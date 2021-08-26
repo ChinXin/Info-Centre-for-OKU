@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "302416272026",
+    "project_id": "oku-application-76cfe",
+    "storage_bucket": "oku-application-76cfe.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:302416272026:android:3c714913c650d5c4869d23",
+        "android_client_info": {
+          "package_name": "my.edu.tarc.oku"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "302416272026-u6q5rlevp73ia18vqfsju823sa8hbn07.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCP_YaPJpwhM81ontzDMFgi91h_-B_9ceA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "302416272026-u6q5rlevp73ia18vqfsju823sa8hbn07.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
