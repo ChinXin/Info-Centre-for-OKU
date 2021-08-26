@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.MutableLiveData
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -20,20 +21,20 @@ import my.edu.tarc.oku.data.User
 import my.edu.tarc.oku.databinding.FragmentRegisterBinding
 import java.lang.StringBuilder
 import java.util.regex.Pattern
+import com.google.firebase.database.GenericTypeIndicator
 
 
 class RegisterFragment : Fragment() {
 
     private lateinit var binding: FragmentRegisterBinding
-    lateinit var userList: MutableList<User>
-    // var username = ""
+//    lateinit var userList: MutableList<User>
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        binding = DataBindingUtil.inflate(inflater,R.layout.fragment_register, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_register, container, false)
 
         setupListener()
 
@@ -48,10 +49,11 @@ class RegisterFragment : Fragment() {
             val address = binding.address.text.toString()
             val password = binding.password.text.toString().toByteArray()
 
-            if(isValidate()){
-                val new_user = User(username,fullName,email,phoneNo,address,convertedPassword(password))
-                myRef.child(username).setValue(new_user).addOnSuccessListener{
-                    Toast.makeText(context,"Register Successfully!!!",Toast.LENGTH_LONG).show()
+            if (isValidate()) {
+                val new_user =
+                    User(username, fullName, email, phoneNo, address, convertedPassword(password))
+                myRef.child(username).setValue(new_user).addOnSuccessListener {
+                    Toast.makeText(context, "Register Successfully!!!", Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -59,9 +61,9 @@ class RegisterFragment : Fragment() {
     }
 
     //Hash Function
-    private fun convertedPassword(data:ByteArray):String{
+    private fun convertedPassword(data: ByteArray): String {
         val HEX_CHARS = "abcdefg1234567890".toCharArray()
-        val r = StringBuilder(data.size*2)
+        val r = StringBuilder(data.size * 2)
         data.forEach { b ->
             val i = b.toInt()
             r.append(HEX_CHARS[i shr 4 and 0xF])
@@ -70,9 +72,10 @@ class RegisterFragment : Fragment() {
         return r.toString()
     }
 
-    private fun isValidate():Boolean = validateUsername() && validateFullName() && validateEmail() && validatePhoneNo() && validateAddress() && validatePassword() && validateConfirmPassword()
+    private fun isValidate(): Boolean =
+        validateUsername() && validateFullName() && validateEmail() && validatePhoneNo() && validateAddress() && validatePassword() && validateConfirmPassword()
 
-    private fun setupListener(){
+    private fun setupListener() {
         binding.username.addTextChangedListener(TextFieldValidation(binding.username))
         binding.fullName.addTextChangedListener(TextFieldValidation(binding.fullName))
         binding.email.addTextChangedListener(TextFieldValidation(binding.email))
@@ -83,49 +86,50 @@ class RegisterFragment : Fragment() {
     }
 
     //check duplicated username
-    private fun validateUsername():Boolean{
-        if(binding.username.text.toString().trim().isEmpty()){
+    private fun validateUsername(): Boolean {
+
+        if (binding.username.text.toString().trim().isEmpty()) {
             binding.usernameLayout.error = "Required Field!"
             binding.username.requestFocus()
             return false
-        }else{
+        } else {
             val database = Firebase.database
             val myRef = database.getReference("users")
+            val username = binding.username.text.toString().trim()
 
-            myRef.child("username").addValueEventListener(object: ValueEventListener{
+            myRef.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    //Log.i("test_data",snapshot.children())
-                    Log.i("test_data",dataSnapshot.toString())
-                    if(dataSnapshot.exists()){
-                        Log.i("test_data",dataSnapshot.toString())
+
+                    val usernameList: MutableList<String?> = ArrayList()
+
+                    for (d in dataSnapshot.children) {
+                        val un = d.child("username").value
+                        usernameList.add(un.toString())
+
+                    }
+                    Log.i("test_data", "$usernameList")
+
+                    if (usernameList.contains(username)) {
                         binding.usernameLayout.error = "Duplicated username"
                         binding.username.requestFocus()
-                    }else{
+                    } else {
                         binding.usernameLayout.isErrorEnabled = false
-                        binding.usernameLayout.error = "123"
                     }
                 }
 
                 override fun onCancelled(error: DatabaseError) {}
             })
 
-//            myRef.child("username").get().addOnSuccessListener {
-//                binding.usernameLayout.error = "Duplicated username"
-//                binding.username.requestFocus()
-//            }.addOnFailureListener{
-//                binding.usernameLayout.isErrorEnabled = false
-//            }
-
         }
         return true
     }
 
-    private fun validateFullName():Boolean{
-        if(binding.fullName.text.toString().trim().isEmpty()){
+    private fun validateFullName(): Boolean {
+        if (binding.fullName.text.toString().trim().isEmpty()) {
             binding.fullNameLayout.error = "Required Field!"
             binding.fullName.requestFocus()
             return false
-        }else{
+        } else {
             binding.fullNameLayout.isErrorEnabled = false
         }
         return true
@@ -168,19 +172,19 @@ class RegisterFragment : Fragment() {
         return true
     }
 
-    private fun validateAddress():Boolean{
-        if(binding.address.text.toString().trim().isEmpty()){
+    private fun validateAddress(): Boolean {
+        if (binding.address.text.toString().trim().isEmpty()) {
             binding.addressLayout.error = "Required Field!"
             binding.address.requestFocus()
             return false
-        }else{
+        } else {
             binding.addressLayout.isErrorEnabled = false
         }
         return true
     }
 
     private fun validatePassword(): Boolean {
-        if(binding.password.text.toString().trim().isEmpty()) {
+        if (binding.password.text.toString().trim().isEmpty()) {
             binding.passwordLayout.error = "Required Field!"
             binding.password.requestFocus()
             return false
@@ -188,15 +192,14 @@ class RegisterFragment : Fragment() {
             binding.passwordLayout.error = "Password must more than 5"
             binding.password.requestFocus()
             return false
-        }
-        else {
+        } else {
             binding.passwordLayout.isErrorEnabled = false
         }
         return true
     }
 
     private fun validateConfirmPassword(): Boolean {
-        if(binding.confirmPassword.text.toString().trim().isEmpty()) {
+        if (binding.confirmPassword.text.toString().trim().isEmpty()) {
             binding.confirmpasswordLayout.error = "Required Field!"
             binding.confirmPassword.requestFocus()
             return false
@@ -204,20 +207,19 @@ class RegisterFragment : Fragment() {
             binding.confirmpasswordLayout.error = "Password not match"
             binding.confirmPassword.requestFocus()
             return false
-        }
-        else {
+        } else {
             binding.confirmpasswordLayout.isErrorEnabled = false
         }
         return true
     }
 
-    inner class TextFieldValidation(private val view:View):TextWatcher{
+    inner class TextFieldValidation(private val view: View) : TextWatcher {
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
         override fun afterTextChanged(s: Editable?) {}
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            when(view.id){
+            when (view.id) {
                 R.id.username -> {
                     validateUsername()
                 }
