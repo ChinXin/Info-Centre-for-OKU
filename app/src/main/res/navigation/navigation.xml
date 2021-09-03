@@ -7,7 +7,7 @@
     <fragment
         android:id="@+id/registerFragment"
         android:name="my.edu.tarc.oku.RegisterFragment"
-        android:label="fragment_Register" >
+        android:label="fragment_Register">
         <action
             android:id="@+id/action_registerFragment_to_loginFragment"
             app:destination="@id/loginFragment" />
@@ -15,7 +15,7 @@
     <fragment
         android:id="@+id/loginFragment"
         android:name="my.edu.tarc.oku.LoginFragment"
-        android:label="LoginFragment" >
+        android:label="LoginFragment">
         <action
             android:id="@+id/action_loginFragment_to_registerFragment"
             app:destination="@id/registerFragment" />

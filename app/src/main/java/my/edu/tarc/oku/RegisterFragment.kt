@@ -14,21 +14,22 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.Navigation
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import my.edu.tarc.oku.data.User
 import my.edu.tarc.oku.databinding.FragmentRegisterBinding
 import java.lang.StringBuilder
 import java.util.regex.Pattern
-import com.google.firebase.database.GenericTypeIndicator
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.util.*
 
 
 class RegisterFragment : Fragment() {
-
     private lateinit var binding: FragmentRegisterBinding
+    private var validated = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,7 +44,7 @@ class RegisterFragment : Fragment() {
             val database = Firebase.database
             val myRef = database.getReference("users")
 
-            val username = binding.username.text.toString()
+            val username = binding.username.text.toString().lowercase()
             val fullName = binding.fullName.text.toString()
             val email = binding.email.text.toString()
             val phoneNo = binding.phoneNo.text.toString()
@@ -51,15 +52,34 @@ class RegisterFragment : Fragment() {
             val password = binding.password.text.toString().toByteArray()
 
             if (isValidate()) {
-                val new_user = User(username, fullName, email, phoneNo, address, convertedPassword(password))
-                myRef.child("admin").child(username).setValue(new_user).addOnSuccessListener { it ->
-                    Toast.makeText(context, "Register Successfully! \n You can now log in your account", Toast.LENGTH_LONG).show()
-                }
-                Navigation.findNavController(it).navigate(R.id.action_registerFragment_to_loginFragment)
+                Toast.makeText(
+                    context,
+                    "Register successful",
+                    Toast.LENGTH_LONG
+                ).show()
+                val newUser =
+                    User(username, fullName, email, phoneNo, address, convertedPassword(password))
+                myRef.child("member").child(username).setValue(newUser)
+                    .addOnSuccessListener { _ ->
+                        Toast.makeText(
+                            context,
+                            "Register Successfully! \n You can now log in your account",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                Navigation.findNavController(it)
+                    .navigate(R.id.action_registerFragment_to_loginFragment)
+            } else {
+                Toast.makeText(
+                    context,
+                    "Register Unsuccessful. Please try again.",
+                    Toast.LENGTH_LONG
+                ).show()
             }
+
         }
 
-        binding.btnGoLogIn.setOnClickListener{
+        binding.btnGoLogIn.setOnClickListener {
             Navigation.findNavController(it).navigate(R.id.action_registerFragment_to_loginFragment)
         }
         return binding.root
@@ -77,7 +97,7 @@ class RegisterFragment : Fragment() {
         return r.toString()
     }
 
-     private fun isValidate(): Boolean =
+    private fun isValidate(): Boolean =
         validateUsername() && validateFullName() && validateEmail() && validatePhoneNo() && validateAddress() && validatePassword() && validateConfirmPassword()
 
     private fun setupListener() {
@@ -92,41 +112,48 @@ class RegisterFragment : Fragment() {
 
     //check duplicated username
     private fun validateUsername(): Boolean {
-
         if (binding.username.text.toString().trim().isEmpty()) {
             binding.usernameLayout.error = "Required Field!"
+            binding.username.requestFocus()
+            return false
+        } else if (binding.username.text.toString().contains(" ")) {
+            binding.usernameLayout.error = "No Spacing"
             binding.username.requestFocus()
             return false
         } else {
             val database = Firebase.database
             val myRef = database.getReference("users")
-            val username = binding.username.text.toString().trim()
+            val username = binding.username.text.toString().lowercase().trim()
 
-            myRef.get().addOnSuccessListener{
-                val usernameList: MutableList<String?> = ArrayList()
-                val adminList    : MutableList<String?> = ArrayList()
+            var checkMember: Boolean
+            var checkAdmin: Boolean
 
-                for (d in it.child("member").children) {
-                    val un = d.child("username").value
-                    usernameList.add(un.toString())
+            myRef.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    checkMember = dataSnapshot.child("member").hasChild(username)
+                    checkAdmin = dataSnapshot.child("admin").hasChild(username)
+
+                    if (checkMember) {
+                        binding.usernameLayout.error = "Duplicated username"
+                        binding.username.requestFocus()
+                        validated = false
+                    } else {
+                        if (checkAdmin) {
+                            binding.usernameLayout.error = "Duplicated username"
+                            binding.username.requestFocus()
+                            validated = false
+                        } else {
+                            binding.usernameLayout.isErrorEnabled = false
+                            validated = true
+                        }
+                    }
                 }
 
-                for (e in it.child("admin").children){
-                    val an = e.child("username").value
-                    adminList.add(an.toString())
-                }
-
-                Log.i("list123",usernameList.toString())
-                Log.i("list123",adminList.toString())
-
-                if (usernameList.contains(username) || adminList.contains(username)) {
-                    binding.usernameLayout.error = "Duplicated username"
-                    binding.username.requestFocus()
-                    
-                } else {
-                    binding.usernameLayout.isErrorEnabled = false
-                }
-            }
+                override fun onCancelled(error: DatabaseError) {}
+            })
+        }
+        if (!validated) {
+            return false
         }
         return true
     }

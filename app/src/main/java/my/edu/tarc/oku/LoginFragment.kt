@@ -30,60 +30,61 @@ class LoginFragment : Fragment() {
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_login, container, false)
 
-        binding.btnLogin.setOnClickListener{
+        binding.btnLogin.setOnClickListener {
 
             val database = Firebase.database
             val myRef = database.getReference("users")
 
-            val username = binding.username.text.toString().trim()
+            var checkMember: Boolean
+            var checkAdmin: Boolean
+            val username = binding.username.text.toString().lowercase().trim()
             val password = convertedPassword(binding.password.text.toString().toByteArray())
 
             myRef.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
 
-                    val usernameList : MutableList<String?> = ArrayList()
-                    val adminList    : MutableList<String?> = ArrayList()
+                    checkMember = dataSnapshot.child("member").hasChild(username)
+                    checkAdmin = dataSnapshot.child("admin").hasChild(username)
 
-                    for (d in dataSnapshot.child("member").children) {
-                        val un = d.child("username").value
-                        usernameList.add(un.toString())
-                    }
-
-                    for (e in dataSnapshot.child("admin").children){
-                        val an = e.child("username").value
-                        adminList.add(an.toString())
-                    }
-
-                    if (usernameList.contains(username)) {
+                    if (checkMember) {
                         myRef.child("member").child(username).get().addOnSuccessListener {
-                            var getPassword = ""
+//                            var getPassword = ""
 
-                            getPassword = it.child("password").value.toString()
+                            val getPassword = it.child("password").value.toString()
 
-                            if(password == getPassword){
+                            if (password == getPassword) {
                                 // Navigate to Home Page
                                 Toast.makeText(context, "Welcome Member", Toast.LENGTH_LONG).show()
-                            }else{
-                                Toast.makeText(context, "Incorrect Password. Please Try Again", Toast.LENGTH_LONG).show()
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Incorrect Password. Please Try Again",
+                                    Toast.LENGTH_LONG
+                                ).show()
                                 binding.password.requestFocus()
                             }
                         }
-                    } else if(adminList.contains(username)){
+                    } else if (checkAdmin) {
                         myRef.child("admin").child(username).get().addOnSuccessListener {
-                            var getPassword = ""
+//                            var getPassword = ""
 
-                            getPassword = it.child("password").value.toString()
+                            val getPassword = it.child("password").value.toString()
 
-                            if(password == getPassword){
+                            if (password == getPassword) {
                                 // Navigate to Home Page
                                 Toast.makeText(context, "Welcome Admin", Toast.LENGTH_LONG).show()
-                            }else{
-                                Toast.makeText(context, "Incorrect Password. Please Try Again", Toast.LENGTH_LONG).show()
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Incorrect Password. Please Try Again",
+                                    Toast.LENGTH_LONG
+                                ).show()
                                 binding.password.requestFocus()
                             }
                         }
-                    }else {
-                        Toast.makeText(context, "Invalid username and password", Toast.LENGTH_LONG).show()
+                    } else {
+                        Toast.makeText(context, "Invalid username and password", Toast.LENGTH_LONG)
+                            .show()
                         binding.username.requestFocus()
                     }
                 }
@@ -93,7 +94,8 @@ class LoginFragment : Fragment() {
             })
         }
 
-        binding.btnGoRegister.setOnClickListener{
+        binding.btnGoRegister.setOnClickListener()
+        {
             Navigation.findNavController(it).navigate(R.id.action_loginFragment_to_registerFragment)
         }
 
