@@ -1,14 +1,17 @@
 package my.edu.tarc.oku
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.Navigation
+import com.google.android.material.navigation.NavigationView
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -16,16 +19,17 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import my.edu.tarc.oku.databinding.FragmentLoginBinding
 import java.lang.StringBuilder
+import java.lang.reflect.Member
 
 
 class LoginFragment : Fragment() {
-
     private lateinit var binding: FragmentLoginBinding
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_login, container, false)
 
@@ -54,6 +58,13 @@ class LoginFragment : Fragment() {
                             if (password == getPassword) {
                                 // Navigate to Home Page
                                 Toast.makeText(context, "Welcome Member", Toast.LENGTH_LONG).show()
+
+                                val rootView = binding.root.rootView.findViewById<NavigationView>(R.id.navView)
+                                val headerView = rootView.getHeaderView(0)
+                                val btnSul: Button = headerView.findViewById(R.id.btnLoginSignUp)
+
+                                btnSul.text = username.uppercase()
+
                             } else {
                                 Toast.makeText(
                                     context,
@@ -72,6 +83,16 @@ class LoginFragment : Fragment() {
                             if (password == getPassword) {
                                 // Navigate to Home Page
                                 Toast.makeText(context, "Welcome Admin", Toast.LENGTH_LONG).show()
+
+                                val rootView = binding.root.rootView.findViewById<NavigationView>(R.id.navView)
+                                val headerView = rootView.getHeaderView(0)
+                                val btnSul: Button = headerView.findViewById(R.id.btnLoginSignUp)
+
+                                btnSul.text = username.uppercase()
+
+                                val intent = Intent(activity, MemberActivity::class.java)
+                                intent.putExtra("Username", username)
+                                startActivity(intent)
                             } else {
                                 Toast.makeText(
                                     context,
@@ -91,6 +112,7 @@ class LoginFragment : Fragment() {
                 override fun onCancelled(error: DatabaseError) {}
 
             })
+
         }
 
         binding.btnGoRegister.setOnClickListener()
@@ -112,4 +134,5 @@ class LoginFragment : Fragment() {
         }
         return r.toString()
     }
+
 }
