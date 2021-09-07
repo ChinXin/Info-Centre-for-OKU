@@ -15,7 +15,6 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import my.edu.tarc.oku.databinding.FragmentLoginBinding
-import my.edu.tarc.oku.databinding.FragmentRegisterBinding
 import java.lang.StringBuilder
 
 

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_marginTop="-20dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -9,28 +10,13 @@
         android:orientation="vertical"
         android:padding="20dp">
 
-        <!--        <ImageView-->
-        <!--            android:layout_width="80dp"-->
-        <!--            android:layout_height="80dp"-->
-        <!--            android:src="@drawable/logo"/>-->
-
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="-20dp"
-            android:fontFamily="@font/bungee"
-            android:text="Welcome"
-            android:textColor="@color/black"
-            android:textSize="40sp" />
-
         <TextView
             android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="-30dp"
+            android:layout_marginTop="15dp"
             android:fontFamily="@font/antic"
-            android:text="Register"
+            android:text="Edit Profile"
             android:textSize="18sp" />
 
 
@@ -54,6 +40,7 @@
                     android:id="@+id/username"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:enabled="false"
                     android:inputType="textCapCharacters" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -124,62 +111,15 @@
                     android:layout_height="wrap_content"
                     android:singleLine="true" />
             </com.google.android.material.textfield.TextInputLayout>
-
-            //password
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/passwordLayout"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Password"
-                app:passwordToggleEnabled="true">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/password"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textPassword" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            //confirmPassword
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/confirmpasswordLayout"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Confirm Password"
-                app:passwordToggleEnabled="true">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/confirmPassword"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textPassword" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-
         </LinearLayout>
 
         <Button
-            android:id="@+id/btnRegister"
+            android:id="@+id/btnUpdate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/black"
-            android:text="Register"
+            android:text="Update"
             android:textColor="@color/white" />
-
-        <Button
-            android:id="@+id/btnGoLogIn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#00000000"
-            android:minHeight="48dp"
-            android:text="Already have an account? Log In"
-            android:textColor="@color/black"
-            tools:ignore="TouchTargetSizeCheck" />
-
 
     </LinearLayout>
 </layout>

@@ -28,6 +28,7 @@ import java.util.*
 
 
 class RegisterFragment : Fragment() {
+
     private lateinit var binding: FragmentRegisterBinding
     private var validated = false
 
