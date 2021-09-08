@@ -17,11 +17,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.OKU">
+        <service
+            android:name=".CustomInfoWindowForGoogleMap"
+            android:enabled="true"
+            android:exported="true"></service>
+
         <activity
             android:name=".MemberActivity"
             android:exported="true"
-            android:theme="@style/Theme.OKU.NoActionBar"/>
-
+            android:theme="@style/Theme.OKU.NoActionBar" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -45,6 +49,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
