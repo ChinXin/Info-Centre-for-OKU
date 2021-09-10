@@ -33,35 +33,6 @@
             android:textColor="#000"
             android:textSize="14sp" />
 
-        <EditText
-            android:id="@+id/editTextTextPersonName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:inputType="textPersonName"
-            android:text="Name" />
 
-        <EditText
-            android:id="@+id/editTextTextPersonName2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:inputType="textPersonName"
-            android:text="Name" />
-
-        <ImageButton
-            android:id="@+id/infoWindowButton"
-            style="@style/Widget.AppCompat.ImageButton"
-            android:layout_width="100dp"
-            android:layout_height="35dp"
-            android:layout_gravity="center_horizontal"
-            android:alpha="0.9"
-            android:backgroundTint="#858585"
-            android:clickable="true"
-            android:elevation="30dp"
-            android:scaleType="fitCenter"
-            android:src="@android:drawable/btn_star_big_on" />
     </LinearLayout>
-
-
 </LinearLayout>

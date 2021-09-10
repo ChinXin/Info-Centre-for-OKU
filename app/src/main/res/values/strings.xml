@@ -20,4 +20,28 @@
     <string name="terrain_map">Terrain Map</string>
 
     <string name="dropped_pin">Dropped Pin</string>
+
+    <string-array name="types">
+        <item>Services</item>
+        <item>Facilities</item>
+    </string-array>
+
+    <string-array name="stateList">
+        <item>Labuan</item>
+        <item>Johor</item>
+        <item>Kedah</item>
+        <item>Kelantan</item>
+        <item>Kuala Lumpur</item>
+        <item>Malacca</item>
+        <item>Negeri Sembilan</item>
+        <item>Pahang</item>
+        <item>Penang</item>
+        <item>Perak</item>
+        <item>Perlis</item>
+        <item>Putrajaya</item>
+        <item>Sabah</item>
+        <item>Sarawak</item>
+        <item>Selangor</item>
+        <item>Terengganu</item>
+    </string-array>
 </resources>

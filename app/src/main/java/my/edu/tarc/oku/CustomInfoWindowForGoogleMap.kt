@@ -23,7 +23,6 @@ class CustomInfoWindowForGoogleMap(context: Context) : GoogleMap.InfoWindowAdapt
 
         tvTitle.text = marker.title
         tvSnippet.text = marker.snippet
-
     }
 
     override fun getInfoContents(marker: Marker): View {
@@ -35,4 +34,6 @@ class CustomInfoWindowForGoogleMap(context: Context) : GoogleMap.InfoWindowAdapt
         rendowWindowText(marker, mWindow)
         return mWindow
     }
+
+
 }
