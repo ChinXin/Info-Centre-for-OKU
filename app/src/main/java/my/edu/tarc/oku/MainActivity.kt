@@ -1,5 +1,6 @@
 package my.edu.tarc.oku
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -17,7 +18,13 @@ import android.widget.TextView
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
+import my.edu.tarc.oku.data.UserSessionManager
 import org.w3c.dom.Text
+import android.text.Html
+
+
+
+
 
 
 class MainActivity : AppCompatActivity() {
@@ -28,10 +35,25 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+//        val session = UserSessionManager(applicationContext)
+
         @Suppress("UNUSED_VARIABLE")
         val binding = DataBindingUtil.setContentView<ActivityMainBinding>(this, R.layout.activity_main)
 //        binding = ActivityMainBinding.inflate(layoutInflater)
 //        setContentView(binding.root)
+
+//        if (session.checkLogin()){
+//            val user = session.userDetails
+//            val name = user[UserSessionManager.KEY_NAME]
+//            val status = user[UserSessionManager.KEY_STATUS]
+//            if(status =="admin") {
+//                val intent = Intent(applicationContext, AdminActivity::class.java)
+//                intent.putExtra("Username", name)
+//                startActivity(intent)
+//            }else if (status == "member"){
+//
+//            }
+//        }
 
         setSupportActionBar(binding.appBarMain.toolbar)
 
@@ -51,19 +73,29 @@ class MainActivity : AppCompatActivity() {
             findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.loginFragment)
             drawerLayout.closeDrawer(GravityCompat.START)
         }
+
+
+
+
+//        btnLogout.setOnClickListener(object : OnClickListener() {
+//            fun onClick(arg0: View?) {
+//
+//                // Clear the User session data
+//                // and redirect user to LoginActivity
+//                session.logoutUser()
+//            }
+//        })
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.aboutUs, R.id.loginFragment, R.id.registerFragment
+                R.id.aboutUs, R.id.loginFragment, R.id.registerFragment, R.id.add_event
             ), drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
-
     }
-
 
 //    override fun onCreateOptionsMenu(menu: Menu): Boolean {
 //        // Inflate the menu; this adds items to the action bar if it is present.
@@ -71,10 +103,9 @@ class MainActivity : AppCompatActivity() {
 //        return true
 //    }
 
-
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_content_main)
-        return navController.navigateUp(appBarConfiguration)
+        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 //    private lateinit var drawerLayout: DrawerLayout
 //    override fun onCreate(savedInstanceState: Bundle?) {

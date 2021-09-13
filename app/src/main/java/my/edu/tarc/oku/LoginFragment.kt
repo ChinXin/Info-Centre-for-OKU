@@ -17,9 +17,11 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import my.edu.tarc.oku.data.UserSessionManager
 import my.edu.tarc.oku.databinding.FragmentLoginBinding
 import java.lang.StringBuilder
 import java.lang.reflect.Member
+import kotlin.system.exitProcess
 
 
 class LoginFragment : Fragment() {
@@ -29,9 +31,25 @@ class LoginFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        var session = UserSessionManager(requireContext().applicationContext)
+        if (session.checkLogin()){
+            val user = session.userDetails
+            val name = user[UserSessionManager.KEY_NAME]
+            val status = user[UserSessionManager.KEY_STATUS]
+            if(status =="admin") {
+                val intent = Intent(requireContext(), AdminActivity::class.java)
+                intent.putExtra("Username", name)
+                startActivity(intent)
+            }else if (status == "member"){
+
+            }
+            return null
+        }
 
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_login, container, false)
+
+//        session = UserSessionManager(requireContext().applicationContext)
 
         binding.btnLogin.setOnClickListener {
 
@@ -59,12 +77,17 @@ class LoginFragment : Fragment() {
                                 // Navigate to Home Page
                                 Toast.makeText(context, "Welcome Member", Toast.LENGTH_LONG).show()
 
-                                val rootView = binding.root.rootView.findViewById<NavigationView>(R.id.navView)
-                                val headerView = rootView.getHeaderView(0)
-                                val btnSul: Button = headerView.findViewById(R.id.btnLoginSignUp)
-
-                                btnSul.text = username.uppercase()
-
+//                                val rootView = binding.root.rootView.findViewById<NavigationView>(R.id.navView)
+//                                val headerView = rootView.getHeaderView(0)
+//                                val btnSul: Button = headerView.findViewById(R.id.btnLoginSignUp)
+//
+//                                btnSul.text = username.uppercase()
+                                session.createUserLoginSession(username,"member")
+                                val intent = Intent(activity, MemberActivity::class.java)
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                intent.putExtra("Username", username)
+                                startActivity(intent)
                             } else {
                                 Toast.makeText(
                                     context,
@@ -84,13 +107,15 @@ class LoginFragment : Fragment() {
                                 // Navigate to Home Page
                                 Toast.makeText(context, "Welcome Admin", Toast.LENGTH_LONG).show()
 
-                                val rootView = binding.root.rootView.findViewById<NavigationView>(R.id.navView)
-                                val headerView = rootView.getHeaderView(0)
-                                val btnSul: Button = headerView.findViewById(R.id.btnLoginSignUp)
-
-                                btnSul.text = username.uppercase()
-
-                                val intent = Intent(activity, MemberActivity::class.java)
+//                                val rootView = binding.root.rootView.findViewById<NavigationView>(R.id.navView)
+//                                val headerView = rootView.getHeaderView(0)
+//                                val btnSul: Button = headerView.findViewById(R.id.btnLoginSignUp)
+//
+//                                btnSul.text = username.uppercase()
+                                session.createUserLoginSession(username,"admin")
+                                val intent = Intent(activity, AdminActivity::class.java)
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                                 intent.putExtra("Username", username)
                                 startActivity(intent)
                             } else {

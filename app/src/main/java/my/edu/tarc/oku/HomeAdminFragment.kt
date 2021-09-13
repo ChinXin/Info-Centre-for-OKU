@@ -45,6 +45,7 @@ import my.edu.tarc.oku.databinding.FragmentHomeAdminBinding
 import my.edu.tarc.oku.databinding.MarkerFormBinding
 import okhttp3.OkHttpClient
 import okhttp3.Request
+
 import java.util.*
 import java.util.regex.Pattern
 import kotlin.jvm.internal.AdaptedFunctionReference
@@ -122,10 +123,7 @@ class HomeAdminFragment : Fragment() {
             override fun onCancelled(error: DatabaseError) {}
 
         })
-
-        //var current = getCurrentLocation()
-        //Log.i("test123", " Line 114 lat = ${current.latitude}")
-        //Log.i("test123", "Line 115 lONG = ${current.longitude}")
+        //Log.i("test123",getCurrentLocation().toString())
 
         //optional style map
         //setMapStyle(map)

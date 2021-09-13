@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/admin_navigation"
+    app:startDestination="@id/homeAdminFragment">
+
+    <fragment
+        android:id="@+id/adminEvent"
+        android:name="my.edu.tarc.oku.AdminEvent"
+        android:label="AdminEvent" >
+        <action
+            android:id="@+id/action_adminEvent_to_adminAddEvent"
+            app:destination="@id/adminAddEvent" />
+    </fragment>
+    <fragment
+        android:id="@+id/adminAddEvent"
+        android:name="my.edu.tarc.oku.AdminAddEvent"
+        android:label="AdminAddEvent" >
+        <action
+            android:id="@+id/action_adminAddEvent_to_adminEvent"
+            app:destination="@id/adminEvent" />
+    </fragment>
+    <fragment
+        android:id="@+id/homeAdminFragment"
+        android:name="my.edu.tarc.oku.HomeAdminFragment"
+        android:label="fragment_home_admin"
+        tools:layout="@layout/fragment_home_admin" />
+</navigation>
