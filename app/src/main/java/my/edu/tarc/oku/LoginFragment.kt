@@ -41,7 +41,9 @@ class LoginFragment : Fragment() {
                 intent.putExtra("Username", name)
                 startActivity(intent)
             }else if (status == "member"){
-
+                val intent = Intent(requireContext(), MemberActivity::class.java)
+                intent.putExtra("Username", name)
+                startActivity(intent)
             }
             return null
         }

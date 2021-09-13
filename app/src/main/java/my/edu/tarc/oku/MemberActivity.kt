@@ -14,6 +14,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
+import my.edu.tarc.oku.data.UserSessionManager
 import my.edu.tarc.oku.databinding.ActivityMemberBinding
 
 class MemberActivity : AppCompatActivity() {
@@ -24,6 +25,8 @@ class MemberActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val session = UserSessionManager(applicationContext)
+
         @Suppress("UNUSED_VARIABLE")
         val binding = DataBindingUtil.setContentView<ActivityMemberBinding>(this, R.layout.activity_member)
         val bundle = intent.extras
@@ -31,30 +34,37 @@ class MemberActivity : AppCompatActivity() {
 //        binding = ActivityMainBinding.inflate(layoutInflater)
 //        setContentView(binding.root)
 
-        setSupportActionBar(binding.appBarMain.toolbar)
+        setSupportActionBar(binding.appBarMember.toolbarM)
 
-        binding.appBarMain.fab.setOnClickListener { view ->
+        binding.appBarMember.fabM.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show()
         }
 
         val drawerLayout: DrawerLayout = binding.drawerLayout
-        val navView: NavigationView = binding.navView
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
+        val navView: NavigationView = binding.navViewM
+        val navController = findNavController(R.id.nav_host_fragment_content_member)
 
         val headerView = navView.getHeaderView(0)
         val btnUS: Button = headerView.findViewById(R.id.btnUsername)
 
         btnUS.text = username
         btnUS.setOnClickListener {
-            findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.loginFragment)
+            findNavController(R.id.nav_host_fragment_content_member).navigate(R.id.editProfileFragment)
             drawerLayout.closeDrawer(GravityCompat.START)
         }
+
+        val btnLogout = navView.menu.findItem(R.id.Member_Logout)
+        btnLogout.setOnMenuItemClickListener {
+            session.logoutUser()
+            true
+        }
+
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.aboutUs, R.id.loginFragment, R.id.registerFragment
+                R.id.homeMemberFragment
             ), drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
@@ -72,7 +82,7 @@ class MemberActivity : AppCompatActivity() {
 
 
     override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
+        val navController = findNavController(R.id.nav_host_fragment_content_member)
         return navController.navigateUp(appBarConfiguration)
     }
 }

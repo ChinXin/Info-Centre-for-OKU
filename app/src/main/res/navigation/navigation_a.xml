@@ -26,4 +26,8 @@
         android:name="my.edu.tarc.oku.HomeAdminFragment"
         android:label="fragment_home_admin"
         tools:layout="@layout/fragment_home_admin" />
+    <fragment
+        android:id="@+id/editProfileFragment"
+        android:name="my.edu.tarc.oku.EditProfileFragment"
+        android:label="EditProfileFragment" />
 </navigation>

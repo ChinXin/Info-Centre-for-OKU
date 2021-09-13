@@ -27,14 +27,6 @@
         android:label="fragment_about_us"
         tools:layout="@layout/fragment_about_us" />
     <fragment
-        android:id="@+id/editProfileFragment"
-        android:name="my.edu.tarc.oku.EditProfileFragment"
-        android:label="EditProfileFragment" />
-    <fragment
-        android:id="@+id/changePasswordFragment"
-        android:name="my.edu.tarc.oku.ChangePasswordFragment"
-        android:label="ChangePasswordFragment" />
-    <fragment
         android:id="@+id/homeAdminFragment"
         android:name="my.edu.tarc.oku.HomeAdminFragment"
         android:label="fragment_home_admin"

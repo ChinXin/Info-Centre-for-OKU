@@ -16,6 +16,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import my.edu.tarc.oku.data.User
+import my.edu.tarc.oku.data.UserSessionManager
 import my.edu.tarc.oku.databinding.FragmentEditProfileBinding
 import my.edu.tarc.oku.databinding.FragmentRegisterBinding
 import java.lang.StringBuilder
@@ -30,6 +31,10 @@ class EditProfileFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        var session = UserSessionManager(requireContext().applicationContext)
+        val user = session.userDetails
+        val name = user[UserSessionManager.KEY_NAME]
+        val status = user[UserSessionManager.KEY_STATUS]
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_edit_profile, container, false)
 
@@ -42,7 +47,7 @@ class EditProfileFragment : Fragment() {
         var tvUsername = "aeronchow"
         var tvPassword = ""
 
-        myRef.child("member").child(tvUsername).addValueEventListener(object : ValueEventListener {
+        myRef.child(status.toString()).child(name.toString()).addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val tvFullName = dataSnapshot.child("fullName").value.toString()
                 val tvEmail = dataSnapshot.child("email").value.toString()

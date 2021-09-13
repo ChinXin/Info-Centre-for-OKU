@@ -55,7 +55,7 @@ class AdminActivity : AppCompatActivity() {
 
         btnUS.text = username
         btnUS.setOnClickListener {
-            findNavController(R.id.nav_host_fragment_content_admin).navigate(R.id.loginFragment)
+            findNavController(R.id.nav_host_fragment_content_admin).navigate(R.id.editProfileFragment)
             drawerLayout.closeDrawer(GravityCompat.START)
         }
 

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navigation_m"
+    app:startDestination="@id/homeMemberFragment">
+
+    <fragment
+        android:id="@+id/homeMemberFragment"
+        android:name="my.edu.tarc.oku.HomeMemberFragment"
+        android:label="fragment_home_member"
+        tools:layout="@layout/fragment_home_member" />
+    <fragment
+        android:id="@+id/editProfileFragment"
+        android:name="my.edu.tarc.oku.EditProfileFragment"
+        android:label="EditProfileFragment" >
+        <action
+            android:id="@+id/action_editProfileFragment2_to_changePasswordFragment2"
+            app:destination="@id/changePasswordFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/changePasswordFragment"
+        android:name="my.edu.tarc.oku.ChangePasswordFragment"
+        android:label="ChangePasswordFragment" />
+</navigation>
