@@ -5,13 +5,17 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.net.Uri
+import android.os.AsyncTask
 import androidx.fragment.app.Fragment
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.*
 import android.widget.*
@@ -19,85 +23,144 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.Exclude
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import com.google.gson.Gson
 import my.edu.tarc.oku.data.Marker
+import my.edu.tarc.oku.databinding.FragmentHomeAdminBinding
+import my.edu.tarc.oku.databinding.MarkerFormBinding
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.util.*
+import java.util.regex.Pattern
 import kotlin.jvm.internal.AdaptedFunctionReference
 import my.edu.tarc.oku.R as R
 
 class HomeAdminFragment : Fragment() {
 
-    private lateinit var map: GoogleMap
+    private lateinit var binding : FragmentHomeAdminBinding
+
+    lateinit var map: GoogleMap
     lateinit var customView: View
     //private val TAG = HomeAdminFragment::class.java.simpleName
     private val REQUEST_LOCATION_PERMISSION = 1
     //val markerList: MutableList<String?> = ArrayList()
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    //private lateinit var poly:Polyline
 
     @SuppressLint("MissingPermission")
     private val callback = OnMapReadyCallback { googleMap ->
         map = googleMap
         val database = Firebase.database
-        val myRef = database.getReference("markers")
+        val myRef = database.getReference("state")
 
+        enableMyLocation()
+        //display all
         myRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
 
-                for(x in snapshot.children){
-                    val id = x.key
-                    val lat = x.child("latitude").value.toString().toDouble()
-                    val long = x.child("longitude").value.toString().toDouble()
-                    val title = x.child("title").value.toString()
-                    val marker = LatLng(lat,long)
+//                for(x in snapshot.children){
+//                    val id = x.key
+//                    val lat = x.child("latitude").value.toString().toDouble()
+//                    val long = x.child("longitude").value.toString().toDouble()
+//                    val title = x.child("title").value.toString()
+//                    val marker = LatLng(lat,long)
+//
+//                    googleMap.addMarker(MarkerOptions().position(marker).snippet(id).title(title))
+//                    //googleMap.moveCamera(CameraUpdateFactory.newLatLng(marker))
+//                    //googleMap.animateCamera
+//                }
+                for(s in snapshot.children){
+                    //Log.i("test123","Line 78 = ${s.value}" )
+                    for (t in s.children){
+                        if(t.key != "Events"){
+                            //Log.i("test123","Line 80 = ${t.k}" )
+                            for(m in t.children){
+                                //Log.i("test123","Line 80 = ${m.value}" )
+                                val id = m.key
+                                val lat = m.child("latitude").value.toString().toDouble()
+                                val long = m.child("longitude").value.toString().toDouble()
+                                val title = m.child("title").value.toString()
+                                val type = m.child("type").value.toString()
+                                val marker = LatLng(lat,long)
 
-                    googleMap.addMarker(MarkerOptions().position(marker).snippet(id).title(title))
-                    //googleMap.moveCamera(CameraUpdateFactory.newLatLng(marker))
-                    //googleMap.animateCamera
+                                if(type == "Services"){
+                                    googleMap.addMarker(MarkerOptions()
+                                        .position(marker)
+                                        .snippet(id)
+                                        .title(title)
+                                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)))
+                                }else{
+                                    googleMap.addMarker(MarkerOptions()
+                                        .position(marker)
+                                        .snippet(id)
+                                        .title(title)
+                                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN)))
+                                }
+
+                            }
+                        }
+
+                    }
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {}
 
         })
-        //Log.i("test123",getCurrentLocation().toString())
+
+        //var current = getCurrentLocation()
+        //Log.i("test123", " Line 114 lat = ${current.latitude}")
+        //Log.i("test123", "Line 115 lONG = ${current.longitude}")
 
         //optional style map
         //setMapStyle(map)
         //map.uiSettings.isZoomControlsEnabled = true
         //map.uiSettings.isZoomGesturesEnabled = true
-
-        enableMyLocation()
         setMapLongClick(map)
         map.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this.requireContext()))
-
 
         //correct version
         map.setOnMarkerClickListener(object: GoogleMap.OnMarkerClickListener {
             override fun onMarkerClick(p0: com.google.android.gms.maps.model.Marker): Boolean {
-                //Toast.makeText(context,p0.snippet,Toast.LENGTH_SHORT).show()
-                //Log.i("test123",p0.toString())
+                var currentLat = ""
+                var currentLong = ""
                 p0.showInfoWindow()
-                map.setOnInfoWindowClickListener {
 
+                //navigate
+                binding.routeFab.setOnClickListener{
+                    clear()
+
+                    fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
+                    fusedLocationClient.lastLocation.addOnSuccessListener {
+                        currentLat = it.latitude.toString()
+                        currentLong = it.longitude.toString()
+                        val origin = LatLng(currentLat.toDouble(),currentLong.toDouble())
+                        val destination = LatLng(p0.position.latitude,p0.position.longitude)
+                        //Log.i("test123","Line 148 = $origin")
+                        //Log.i("test123","Line 148 = $destination")
+                        val URL = getDirectionURL(origin,destination)
+
+                        GetDirection(URL).execute()
+                        callRoute(p0,map)
+                    }
+                }
+
+                map.setOnInfoWindowClickListener {
                     var markerId = p0.snippet
                     basicAlert(p0,markerId.toString(),p0.position.latitude.toString(),p0.position.longitude.toString())
                     //Log.i("test123","lat = " + p0.position.latitude.toString())
@@ -107,53 +170,22 @@ class HomeAdminFragment : Fragment() {
             }
         })
 
-        //try version
-//        map.setOnMarkerClickListener(object: GoogleMap.OnMarkerClickListener {
-//            override fun onMarkerClick(p0: com.google.android.gms.maps.model.Marker): Boolean {
-//                //val gmmIntentUri = Uri.parse("geo:" + p0.position.latitude.toString() + "," + p0.position.longitude.toString())
-//                val gmmIntentUri = Uri.parse("google.navigation:q=" + p0.position.latitude.toString() + "," + p0.position.longitude.toString())
-//                val mapIntent = Intent(Intent.ACTION_VIEW,gmmIntentUri)
-//                mapIntent.setPackage("com.google.android.apps.maps")
-//                startActivity(mapIntent)
-//                return true
-//            }
-//        })
-
-
         //googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney,5f))
     }
 
-//    private fun getCurrentLocation():LatLng {
-//        val request = LocationRequest()
-//        var geoPoint:LatLng
-//
-//        request.setInterval(10000)
-//
-//        val client = LocationServices.getFusedLocationProviderClient(this.activity)
-//        val permission = ContextCompat.checkSelfPermission(
-//            this.requireContext(),
-//            Manifest.permission.ACCESS_FINE_LOCATION
-//        )
-//
-//        if (permission == PackageManager.PERMISSION_GRANTED) {
-//            client.requestLocationUpdates(request, object : LocationCallback() {
-//                override fun onLocationResult(locationResult: LocationResult) {
-//                    val location = locationResult.lastLocation
-//                    geoPoint = LatLng(location.latitude, location.longitude)
-//
-//                }
-//            }, null)
-//        }
-//        return geoPoint
-//    }
+    private fun clear(){
+        map.clear()
+        val mapFragment =
+            childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
+        mapFragment?.getMapAsync(callback)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
-        return inflater.inflate(R.layout.fragment_home_admin, container, false)
-
+        binding = DataBindingUtil.inflate(inflater,R.layout.fragment_home_admin, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -164,7 +196,7 @@ class HomeAdminFragment : Fragment() {
 
         //return long press action
         val v:View = this.requireActivity().findViewById(android.R.id.content)
-        Snackbar.make(v,"Long press to add a marker!",Snackbar.LENGTH_INDEFINITE)
+        Snackbar.make(v,"Long press to add a marker!",Snackbar.LENGTH_SHORT)
             .setAction("OK",{})
             .setActionTextColor(ContextCompat.getColor(this.requireContext(),android.R.color.white))
             .show()
@@ -189,6 +221,38 @@ class HomeAdminFragment : Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
+//    fun getCurrentLocation():LatLng {
+//        val request = LocationRequest()
+//        var geoPoint = LatLng(0.0,0.0)
+//
+//        request.setFastestInterval(5000)
+//
+//        request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+//        val client = LocationServices.getFusedLocationProviderClient(this.requireContext())
+//        val permission = ContextCompat.checkSelfPermission(
+//            this.requireContext(),
+//            Manifest.permission.ACCESS_FINE_LOCATION) ==  PackageManager.PERMISSION_GRANTED
+//
+//        if (permission) {
+//            Log.i("test123","Line 213 ")
+//            client.requestLocationUpdates(request, object : LocationCallback() {
+//                override fun onLocationResult(locationResult: LocationResult) {
+//                    //Log.i("test123","Line 216")
+//                    val location = locationResult.lastLocation
+//                    //Log.i("test123","Line 218 = ${location.latitude}")
+//                   // Log.i("test123","Line 219 = ${location.longitude}")
+//                    geoPoint = LatLng(location.latitude, location.longitude)
+//                    Log.i("test123","Line 221 = $geoPoint")
+//                    Log.i("test123","Line 222 = ${geoPoint.latitude}")
+//
+//                }
+//            }, null)
+//        }
+//
+//        Log.i("test123","Line 229 = $geoPoint")
+//        return geoPoint
+//    }
+
     private fun isPermissionGranted() : Boolean {
         return ContextCompat.checkSelfPermission(
             this.requireContext(),
@@ -206,6 +270,17 @@ class HomeAdminFragment : Fragment() {
                 arrayOf<String>(Manifest.permission.ACCESS_FINE_LOCATION),
                 REQUEST_LOCATION_PERMISSION
             )
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray) {
+        if (requestCode == REQUEST_LOCATION_PERMISSION) {
+            if (grantResults.contains(PackageManager.PERMISSION_GRANTED)) {
+                enableMyLocation()
+            }
         }
     }
 
@@ -234,7 +309,7 @@ class HomeAdminFragment : Fragment() {
             //getMarker(test)
             //test.showInfoWindow()
 //            map.setOnInfoWindowClickListener {
-//                basicAlert(latLng.latitude.toString(),latLng.longitude.toString())
+                basicAlert(test,test.snippet.toString(),latLng.latitude.toString(),latLng.longitude.toString())
 //            }
         }
     }
@@ -244,16 +319,7 @@ class HomeAdminFragment : Fragment() {
 //        return marker
 //    }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray) {
-        if (requestCode == REQUEST_LOCATION_PERMISSION) {
-            if (grantResults.contains(PackageManager.PERMISSION_GRANTED)) {
-                enableMyLocation()
-            }
-        }
-    }
+
 
 //    private fun setMapStyle(map: GoogleMap) {
 //        try {
@@ -291,127 +357,413 @@ class HomeAdminFragment : Fragment() {
         autoId2.setAdapter(adapter2)
 
         val database = Firebase.database
-        val myRef = database.getReference("markers")
+        val myRef = database.getReference("state")
 
         val title = content.findViewById<TextInputEditText>(R.id.infoTitle)
         //val type = content.findViewById<AutoCompleteTextView>(R.id.autoCompleteList)
         val phoneNo = content.findViewById<TextInputEditText>(R.id.phoneNo)
         val address = content.findViewById<TextInputEditText>(R.id.address)
         var getId = ""
+        var oldType = ""
+        var oldState = ""
 
         if(markerId != ""){
-            myRef.child(markerId).get().addOnSuccessListener {
-                getId = it.key.toString()
-                //autoId.text. = it.child("type").value.toString()
-                if(it.child("type").value.toString() == "Services"){
-                    autoId.setText(adapter.getItem(0),false)
-                }else{
-                    autoId.setText(adapter.getItem(1),false)
+//            myRef.child(markerId).get().addOnSuccessListener {
+//                getId = it.key.toString()
+//                autoId.setText(it.child("type").value.toString(),false)
+//                title.setText(it.child("title").value.toString())
+//                phoneNo.setText(it.child("phoneNo").value.toString())
+//                address.setText(it.child("address").value.toString())
+//                autoId2.setText(it.child("state").value.toString(),false)
+//            }
+            myRef.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for(s in snapshot.children){
+                        for (t in s.children){
+                            //Log.i("test123","Line 334 = ${s.children.s}")
+                            if(t.hasChild(markerId)){
+                                getId = t.child(markerId).key.toString()
+                                oldType = t.child(markerId).child("type").value.toString()
+                                autoId.setText(oldType,false)
+                                title.setText(t.child(markerId).child("title").value.toString())
+                                phoneNo.setText(t.child(markerId).child("phoneNo").value.toString())
+                                address.setText(t.child(markerId).child("address").value.toString())
+                                oldState = t.child(markerId).child("state").value.toString()
+                                autoId2.setText(oldState,false)
+                                break
+                            }
+                        }
+                    }
                 }
-                //autoId.setText(adapter.getItem(0))
-                title.setText(it.child("title").value.toString())
-                phoneNo.setText(it.child("phoneNo").value.toString())
-                address.setText(it.child("address").value.toString())
 
-            }
+                override fun onCancelled(error: DatabaseError) {}
+            })
         }else{
             autoId.setText("")
             title.setText("")
             phoneNo.setText("")
             address.setText("")
+            autoId2.setText("")
         }
-        builder.setView(content)
 
-        //builder.setMessage("We have a message")
-        builder.setPositiveButton("Save") { dialog, which ->
+
+        builder.setView(content)
+        builder.setCancelable(false)
+        //builder.show()
+
+        val dialog = builder.show()
+        val btnSave = content.findViewById<Button>(R.id.btnSave)
+        val btnCancel = content.findViewById<Button>(R.id.btnCancel)
+        val btnDelete = content.findViewById<Button>(R.id.btnDelete)
+
+        btnSave.setOnClickListener{
             val lat = latitude.toDouble()
             val long = longitude.toDouble()
             val type = autoId.text.toString()
             val title = content.findViewById<TextInputEditText>(R.id.infoTitle).text.toString()
             val phoneNo = content.findViewById<TextInputEditText>(R.id.phoneNo).text.toString()
             val address = content.findViewById<TextInputEditText>(R.id.address).text.toString()
+            val state = autoId2.text.toString()
 
-            val newMarker = Marker(lat.toString(),long.toString(),type,title,phoneNo,address)
+            val newMarker = Marker(lat.toString(),long.toString(),type,title,phoneNo,address,state)
 
-            if(getId != ""){
-                myRef.child(getId).setValue(newMarker).addOnSuccessListener {
-                    Toast.makeText(context,"Update Successfull!!!",Toast.LENGTH_SHORT).show()
-                    getId = ""
+            if(type.isNotEmpty() && title.isNotEmpty() && phoneNo.isNotEmpty() && address.isNotEmpty() && state.isNotEmpty()){
+                val REG = "^(01)([0-9]{8,9})\$"
+                if (!Pattern.compile(REG).matcher(phoneNo).matches()) {
+                    content.findViewById<TextInputLayout>(R.id.phoneNoLayout).error = "Invalid Phone Number! e.g 01XXXXXXXXX"
+                    content.findViewById<TextInputEditText>(R.id.phoneNo).requestFocus()
+                }else{
+                    if(getId != ""){
+                        myRef.child(oldState).child(oldType).child(markerId).removeValue().addOnSuccessListener {
+                            myRef.child(state).child(type).child(markerId).setValue(newMarker).addOnSuccessListener {
+                                Toast.makeText(context,"Update Successfull!!!",Toast.LENGTH_SHORT).show()
+                                getId = ""
+                                dialog.dismiss()
+                            }
+                        }
+                    }else{
+                        myRef.child(state).child(type).push().setValue(newMarker).addOnSuccessListener {
+                            Toast.makeText(context,"Added Successful",Toast.LENGTH_SHORT).show()
+                            dialog.dismiss()
+                        }
+                    }
+                    map.clear()
+                    val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
+                    mapFragment?.getMapAsync(callback)
                 }
             }else{
-                myRef.push().setValue(newMarker).addOnSuccessListener {
-                    Toast.makeText(context,"Added Successful",Toast.LENGTH_SHORT).show()
+                if(type.isEmpty()){
+                    content.findViewById<TextInputLayout>(R.id.typeLayout).error = "Required Field!"
+                    autoId.requestFocus()
+                }else{
+                    content.findViewById<TextInputLayout>(R.id.typeLayout).isErrorEnabled = false
                 }
-            }
-            map.clear()
-            val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
-            mapFragment?.getMapAsync(callback)
-            //val marker = LatLng(lat,long)
-            //map.moveCamera(CameraUpdateFactory.newLatLngZoom(marker,15f))
-        }
 
-        if(markerId != ""){
-            builder.setNeutralButton("Delete"){ dialog,which ->
-                myRef.child(markerId).get().addOnSuccessListener {
-                    val markId = it.key
-                    val markLat = it.child("latitude").value.toString()
-                    val markLong = it.child("longitude").value.toString()
-                    val markTitle = it.child("title").value.toString()
-                    val markType = it.child("type").value.toString()
-                    val phone = it.child("phoneNo").value.toString()
-                    val add = it.child("address").value.toString()
+                if(title.isEmpty()){
+                    content.findViewById<TextInputLayout>(R.id.TitleLayout).error = "Required Field!"
+                    content.findViewById<TextInputEditText>(R.id.infoTitle).requestFocus()
+                }else{
+                    content.findViewById<TextInputLayout>(R.id.TitleLayout).isErrorEnabled = false
+                }
 
-                    val undoMarker = Marker(markLat, markLong, markType, markTitle,phone, add)
-
-                    myRef.child(markerId).removeValue().addOnSuccessListener {
-                        //Toast.makeText(context, "Delete Successful", Toast.LENGTH_SHORT).show()
-                        //defaultId.remove()
-                        //remove marker
-                        map.clear()
-                        val mapFragment =
-                            childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
-                        mapFragment?.getMapAsync(callback)
-
-                        val v: View = this.requireActivity().findViewById(android.R.id.content)
-                        Snackbar.make(v, "Marker Deleted!", Snackbar.LENGTH_LONG)
-                            .setAction("UNDO", View.OnClickListener {
-                                val setMark = LatLng(markLat.toDouble(),markLong.toDouble())
-                                map.addMarker(
-                                    MarkerOptions()
-                                        .position(setMark)
-                                        .title(markTitle)
-                                        .snippet(markId)
-                                        .icon(
-                                            BitmapDescriptorFactory.defaultMarker(
-                                                BitmapDescriptorFactory.HUE_RED
-                                            )
-                                        )
-                                )
-
-                                myRef.child(markId.toString()).setValue(undoMarker).addOnSuccessListener {
-                                    Toast.makeText(context,"Undo Successfully!!!",Toast.LENGTH_SHORT).show()
-                                }
-                            })
-                            .setActionTextColor(
-                                ContextCompat.getColor(
-                                    this.requireContext(),
-                                    android.R.color.white
-                                )
-                            )
-                            .show()
+                if(phoneNo.isEmpty()){
+                    content.findViewById<TextInputLayout>(R.id.phoneNoLayout).error = "Required Field!"
+                    content.findViewById<TextInputEditText>(R.id.phoneNo).requestFocus()
+                }else{
+                    val REG = "^(01)([0-9]{8,9})\$"
+                    if (!Pattern.compile(REG).matcher(phoneNo).matches()) {
+                        content.findViewById<TextInputLayout>(R.id.phoneNoLayout).error = "Invalid Phone Number! e.g 01XXXXXXXXX"
+                        content.findViewById<TextInputEditText>(R.id.phoneNo).requestFocus()
+                    }else{
+                        content.findViewById<TextInputLayout>(R.id.phoneNoLayout).isErrorEnabled = false
                     }
                 }
+
+                if(address.isEmpty()){
+                    content.findViewById<TextInputLayout>(R.id.addressLayout).error = "Required Field!"
+                    content.findViewById<TextInputEditText>(R.id.address).requestFocus()
+                }else{
+                    content.findViewById<TextInputLayout>(R.id.addressLayout).isErrorEnabled = false
+                }
+
+                if(state.isEmpty()){
+                    content.findViewById<TextInputLayout>(R.id.stateLayout).error = "Required Field!"
+                    autoId2.requestFocus()
+                }else{
+                    content.findViewById<TextInputLayout>(R.id.stateLayout).isErrorEnabled = false
+                }
             }
         }
 
-        builder.setNegativeButton("Cancel") { dialog, which ->
-            //remove marker
-            if(markerId == ""){
-                defaultId.remove()
+        btnDelete.setOnClickListener{
+            if(markerId != ""){
+                    myRef.child(oldState).child(oldType).child(markerId).get().addOnSuccessListener {
+                        val markId = it.key
+                        val markLat = it.child("latitude").value.toString()
+                        val markLong = it.child("longitude").value.toString()
+                        val markTitle = it.child("title").value.toString()
+                        val markType = it.child("type").value.toString()
+                        val phone = it.child("phoneNo").value.toString()
+                        val add = it.child("address").value.toString()
+                        val state = it.child("state").value.toString()
+
+                        val undoMarker = Marker(markLat,markLong,markType,markTitle,phone,add,state)
+
+
+                        myRef.child(oldState).child(oldType).child(markerId).removeValue().addOnSuccessListener {
+                            dialog.dismiss()
+                            //Toast.makeText(context, "Delete Successful", Toast.LENGTH_SHORT).show()
+                            //defaultId.remove()
+                            //remove marker
+                            map.clear()
+                            val mapFragment =
+                                childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
+                            mapFragment?.getMapAsync(callback)
+
+                            val v: View = this.requireActivity().findViewById(android.R.id.content)
+                            Snackbar.make(v, "Marker Deleted!", Snackbar.LENGTH_LONG)
+                                .setAction("UNDO", View.OnClickListener {
+                                    val setMark = LatLng(markLat.toDouble(),markLong.toDouble())
+                                    if(oldType == "Services"){
+                                        map.addMarker(
+                                            MarkerOptions()
+                                                .position(setMark)
+                                                .title(markTitle)
+                                                .snippet(markId)
+                                                .icon(
+                                                    BitmapDescriptorFactory.defaultMarker(
+                                                        BitmapDescriptorFactory.HUE_GREEN
+                                                    )
+                                                )
+                                        )
+                                    }else{
+                                        map.addMarker(
+                                            MarkerOptions()
+                                                .position(setMark)
+                                                .title(markTitle)
+                                                .snippet(markId)
+                                                .icon(
+                                                    BitmapDescriptorFactory.defaultMarker(
+                                                        BitmapDescriptorFactory.HUE_CYAN
+                                                    )
+                                                )
+                                        )
+                                    }
+
+                                    myRef.child(state).child(markType).child(markId.toString()).setValue(undoMarker).addOnSuccessListener {
+                                        Toast.makeText(context,"Undo Successfully!!!",Toast.LENGTH_SHORT).show()
+                                    }
+                                })
+                                .setActionTextColor(
+                                    ContextCompat.getColor(
+                                        this.requireContext(),
+                                        android.R.color.white
+                                    )
+                                )
+                            .show()
+                        }
+                    }
             }else{
-                defaultId.hideInfoWindow()
+                defaultId.remove()
+                dialog.dismiss()
             }
         }
+
+        btnCancel.setOnClickListener{
+            if(markerId == ""){
+                defaultId.remove()
+                dialog.dismiss()
+            }else{
+                defaultId.hideInfoWindow()
+                dialog.dismiss()
+            }
+        }
+
+        //--------------------------------------------------------
+
+        //builder.setMessage("We have a message")
+//        builder.setPositiveButton("Save") { dialog, which ->
+//            val lat = latitude.toDouble()
+//            val long = longitude.toDouble()
+//            val type = autoId.text.toString()
+//            val title = content.findViewById<TextInputEditText>(R.id.infoTitle).text.toString()
+//            val phoneNo = content.findViewById<TextInputEditText>(R.id.phoneNo).text.toString()
+//            val address = content.findViewById<TextInputEditText>(R.id.address).text.toString()
+//            val state = autoId2.text.toString()
+//
+//            val newMarker = Marker(lat.toString(),long.toString(),type,title,phoneNo,address,state)
+//
+//            if(type.isNotEmpty() && title.isNotEmpty() && phoneNo.isNotEmpty() && address.isNotEmpty() && state.isNotEmpty()){
+//                if(getId != ""){
+//                    myRef.child(oldState).child(oldType).child(markerId).removeValue().addOnSuccessListener {
+//                        myRef.child(state).child(type).child(markerId).setValue(newMarker).addOnSuccessListener {
+//                            Toast.makeText(context,"Update Successfull!!!",Toast.LENGTH_SHORT).show()
+//                            getId = ""
+//                        }
+//                    }
+//                }else{
+//
+//                    myRef.child(state).child(type).push().setValue(newMarker).addOnSuccessListener {
+//                        Toast.makeText(context,"Added Successful",Toast.LENGTH_SHORT).show()
+//                    }
+//                }
+//            }else{
+//                if(type.isEmpty()){
+//                    autoId.error = "Required Field!"
+//                }
+//
+//            }
+//
+//
+//            //update and add
+////            if(getId != ""){
+////                    myRef.child(oldState).child(oldType).child(markerId).removeValue().addOnSuccessListener {
+////                        myRef.child(state).child(type).child(markerId).setValue(newMarker).addOnSuccessListener {
+////                            Toast.makeText(context,"Update Successfull!!!",Toast.LENGTH_SHORT).show()
+////                            getId = ""
+////                        }
+////                    }
+////            }else{
+////
+////                    myRef.child(state).child(type).push().setValue(newMarker).addOnSuccessListener {
+////                        Toast.makeText(context,"Added Successful",Toast.LENGTH_SHORT).show()
+////                    }
+////            }
+//            map.clear()
+//            val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
+//            mapFragment?.getMapAsync(callback)
+//            //val marker = LatLng(lat,long)
+//            //map.moveCamera(CameraUpdateFactory.newLatLngZoom(marker,15f))
+//        }
+
+        //-------------------------------------
+
+//neutral button
+
+//        builder.setNegativeButton("Cancel") { dialog, which ->
+//            //remove marker
+//            if(markerId == ""){
+//                defaultId.remove()
+//            }else{
+//                defaultId.hideInfoWindow()
+//            }
+//        }
+    }
+
+    //Direction
+    fun getDirectionURL(origin:LatLng,dest:LatLng) : String{
+        return "https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${dest.latitude},${dest.longitude}&sensor=false&mode=driving&key=AIzaSyBaPkxWQObtSkv-qUNUTsIqnbrAb8jYbS4"
+    }
+
+    private inner class GetDirection(val url : String) : AsyncTask<Void, Void, List<List<LatLng>>>() {
+        override fun doInBackground(vararg params: Void?): List<List<LatLng>> {
+            val client = OkHttpClient()
+            val request = Request.Builder().url(url).build()
+            val response = client.newCall(request).execute()
+            val data = response.body!!.string()
+            Log.d("GoogleMap", " data : $data")
+            val result = ArrayList<List<LatLng>>()
+            try {
+                val respObj = Gson().fromJson(data, GoogleMapDTO::class.java)
+
+                val path = ArrayList<LatLng>()
+
+                for (i in 0..(respObj.routes[0].legs[0].steps.size - 1)) {
+//                    val startLatLng = LatLng(respObj.routes[0].legs[0].steps[i].start_location.lat.toDouble()
+//                            ,respObj.routes[0].legs[0].steps[i].start_location.lng.toDouble())
+//                    path.add(startLatLng)
+//                    val endLatLng = LatLng(respObj.routes[0].legs[0].steps[i].end_location.lat.toDouble()
+//                            ,respObj.routes[0].legs[0].steps[i].end_location.lng.toDouble())
+                    path.addAll(decodePolyline(respObj.routes[0].legs[0].steps[i].polyline.points))
+                }
+                result.add(path)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            return result
+        }
+
+        override fun onPostExecute(result: List<List<LatLng>>) {
+            val lineoption = PolylineOptions()
+            for (i in result.indices){
+                lineoption.addAll(result[i])
+                lineoption.width(10f)
+                lineoption.color(R.color.purple_700)
+                lineoption.geodesic(true)
+            }
+            //poly = map.addPolyline(lineoption)
+            map.addPolyline(lineoption)
+        }
+    }
+
+
+    fun decodePolyline(encoded: String): List<LatLng> {
+
+        val poly = ArrayList<LatLng>()
+        var index = 0
+        val len = encoded.length
+        var lat = 0
+        var lng = 0
+
+        while (index < len) {
+            var b: Int
+            var shift = 0
+            var result = 0
+            do {
+                b = encoded[index++].toInt() - 63
+                result = result or (b and 0x1f shl shift)
+                shift += 5
+            } while (b >= 0x20)
+            val dlat = if (result and 1 != 0) (result shr 1).inv() else result shr 1
+            lat += dlat
+
+            shift = 0
+            result = 0
+            do {
+                b = encoded[index++].toInt() - 63
+                result = result or (b and 0x1f shl shift)
+                shift += 5
+            } while (b >= 0x20)
+            val dlng = if (result and 1 != 0) (result shr 1).inv() else result shr 1
+            lng += dlng
+
+            val latLng = LatLng((lat.toDouble() / 1E5),(lng.toDouble() / 1E5))
+            poly.add(latLng)
+        }
+
+        return poly
+    }
+
+    //Call route
+    fun callRoute(p0:com.google.android.gms.maps.model.Marker,map:GoogleMap){
+        val builder:AlertDialog.Builder = AlertDialog.Builder(this.requireContext())
+        builder.setTitle("Google Maps")
+        builder.setMessage("Start to Go?")
+
+        builder.setPositiveButton("Start"){ which,dialog ->
+                //val gmmIntentUri = Uri.parse("geo:" + p0.position.latitude.toString() + "," + p0.position.longitude.toString())
+                val gmmIntentUri = Uri.parse("google.navigation:q=" + p0.position.latitude.toString() + "," + p0.position.longitude.toString())
+                val mapIntent = Intent(Intent.ACTION_VIEW,gmmIntentUri)
+                mapIntent.setPackage("com.google.android.apps.maps")
+                startActivity(mapIntent)
+        }
+
+        builder.setNegativeButton("Cancel"){ which,dialog ->
+
+        }
+
         builder.show()
+
+//        val v:View = this.requireActivity().findViewById(android.R.id.content)
+//        Snackbar.make(v,"Start to route!",Snackbar.LENGTH_INDEFINITE)
+//            .setAction("OK") {
+//                val gmmIntentUri = Uri.parse("google.navigation:q=" + p0.position.latitude.toString() + "," + p0.position.longitude.toString())
+//                val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+//                mapIntent.setPackage("com.google.android.apps.maps")
+//                startActivity(mapIntent)
+//            }
+//            .setActionTextColor(ContextCompat.getColor(this.requireContext(),android.R.color.white))
+//            .show()
+
     }
 }

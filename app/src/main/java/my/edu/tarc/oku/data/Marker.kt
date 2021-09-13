@@ -10,6 +10,7 @@ data class Marker(
     val title:String,
     //val description:String,
     val phoneNo:String,
-    val address:String
+    val address:String,
+    val state:String
 
 )
