@@ -18,6 +18,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.databinding.DataBindingUtil
+import androidx.navigation.findNavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.GoogleMap
@@ -27,6 +28,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
+import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -51,11 +53,7 @@ class HomeMemberFragment : Fragment() {
     lateinit var map: GoogleMap
     private val REQUEST_LOCATION_PERMISSION = 1
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-
-    var session = UserSessionManager(requireContext().applicationContext)
-    val user = session.userDetails
-    val name = user[UserSessionManager.KEY_NAME]
-    val status = user[UserSessionManager.KEY_STATUS]
+    private lateinit var name:String
 
     @SuppressLint("MissingPermission")
     private val callback = OnMapReadyCallback { googleMap ->
@@ -178,15 +176,26 @@ class HomeMemberFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater,R.layout.fragment_home_member, container, false)
+//        val rootView = binding.root.rootView.findViewById<NavigationView>(R.id.navView)
+//        val headerView = rootView.getHeaderView(0)
+//        val btnSul: Button = headerView.findViewById(R.id.btnLoginSignUp)
+//        name = btnSul.text.toString()
+
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setHasOptionsMenu(true)
         super.onViewCreated(view, savedInstanceState)
+
+
+        var session = UserSessionManager(requireContext().applicationContext)
+        val user = session.userDetails
+        name = user[UserSessionManager.KEY_NAME].toString()
+        val status = user[UserSessionManager.KEY_STATUS]
+
         val mapFragment = childFragmentManager.findFragmentById(R.id.memberMap) as SupportMapFragment?
         mapFragment?.getMapAsync(callback)
 

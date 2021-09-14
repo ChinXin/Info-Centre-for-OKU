@@ -12,6 +12,9 @@
         <action
             android:id="@+id/action_adminEvent_to_adminAddEvent"
             app:destination="@id/adminAddEvent" />
+        <action
+            android:id="@+id/action_adminEvent_to_eventInfo"
+            app:destination="@id/eventInfo" />
     </fragment>
     <fragment
         android:id="@+id/adminAddEvent"
@@ -30,4 +33,12 @@
         android:id="@+id/editProfileFragment"
         android:name="my.edu.tarc.oku.EditProfileFragment"
         android:label="EditProfileFragment" />
+    <fragment
+        android:id="@+id/eventInfo"
+        android:name="my.edu.tarc.oku.EventInfo"
+        android:label="EventInfo" >
+        <argument
+            android:name="eventID"
+            app:argType="string" />
+    </fragment>
 </navigation>

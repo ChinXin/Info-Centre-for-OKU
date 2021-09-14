@@ -22,22 +22,21 @@ import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
 import my.edu.tarc.oku.data.Event
 import my.edu.tarc.oku.data.EventAdapter
+import my.edu.tarc.oku.data.UserSessionManager
 import my.edu.tarc.oku.databinding.FragmentAdminEventBinding
 
 class AdminEvent : Fragment() {
     private lateinit var binding: FragmentAdminEventBinding
     private var eventList: MutableList<Event> = ArrayList()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
+    private lateinit var session: UserSessionManager
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+        session = UserSessionManager(requireContext().applicationContext)
+
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_admin_event, container, false)
         CoroutineScope(IO).launch {
             val database = Firebase.database
@@ -47,24 +46,29 @@ class AdminEvent : Fragment() {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     eventList.clear()
                     for (s in snapshot.children) {//for each state
-                        for (t in s.children) {//for each element in each state
-                            if (t.key.toString() == "Events") {
-                                for (e in s.child("Events").children) {//event in events
-                                    val getId = e.key.toString()
-                                    val title = e.child("title").value.toString()
-                                    val date = e.child("date").value.toString()
-                                    val time = e.child("time").value.toString()
-                                    val address = e.child("address").value.toString()
-                                    val state = e.child("state").value.toString()
-                                    val description = e.child("description").value.toString()
-                                    val image = e.child("image").value.toString()
-                                    val link = e.child("link").value.toString()
-                                    val event =
-                                        Event(getId,image, title, date, time, address, state, description, link)
-                                    eventList.add(event)
-
-                                }
-                            }
+                        for (e in s.child("Events").children) {//event in events
+                            val getId = e.key.toString()
+                            val title = e.child("title").value.toString()
+                            val date = e.child("date").value.toString()
+                            val time = e.child("time").value.toString()
+                            val address = e.child("address").value.toString()
+                            val state = e.child("state").value.toString()
+                            val description = e.child("description").value.toString()
+                            val image = e.child("image").value.toString()
+                            val link = e.child("link").value.toString()
+                            val event =
+                                Event(
+                                    getId,
+                                    image,
+                                    title,
+                                    date,
+                                    time,
+                                    address,
+                                    state,
+                                    description,
+                                    link
+                                )
+                            eventList.add(event)
                         }
                     }
                     CoroutineScope(Main).launch {
@@ -86,7 +90,11 @@ class AdminEvent : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        setHasOptionsMenu(true)
+        val user = session.userDetails
+        val status = user[UserSessionManager.KEY_STATUS]
+        if (status == "admin") {
+            setHasOptionsMenu(true)
+        }
         super.onViewCreated(view, savedInstanceState)
     }
 

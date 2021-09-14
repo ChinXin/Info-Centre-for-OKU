@@ -43,10 +43,9 @@ import com.google.firebase.storage.ktx.storage
 class AdminAddEvent : Fragment(), View.OnClickListener {
 
     private lateinit var binding: FragmentAdminAddEventBinding
-    private var progressBar: ProgressBar? = null
     private val myRef = Firebase.database.getReference("state")
     private val storage = Firebase.storage.getReference("EventImage")
-    private lateinit var link:String
+    private var link: String = "N/A"
 
     //Image
     private var savedImgUri: String? = null
@@ -74,7 +73,6 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        progressBar?.visibility = View.INVISIBLE
         // Inflate the layout for this fragment
         binding =
             DataBindingUtil.inflate(inflater, R.layout.fragment_admin_add_event, container, false)
@@ -110,14 +108,10 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
 
                     override fun onDataChange(snapshot: DataSnapshot) {
                         for (s in snapshot.children) {//for each state
-                            for (t in s.children) {//for each element in each state
-                                if (t.key.toString() == "Events") {
-                                    for (e in s.child("Events").children) {//event in events
-                                        totalEvents++
-                                        if (e.key.toString() == eventId) {
-                                            exist = true
-                                        }
-                                    }
+                            for (e in s.child("Events").children) {//event in events
+                                totalEvents++
+                                if (e.key.toString() == eventId) {
+                                    exist = true
                                 }
                             }
                         }
@@ -127,7 +121,7 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
                                 storage.child("$eventId.${getFileExtension(imgUri!!)}")
                             fileRef.putFile(imgUri!!).addOnSuccessListener(object:OnSuccessListener<UploadTask.TaskSnapshot> {
                                 override fun onSuccess(p0: UploadTask.TaskSnapshot?) {
-                                    fileRef.downloadUrl.addOnSuccessListener{
+                                    fileRef.downloadUrl.addOnSuccessListener {
                                         savedImgUri = it.toString()
                                         val event = Event(
                                             eventId,
@@ -143,7 +137,7 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
                                         myRef.child(state).child("Events").child(eventId)
                                             .setValue(event)
                                             .addOnSuccessListener { _ ->
-                                                progressBar!!.visibility = View.INVISIBLE
+                                                binding.progressBarHolder.visibility = View.INVISIBLE
                                                 Toast.makeText(
                                                     context,
                                                     "Event added successfully!!",
@@ -161,13 +155,13 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
 
                                 }
 
-                            }).addOnProgressListener{
-                                progressBar?.visibility = View.VISIBLE
+                            }).addOnProgressListener {
+                                binding.progressBarHolder.visibility = View.VISIBLE
                             }.addOnFailureListener {
-                                progressBar?.visibility = View.INVISIBLE
-                                    Toast.makeText(context, "Uploading Fail", Toast.LENGTH_LONG)
-                                        .show()
-                                }
+                                binding.progressBarHolder.visibility = View.INVISIBLE
+                                Toast.makeText(context, "Uploading Fail", Toast.LENGTH_LONG)
+                                    .show()
+                            }
                         } else {
                             Navigation.findNavController(it)
                                 .navigate(R.id.action_adminAddEvent_to_adminEvent)
@@ -185,7 +179,7 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
 
     override fun onDestroy() {
         super.onDestroy()
-        if(valueEventListener != null){
+        if (valueEventListener != null) {
             myRef.removeEventListener(valueEventListener!!)
         }
     }
@@ -381,6 +375,7 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
             }
 
         }
+
     private fun validateURL(): Boolean {
         if (binding.eLink.text.toString().trim().isEmpty()) {
             link = "N/A"
@@ -390,13 +385,12 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
         } else {
             binding.eLinkLayout.isErrorEnabled = false
         }
-        if(binding.eLink.text.toString().trim().isNotEmpty()){
+        if (binding.eLink.text.toString().trim().isNotEmpty()) {
 //            if (URLUtil.isValidUrl(binding.eLink.text.toString())){
-            if (Patterns.WEB_URL.matcher(binding.eLink.text.toString()).matches()){
+            if (Patterns.WEB_URL.matcher(binding.eLink.text.toString()).matches()) {
                 binding.eLinkLayout.isErrorEnabled = false
-                return true
-            }
-            else{
+                link = binding.eLink.text.toString()
+            } else {
                 binding.eLinkLayout.error = "Invalid Website Link"
                 binding.eLink.requestFocus()
                 return false

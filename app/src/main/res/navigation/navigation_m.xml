@@ -6,11 +6,6 @@
     app:startDestination="@id/homeMemberFragment">
 
     <fragment
-        android:id="@+id/homeMemberFragment"
-        android:name="my.edu.tarc.oku.HomeMemberFragment"
-        android:label="fragment_home_member"
-        tools:layout="@layout/fragment_home_member" />
-    <fragment
         android:id="@+id/editProfileFragment"
         android:name="my.edu.tarc.oku.EditProfileFragment"
         android:label="EditProfileFragment" >
@@ -22,4 +17,8 @@
         android:id="@+id/changePasswordFragment"
         android:name="my.edu.tarc.oku.ChangePasswordFragment"
         android:label="ChangePasswordFragment" />
+    <fragment
+        android:id="@+id/homeMemberFragment"
+        android:name="my.edu.tarc.oku.HomeMemberFragment"
+        android:label="HomeMemberFragment" />
 </navigation>

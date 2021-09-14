@@ -75,8 +75,6 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-
-
 //        btnLogout.setOnClickListener(object : OnClickListener() {
 //            fun onClick(arg0: View?) {
 //
@@ -89,7 +87,7 @@ class MainActivity : AppCompatActivity() {
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.aboutUs, R.id.loginFragment, R.id.registerFragment
+                R.id.homeFragment, R.id.aboutUs, R.id.loginFragment, R.id.registerFragment
             ), drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)

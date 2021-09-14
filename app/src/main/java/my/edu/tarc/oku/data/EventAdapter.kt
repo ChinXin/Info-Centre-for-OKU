@@ -9,8 +9,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.graphics.drawable.toIcon
 import androidx.core.net.toUri
+import androidx.navigation.Navigation
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import my.edu.tarc.oku.AdminEventDirections
 import my.edu.tarc.oku.R
 import kotlin.coroutines.coroutineContext
 
@@ -42,13 +44,14 @@ class EventAdapter (val eventList: List<Event>): RecyclerView.Adapter<EventAdapt
 //        holder.eventImage.setImageResource(currentEvent.image)
         Glide.with(holder.eventImage.context)
             .load(currentEvent.image)
-            .fitCenter() // scale to fit entire image within ImageView
+            .override(286,80)
+            .fitCenter()// scale to fit entire image within ImageView
             .into(holder.eventImage)
         holder.itemView.setOnClickListener {
             val eventId = currentEvent.id
             Toast.makeText(holder.itemView.context, "$eventId", Toast.LENGTH_SHORT).show()
-//            val action = StockIn_FragmentDirections.actionStockInFragmentToStockDetailFragment(serialNo)
-//            Navigation.findNavController(it).navigate(action)
+            val action = AdminEventDirections.actionAdminEventToEventInfo(eventId)
+            Navigation.findNavController(it).navigate(action)
         }
     }
 
