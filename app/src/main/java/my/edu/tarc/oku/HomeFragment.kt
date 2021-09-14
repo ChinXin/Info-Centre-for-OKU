@@ -12,6 +12,7 @@ import android.util.Log
 import android.view.*
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.core.content.ContextCompat
@@ -56,7 +57,7 @@ class HomeFragment : Fragment() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 for(s in snapshot.children){
                     for (t in s.children){
-                        if(t.key != "Events"){
+                        if(t.key == "Services" || t.key == "Facilities"){
                             for(m in t.children){
                                 val id = m.key
                                 val lat = m.child("latitude").value.toString().toDouble()
@@ -88,6 +89,28 @@ class HomeFragment : Fragment() {
                             }
                         }
 
+                        if(t.key == "Individual"){
+                            for(a in t.children){ //member id
+                                for(b in a.children){ //marker id
+                                    val id = b.key
+                                    val lat = b.child("latitude").value.toString().toDouble()
+                                    val long = b.child("longitude").value.toString().toDouble()
+                                    val title = b.child("title").value.toString()
+                                    val type = b.child("type").value.toString()
+                                    val marker = LatLng(lat,long)
+
+                                    googleMap.addMarker(
+                                        MarkerOptions()
+                                            .position(marker)
+                                            .snippet(id)
+                                            .title(title)
+                                            .icon(
+                                                BitmapDescriptorFactory.defaultMarker(
+                                                    BitmapDescriptorFactory.HUE_YELLOW)))
+
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -125,6 +148,35 @@ class HomeFragment : Fragment() {
 
                 map.setOnInfoWindowClickListener {
                     var markerId = p0.snippet
+
+//                    myRef.addValueEventListener(object : ValueEventListener {
+//                        override fun onDataChange(snapshot: DataSnapshot) {
+//                            for(x in snapshot.children){
+//                                for(y in x.children){
+//                                    if(y.key == "Facilities" || y.key == "Services"){
+//                                        for(a in y.children){ //marker id
+//                                            if(y.hasChild(markerId)){
+//                                                //Toast.makeText(context,"Facilities or Services",Toast.LENGTH_SHORT).show()
+//                                                basicAlert(p0,markerId.toString())
+//                                            }
+//                                        }
+//                                    }
+//
+//                                    if(y.key == "Individual"){
+//                                        for(a in y.children){ //member ID
+//                                            for(b in a.children){ //member's markers id
+//                                                if(a.hasChild(markerId)){
+//                                                    Toast.makeText(context,"Individual",Toast.LENGTH_SHORT).show()
+//                                                }
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//
+//                        override fun onCancelled(error: DatabaseError) {}
+//                    })
                     basicAlert(p0,markerId.toString())
                 }
                 return true
@@ -340,18 +392,34 @@ class HomeFragment : Fragment() {
         if(markerId != ""){
             myRef.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    for(s in snapshot.children){
-                        for (t in s.children){
-                            if(t.hasChild(markerId)){
-                                getId = t.child(markerId).key.toString()
-                                type.text = t.child(markerId).child("type").value.toString()
-                                title.text = t.child(markerId).child("title").value.toString()
-                                description.text = t.child(markerId).child("description").value.toString()
-                                phoneNo.text = t.child(markerId).child("phoneNo").value.toString()
-                                address.text = t.child(markerId).child("address").value.toString()
-                                state.text = t.child(markerId).child("state").value.toString()
+                    for(s in snapshot.children){ //state list
+                        for (t in s.children){ //type
+                            if(t.key == "Services" || t.key == "Facilities"){
+                                if(t.hasChild(markerId)){
+                                    getId = t.child(markerId).key.toString()
+                                    type.text = t.child(markerId).child("type").value.toString()
+                                    title.text = t.child(markerId).child("title").value.toString()
+                                    description.text = t.child(markerId).child("description").value.toString()
+                                    phoneNo.text = t.child(markerId).child("phoneNo").value.toString()
+                                    address.text = t.child(markerId).child("address").value.toString()
+                                    state.text = t.child(markerId).child("state").value.toString()
+                                    break
+                                }
+                            }
 
-                                break
+                            if(t.key == "Individual"){
+                                for(a in t.children){ //member ID
+                                    if(a.hasChild(markerId)){
+                                        getId = a.child(markerId).key.toString()
+                                        type.text = a.child(markerId).child("type").value.toString()
+                                        title.text = a.child(markerId).child("title").value.toString()
+                                        description.text = a.child(markerId).child("description").value.toString()
+                                        phoneNo.text = a.child(markerId).child("phoneNo").value.toString()
+                                        address.text = a.child(markerId).child("address").value.toString()
+                                        state.text = a.child(markerId).child("state").value.toString()
+                                        break
+                                    }
+                                }
                             }
                         }
                     }

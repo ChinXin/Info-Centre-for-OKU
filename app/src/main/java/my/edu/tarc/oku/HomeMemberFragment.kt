@@ -10,10 +10,7 @@ import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
-import android.widget.Button
-import android.widget.Toast
+import android.widget.*
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -63,6 +60,8 @@ class HomeMemberFragment : Fragment() {
 
         enableMyLocation()
         //display all
+
+        Toast.makeText(context,"username = $name",Toast.LENGTH_LONG).show()
         myRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
 
@@ -80,7 +79,7 @@ class HomeMemberFragment : Fragment() {
                 for(s in snapshot.children){
                     //Log.i("test123","Line 78 = ${s.value}" )
                     for (t in s.children){
-                        if(t.key != "Events"){
+                        if(t.key == "Services" || t.key == "Facilities"){
                             //Log.i("test123","Line 80 = ${t.k}" )
                             for(m in t.children){
                                 //Log.i("test123","Line 80 = ${m.value}" )
@@ -114,12 +113,53 @@ class HomeMemberFragment : Fragment() {
                             }
                         }
 
+                        if(t.key == "Individual"){
+                            for(a in t.children){
+                                if(a.key == name){
+                                    Log.i("test123","Line 122 = ${a.key}" )
+                                    for(b in a.children){
+                                        val id = b.key
+                                        val lat = b.child("latitude").value.toString().toDouble()
+                                        val long = b.child("longitude").value.toString().toDouble()
+                                        val title = b.child("title").value.toString()
+                                        val type = b.child("type").value.toString()
+                                        val marker = LatLng(lat,long)
+
+                                        googleMap.addMarker(
+                                            MarkerOptions()
+                                                .position(marker)
+                                                .snippet(id)
+                                                .title(title)
+                                                .icon(
+                                                    BitmapDescriptorFactory.defaultMarker(
+                                                        BitmapDescriptorFactory.HUE_YELLOW)))
+                                    }
+                                }else{
+                                    for(b in a.children){
+                                        val id = b.key
+                                        val lat = b.child("latitude").value.toString().toDouble()
+                                        val long = b.child("longitude").value.toString().toDouble()
+                                        val title = b.child("title").value.toString()
+                                        val type = b.child("type").value.toString()
+                                        val marker = LatLng(lat,long)
+
+                                        googleMap.addMarker(
+                                            MarkerOptions()
+                                                .position(marker)
+                                                .snippet(id)
+                                                .title(title)
+                                                .icon(
+                                                    BitmapDescriptorFactory.defaultMarker(
+                                                        BitmapDescriptorFactory.HUE_ROSE)))
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {}
-
         })
 
         //optional style map
@@ -157,7 +197,89 @@ class HomeMemberFragment : Fragment() {
 
                 map.setOnInfoWindowClickListener {
                     var markerId = p0.snippet
-                    basicAlert(p0,markerId.toString(),p0.position.latitude.toString(),p0.position.longitude.toString())
+
+                    myRef.addValueEventListener(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+
+                            for(x in snapshot.children){
+                                val individual = x.child("Individual").child(name).hasChild(markerId)
+                                val facilities = x.child("Facilities").hasChild(markerId)
+                                val services   = x.child("Services").hasChild(markerId)
+
+                                if(facilities || services){
+                                    viewAlert(p0,markerId.toString())
+                                    Log.i("test1234","Line 211")
+                                    break
+                                }else if(individual){
+                                    basicAlert(p0,markerId.toString(),p0.position.latitude.toString(),p0.position.longitude.toString())
+                                    Log.i("test1234","Line 215")
+                                    break
+                                } // other member marker cannot display
+
+//                                else{
+//
+//                                    viewAlert(p0,markerId.toString())
+//                                    Log.i("test1234","Line 219")
+//                                }
+                            }
+
+
+//                            for(x in snapshot.children){
+//                                for(y in x.children){
+//
+//                                    if(y.key == "Facilities" || y.key == "Services"){
+//                                        if(y.hasChild(markerId)){
+//                                            for(a in y.children){ //marker id
+//                                                for(j in y.children){
+//                                                    if(a.key == markerId){
+//                                                        viewAlert(p0,markerId.toString())
+//                                                        Log.i("test1234","Line 212")
+//                                                        break
+//                                                    }
+//                                                }
+//                                            }
+//                                        }
+//                                    }
+//
+//                                    if(y.key == "Individual"){
+//                                        if(markerId == y.child(name).child(markerId).key){
+//                                            basicAlert(p0,markerId.toString(),p0.position.latitude.toString(),p0.position.longitude.toString())
+//                                            Log.i("test1234","Line 226")
+//                                            break
+//                                        }else{
+//                                            viewAlert(p0,markerId.toString())
+//                                            Log.i("test1234","Line 230")
+//                                            break
+//                                        }
+////                                        for(a in y.children){ //member ID
+////                                            if(y.hasChild(name)){ //check whether got this username or not
+////                                                //for(x in y.children){
+////                                                if(a.key == name){
+////                                                    //if(x.hasChild(markerId)){
+////                                                        for(m in a.children){
+////                                                            if(m.key == markerId){
+////                                                                basicAlert(p0,markerId.toString(),p0.position.latitude.toString(),p0.position.longitude.toString())
+////                                                                break
+////                                                            }
+////                                                        }
+////                                                    //}
+////                                                }
+////                                                //}
+////                                            }else{
+////                                                viewAlert(p0,markerId.toString())
+////                                                Log.i("test1234","Line 237")
+////                                                break
+////                                            }
+////                                        }
+//                                    }
+//                                }
+//                            }
+                        }
+
+                        override fun onCancelled(error: DatabaseError) {}
+                    })
+
+                    //basicAlert(p0,markerId.toString(),p0.position.latitude.toString(),p0.position.longitude.toString())
                 }
                 return true
             }
@@ -267,9 +389,9 @@ class HomeMemberFragment : Fragment() {
                     //.draggable(true)
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
             )
-            map.setOnInfoWindowClickListener {
+            //map.setOnInfoWindowClickListener {
                 basicAlert(test,test.snippet.toString(),latLng.latitude.toString(),latLng.longitude.toString())
-            }
+            //}
         }
     }
 
@@ -312,7 +434,6 @@ class HomeMemberFragment : Fragment() {
             map.addPolyline(lineoption)
         }
     }
-
 
     fun decodePolyline(encoded: String): List<LatLng> {
 
@@ -380,7 +501,7 @@ class HomeMemberFragment : Fragment() {
         val adapter2 = ArrayAdapter(this.requireContext(), R.layout.dropdown_state, stateList)
         val autoId = content.findViewById<AutoCompleteTextView>(R.id.autoCompleteList)
         val autoId2 = content.findViewById<AutoCompleteTextView>(R.id.autoCompleteList2)
-        autoId.setAdapter(adapter)
+
         autoId2.setAdapter(adapter2)
 
         val database = Firebase.database
@@ -402,7 +523,7 @@ class HomeMemberFragment : Fragment() {
                             if(t.hasChild(markerId)){
                                 getId = t.child(markerId).key.toString()
                                 oldType = t.child(markerId).child("type").value.toString()
-                                autoId.setText(oldType,false)
+                                autoId.setText("Individual")
                                 title.setText(t.child(markerId).child("title").value.toString())
                                 description.setText(t.child(markerId).child("description").value.toString())
                                 phoneNo.setText(t.child(markerId).child("phoneNo").value.toString())
@@ -418,7 +539,7 @@ class HomeMemberFragment : Fragment() {
                 override fun onCancelled(error: DatabaseError) {}
             })
         }else{
-            autoId.setText("")
+            autoId.setText("Individual")
             title.setText("")
             description.setText("")
             phoneNo.setText("")
@@ -461,7 +582,7 @@ class HomeMemberFragment : Fragment() {
                             }
                         }
                     }else{
-                        myRef.child(state).child(type).child(name.toString()).setValue(newMarker).addOnSuccessListener {
+                        myRef.child(state).child(type).child(name).push().setValue(newMarker).addOnSuccessListener {
                             Toast.makeText(context,"Added Successfully!!!", Toast.LENGTH_SHORT).show()
                             dialog.dismiss()
                         }
@@ -521,80 +642,80 @@ class HomeMemberFragment : Fragment() {
             }
         }
 
-//        btnDelete.setOnClickListener{
-//            if(markerId != ""){
-//                myRef.child(oldState).child(oldType).child(markerId).get().addOnSuccessListener {
-//                    val markId = it.key
-//                    val markLat = it.child("latitude").value.toString()
-//                    val markLong = it.child("longitude").value.toString()
-//                    val markTitle = it.child("title").value.toString()
-//                    val markDesc = it.child("description").value.toString()
-//                    val markType = it.child("type").value.toString()
-//                    val phone = it.child("phoneNo").value.toString()
-//                    val add = it.child("address").value.toString()
-//                    val state = it.child("state").value.toString()
-//
-//                    val undoMarker = Marker(markLat,markLong,markType,markTitle,markDesc,phone,add,state)
-//
-//
-//                    myRef.child(oldState).child(oldType).child(markerId).removeValue().addOnSuccessListener {
-//                        dialog.dismiss()
-//                        //Toast.makeText(context, "Delete Successful", Toast.LENGTH_SHORT).show()
-//                        //defaultId.remove()
-//                        //remove marker
-//                        map.clear()
-//                        val mapFragment =
-//                            childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
-//                        mapFragment?.getMapAsync(callback)
-//
-//                        val v: View = this.requireActivity().findViewById(android.R.id.content)
-//                        Snackbar.make(v, "Marker Deleted!", Snackbar.LENGTH_LONG)
-//                            .setAction("UNDO", View.OnClickListener {
-//                                val setMark = LatLng(markLat.toDouble(),markLong.toDouble())
-//                                if(oldType == "Services"){
-//                                    map.addMarker(
-//                                        MarkerOptions()
-//                                            .position(setMark)
-//                                            .title(markTitle)
-//                                            .snippet(markId)
-//                                            .icon(
-//                                                BitmapDescriptorFactory.defaultMarker(
-//                                                    BitmapDescriptorFactory.HUE_GREEN
-//                                                )
-//                                            )
-//                                    )
-//                                }else{
-//                                    map.addMarker(
-//                                        MarkerOptions()
-//                                            .position(setMark)
-//                                            .title(markTitle)
-//                                            .snippet(markId)
-//                                            .icon(
-//                                                BitmapDescriptorFactory.defaultMarker(
-//                                                    BitmapDescriptorFactory.HUE_CYAN
-//                                                )
-//                                            )
-//                                    )
-//                                }
-//
-//                                myRef.child(state).child(markType).child(markId.toString()).setValue(undoMarker).addOnSuccessListener {
-//                                    Toast.makeText(context,"Undo Successfully!!!", Toast.LENGTH_SHORT).show()
-//                                }
-//                            })
-//                            .setActionTextColor(
-//                                ContextCompat.getColor(
-//                                    this.requireContext(),
-//                                    android.R.color.white
-//                                )
-//                            )
-//                            .show()
-//                    }
-//                }
-//            }else{
-//                defaultId.remove()
-//                dialog.dismiss()
-//            }
-//        }
+        btnDelete.setOnClickListener{
+            if(markerId != ""){
+                myRef.child(oldState).child(oldType).child(markerId).get().addOnSuccessListener {
+                    val markId = it.key
+                    val markLat = it.child("latitude").value.toString()
+                    val markLong = it.child("longitude").value.toString()
+                    val markTitle = it.child("title").value.toString()
+                    val markDesc = it.child("description").value.toString()
+                    val markType = it.child("type").value.toString()
+                    val phone = it.child("phoneNo").value.toString()
+                    val add = it.child("address").value.toString()
+                    val state = it.child("state").value.toString()
+
+                    val undoMarker = Marker(markLat,markLong,markType,markTitle,markDesc,phone,add,state)
+
+
+                    myRef.child(oldState).child(oldType).child(markerId).removeValue().addOnSuccessListener {
+                        dialog.dismiss()
+                        //Toast.makeText(context, "Delete Successful", Toast.LENGTH_SHORT).show()
+                        //defaultId.remove()
+                        //remove marker
+                        map.clear()
+                        val mapFragment =
+                            childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
+                        mapFragment?.getMapAsync(callback)
+
+                        val v: View = this.requireActivity().findViewById(android.R.id.content)
+                        Snackbar.make(v, "Marker Deleted!", Snackbar.LENGTH_LONG)
+                            .setAction("UNDO", View.OnClickListener {
+                                val setMark = LatLng(markLat.toDouble(),markLong.toDouble())
+                                if(oldType == "Services"){
+                                    map.addMarker(
+                                        MarkerOptions()
+                                            .position(setMark)
+                                            .title(markTitle)
+                                            .snippet(markId)
+                                            .icon(
+                                                BitmapDescriptorFactory.defaultMarker(
+                                                    BitmapDescriptorFactory.HUE_GREEN
+                                                )
+                                            )
+                                    )
+                                }else{
+                                    map.addMarker(
+                                        MarkerOptions()
+                                            .position(setMark)
+                                            .title(markTitle)
+                                            .snippet(markId)
+                                            .icon(
+                                                BitmapDescriptorFactory.defaultMarker(
+                                                    BitmapDescriptorFactory.HUE_CYAN
+                                                )
+                                            )
+                                    )
+                                }
+
+                                myRef.child(state).child(markType).child(markId.toString()).setValue(undoMarker).addOnSuccessListener {
+                                    Toast.makeText(context,"Undo Successfully!!!", Toast.LENGTH_SHORT).show()
+                                }
+                            })
+                            .setActionTextColor(
+                                ContextCompat.getColor(
+                                    this.requireContext(),
+                                    android.R.color.white
+                                )
+                            )
+                            .show()
+                    }
+                }
+            }else{
+                defaultId.remove()
+                dialog.dismiss()
+            }
+        }
 
         btnCancel.setOnClickListener{
             if(markerId == ""){
@@ -604,6 +725,93 @@ class HomeMemberFragment : Fragment() {
                 defaultId.hideInfoWindow()
                 dialog.dismiss()
             }
+        }
+    }
+
+    fun viewAlert(defaultId:com.google.android.gms.maps.model.Marker,markerId:String){
+
+        val builder:AlertDialog.Builder = AlertDialog.Builder(this.requireContext())
+
+        val content = LayoutInflater.from(this.requireContext()).inflate(R.layout.marker_details,null)
+
+        val database = Firebase.database
+        val myRef = database.getReference("state")
+
+        val type = content.findViewById<TextView>(R.id.markerType)
+        val title = content.findViewById<TextView>(R.id.markerTitle)
+        val description = content.findViewById<TextView>(R.id.markerDescription)
+        val phoneNo = content.findViewById<TextView>(R.id.markerPhoneNo)
+        val address = content.findViewById<TextView>(R.id.markerAddress)
+        val state = content.findViewById<TextView>(R.id.markerState)
+        var getId = ""
+
+        if(markerId != ""){
+            myRef.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for(s in snapshot.children){ //state list
+                        for (t in s.children){ //type
+
+                            if(t.key == "Services" || t.key == "Facilities"){
+                                if(t.hasChild(markerId)){
+                                    for(a in t.children){
+                                        if(a.key == markerId){
+                                            getId = a.key.toString()
+                                            type.text = a.child("type").value.toString()
+                                            title.text = a.child("title").value.toString()
+                                            description.text = a.child("description").value.toString()
+                                            phoneNo.text = a.child("phoneNo").value.toString()
+                                            address.text = a.child("address").value.toString()
+                                            state.text = a.child("state").value.toString()
+                                            break
+                                        }
+                                    }
+                                }
+                            }
+
+                            if(t.key == "Individual"){
+                                for(a in t.children){ //member ID
+                                    if(a.hasChild(markerId)){
+                                        for(v in a.children){
+                                            if(v.key == markerId){
+                                                getId = a.child(markerId).key.toString()
+                                                type.text = a.child(markerId).child("type").value.toString()
+                                                title.text = a.child(markerId).child("title").value.toString()
+                                                description.text = a.child(markerId).child("description").value.toString()
+                                                phoneNo.text = a.child(markerId).child("phoneNo").value.toString()
+                                                address.text = a.child(markerId).child("address").value.toString()
+                                                state.text = a.child(markerId).child("state").value.toString()
+                                                break
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {}
+            })
+        }
+//        else{
+//            type.text = ""
+//            title.text = ""
+//            description.text = ""
+//            phoneNo.text = ""
+//            address.text = ""
+//            state.text = ""
+//        }
+
+        builder.setView(content)
+        builder.setCancelable(false)
+
+        val dialog = builder.show()
+
+        val btnClose = content.findViewById<Button>(R.id.btnClose)
+
+        btnClose.setOnClickListener{
+            defaultId.hideInfoWindow()
+            dialog.dismiss()
         }
     }
 }
