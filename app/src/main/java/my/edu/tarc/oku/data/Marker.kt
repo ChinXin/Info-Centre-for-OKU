@@ -8,7 +8,7 @@ data class Marker(
     val longitude:String,
     val type:String,
     val title:String,
-    //val description:String,
+    val description:String,
     val phoneNo:String,
     val address:String,
     val state:String

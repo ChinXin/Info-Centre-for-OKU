@@ -19,10 +19,10 @@ class CustomInfoWindowForGoogleMap(context: Context) : GoogleMap.InfoWindowAdapt
     private fun rendowWindowText(marker: Marker, view: View){
 
         val tvTitle = view.findViewById<TextView>(R.id.title)
-        val tvSnippet = view.findViewById<TextView>(R.id.snippet)
+        //val tvSnippet = view.findViewById<TextView>(R.id.snippet)
 
         tvTitle.text = marker.title
-        tvSnippet.text = marker.snippet
+        //tvSnippet.text = marker.snippet
     }
 
     override fun getInfoContents(marker: Marker): View {

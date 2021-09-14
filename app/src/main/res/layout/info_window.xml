@@ -10,8 +10,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#99A2D6"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:textAlignment="center">
 
         <TextView
             android:id="@+id/title"
@@ -24,14 +24,26 @@
             android:textSize="14sp"
             android:textStyle="bold" />
 
+<!--        <TextView-->
+<!--            android:id="@+id/snippet"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:ellipsize="end"-->
+<!--            android:maxLines="10"-->
+<!--            android:textColor="#000"-->
+<!--            android:textSize="14sp" />-->
+
         <TextView
-            android:id="@+id/snippet"
+            android:id="@+id/displayText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
             android:ellipsize="end"
-            android:maxLines="10"
-            android:textColor="#000"
-            android:textSize="14sp" />
+            android:maxLines="1"
+            android:text="Click to View"
+            android:textColor="@color/design_default_color_secondary_variant"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
 
     </LinearLayout>

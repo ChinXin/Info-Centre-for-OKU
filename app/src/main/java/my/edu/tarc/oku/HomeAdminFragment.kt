@@ -306,18 +306,11 @@ class HomeAdminFragment : Fragment() {
             //Toast.makeText(context,test.tag.toString(),Toast.LENGTH_LONG).show()
             //getMarker(test)
             //test.showInfoWindow()
-//            map.setOnInfoWindowClickListener {
+            map.setOnInfoWindowClickListener {
                 basicAlert(test,test.snippet.toString(),latLng.latitude.toString(),latLng.longitude.toString())
-//            }
+            }
         }
     }
-
-//    private fun getMarker(marker:com.google.android.gms.maps.model.Marker): com.google.android.gms.maps.model.Marker {
-//        val abc = marker.
-//        return marker
-//    }
-
-
 
 //    private fun setMapStyle(map: GoogleMap) {
 //        try {
@@ -358,7 +351,7 @@ class HomeAdminFragment : Fragment() {
         val myRef = database.getReference("state")
 
         val title = content.findViewById<TextInputEditText>(R.id.infoTitle)
-        //val type = content.findViewById<AutoCompleteTextView>(R.id.autoCompleteList)
+        val description = content.findViewById<TextInputEditText>(R.id.description)
         val phoneNo = content.findViewById<TextInputEditText>(R.id.phoneNo)
         val address = content.findViewById<TextInputEditText>(R.id.address)
         var getId = ""
@@ -378,12 +371,12 @@ class HomeAdminFragment : Fragment() {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     for(s in snapshot.children){
                         for (t in s.children){
-                            //Log.i("test123","Line 334 = ${s.children.s}")
                             if(t.hasChild(markerId)){
                                 getId = t.child(markerId).key.toString()
                                 oldType = t.child(markerId).child("type").value.toString()
                                 autoId.setText(oldType,false)
                                 title.setText(t.child(markerId).child("title").value.toString())
+                                description.setText(t.child(markerId).child("description").value.toString())
                                 phoneNo.setText(t.child(markerId).child("phoneNo").value.toString())
                                 address.setText(t.child(markerId).child("address").value.toString())
                                 oldState = t.child(markerId).child("state").value.toString()
@@ -399,15 +392,14 @@ class HomeAdminFragment : Fragment() {
         }else{
             autoId.setText("")
             title.setText("")
+            description.setText("")
             phoneNo.setText("")
             address.setText("")
             autoId2.setText("")
         }
 
-
         builder.setView(content)
         builder.setCancelable(false)
-        //builder.show()
 
         val dialog = builder.show()
         val btnSave = content.findViewById<Button>(R.id.btnSave)
@@ -419,13 +411,14 @@ class HomeAdminFragment : Fragment() {
             val long = longitude.toDouble()
             val type = autoId.text.toString()
             val title = content.findViewById<TextInputEditText>(R.id.infoTitle).text.toString()
+            val description = content.findViewById<TextInputEditText>(R.id.description).text.toString()
             val phoneNo = content.findViewById<TextInputEditText>(R.id.phoneNo).text.toString()
             val address = content.findViewById<TextInputEditText>(R.id.address).text.toString()
             val state = autoId2.text.toString()
 
-            val newMarker = Marker(lat.toString(),long.toString(),type,title,phoneNo,address,state)
+            val newMarker = Marker(lat.toString(),long.toString(),type,title,description,phoneNo,address,state)
 
-            if(type.isNotEmpty() && title.isNotEmpty() && phoneNo.isNotEmpty() && address.isNotEmpty() && state.isNotEmpty()){
+            if(type.isNotEmpty() && title.isNotEmpty() && description.isNotEmpty() && phoneNo.isNotEmpty() && address.isNotEmpty() && state.isNotEmpty()){
                 val REG = "^(01)([0-9]{8,9})\$"
                 if (!Pattern.compile(REG).matcher(phoneNo).matches()) {
                     content.findViewById<TextInputLayout>(R.id.phoneNoLayout).error = "Invalid Phone Number! e.g 01XXXXXXXXX"
@@ -434,14 +427,14 @@ class HomeAdminFragment : Fragment() {
                     if(getId != ""){
                         myRef.child(oldState).child(oldType).child(markerId).removeValue().addOnSuccessListener {
                             myRef.child(state).child(type).child(markerId).setValue(newMarker).addOnSuccessListener {
-                                Toast.makeText(context,"Update Successfull!!!",Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context,"Update Successfully!!!",Toast.LENGTH_SHORT).show()
                                 getId = ""
                                 dialog.dismiss()
                             }
                         }
                     }else{
                         myRef.child(state).child(type).push().setValue(newMarker).addOnSuccessListener {
-                            Toast.makeText(context,"Added Successful",Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context,"Added Successfully!!!",Toast.LENGTH_SHORT).show()
                             dialog.dismiss()
                         }
                     }
@@ -462,6 +455,13 @@ class HomeAdminFragment : Fragment() {
                     content.findViewById<TextInputEditText>(R.id.infoTitle).requestFocus()
                 }else{
                     content.findViewById<TextInputLayout>(R.id.TitleLayout).isErrorEnabled = false
+                }
+
+                if(description.isEmpty()){
+                    content.findViewById<TextInputLayout>(R.id.descriptionLayout).error = "Required Field!"
+                    content.findViewById<TextInputEditText>(R.id.description).requestFocus()
+                }else{
+                    content.findViewById<TextInputLayout>(R.id.descriptionLayout).isErrorEnabled = false
                 }
 
                 if(phoneNo.isEmpty()){
@@ -500,12 +500,13 @@ class HomeAdminFragment : Fragment() {
                         val markLat = it.child("latitude").value.toString()
                         val markLong = it.child("longitude").value.toString()
                         val markTitle = it.child("title").value.toString()
+                        val markDesc = it.child("description").value.toString()
                         val markType = it.child("type").value.toString()
                         val phone = it.child("phoneNo").value.toString()
                         val add = it.child("address").value.toString()
                         val state = it.child("state").value.toString()
 
-                        val undoMarker = Marker(markLat,markLong,markType,markTitle,phone,add,state)
+                        val undoMarker = Marker(markLat,markLong,markType,markTitle,markDesc,phone,add,state)
 
 
                         myRef.child(oldState).child(oldType).child(markerId).removeValue().addOnSuccessListener {
