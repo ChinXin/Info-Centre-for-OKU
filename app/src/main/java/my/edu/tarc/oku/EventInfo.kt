@@ -1,5 +1,6 @@
 package my.edu.tarc.oku
 
+import android.app.AlertDialog
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.databinding.DataBindingUtil
@@ -13,10 +14,12 @@ import kotlinx.coroutines.*
 import my.edu.tarc.oku.databinding.FragmentEventInfoBinding
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.view.*
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
+import androidx.annotation.RequiresApi
 import androidx.navigation.Navigation
 import androidx.navigation.findNavController
 import com.google.android.material.snackbar.BaseTransientBottomBar
@@ -24,15 +27,20 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.flow.callbackFlow
 import my.edu.tarc.oku.data.Event
+import my.edu.tarc.oku.data.EventRegistration
 import my.edu.tarc.oku.data.UserSessionManager
 import java.util.*
 import kotlin.collections.HashMap
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 
 class EventInfo : Fragment() {
     private lateinit var binding: FragmentEventInfoBinding
     private lateinit var session: UserSessionManager
     private lateinit var user: HashMap<String?, String?>
+    private lateinit var username:String
     private lateinit var status: String
     private lateinit var event: Event
     val myRef = Firebase.database.getReference("state" )
@@ -70,6 +78,7 @@ class EventInfo : Fragment() {
 
         session = UserSessionManager(requireContext().applicationContext)
         user = session.userDetails
+        username = user[UserSessionManager.KEY_NAME].toString()
         status = user[UserSessionManager.KEY_STATUS].toString()
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_event_info, container, false)
@@ -148,7 +157,7 @@ class EventInfo : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        if (status == "admin") {
+        if (status == "admin" || status == "member") {
             setHasOptionsMenu(true)
         }
         super.onViewCreated(view, savedInstanceState)
@@ -158,9 +167,27 @@ class EventInfo : Fragment() {
         // Inflate the menu; this adds items to the action bar if it is present.
         inflater.inflate(R.menu.event, menu)
         menu.findItem(R.id.btnAdd).isEnabled = false
-        menu.findItem(R.id.btnDelete).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
-        menu.findItem(R.id.btnDelete).isVisible = true
+        val myReg = Firebase.database.getReference("register")
+        if(status == "admin"){
+            myReg.child(eventId).addValueEventListener(object:ValueEventListener{
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (m in snapshot.children){
+                        if (m.key.toString() != username){
+                            menu.findItem(R.id.btnDelete).isEnabled = false
+                            menu.findItem(R.id.btnRegisterE).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
+                            menu.findItem(R.id.btnRegisterE).isVisible = true
+                        }
+                    }
+                }
 
+                override fun onCancelled(error: DatabaseError) {}
+
+            })
+        }
+        if(status != "admin"){
+            menu.findItem(R.id.btnDelete).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
+            menu.findItem(R.id.btnDelete).isVisible = true
+        }
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -174,6 +201,7 @@ class EventInfo : Fragment() {
 //
 //        return true
 //    }
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.btnDelete -> {
@@ -219,6 +247,30 @@ class EventInfo : Fragment() {
 //                binding.root.findNavController().navigate(R.id.action_adminEvent_to_adminAddEvent)
 //                myRef.child(state)
 //                Toast.makeText(context, "delete", Toast.LENGTH_SHORT).show()
+                true
+            }
+            R.id.btnRegisterE -> {
+                val myReg = Firebase.database.getReference("register")
+                val builder: AlertDialog.Builder = AlertDialog.Builder(this.requireContext())
+                val currentDateTime = LocalDateTime.now()
+                val date = currentDateTime.format(DateTimeFormatter.ISO_DATE)
+                val time = currentDateTime.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))
+                val registerE = EventRegistration(date,time)
+
+                builder.setTitle("Register Event")
+                builder.setMessage("Are you sure you want to register for this event?")
+
+                builder.setPositiveButton("Yes"){ which,dialog ->
+                    myReg.child(eventId).child(username).setValue(registerE).addOnSuccessListener{
+                        Toast.makeText(context,"Register successfully!", Toast.LENGTH_LONG).show()
+                    }
+                }
+
+                builder.setNegativeButton("No"){ which,dialog ->
+
+                }
+
+                builder.show()
                 true
             }
             else -> super.onOptionsItemSelected(item)

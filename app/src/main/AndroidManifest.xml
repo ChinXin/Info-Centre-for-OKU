@@ -22,6 +22,7 @@
             android:name=".AdminActivity"
             android:exported="true"
             android:label="@string/title_activity_admin"
+            android:noHistory="true"
             android:theme="@style/Theme.OKU.NoActionBar" />
 
         <service
@@ -33,6 +34,7 @@
         <activity
             android:name=".MemberActivity"
             android:exported="true"
+            android:noHistory="true"
             android:theme="@style/Theme.OKU.NoActionBar" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.

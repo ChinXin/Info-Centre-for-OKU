@@ -71,7 +71,7 @@ class HomeAdminFragment : Fragment() {
 
         enableMyLocation()
 
-        //Go to my current location
+//        Go to my current location
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
         fusedLocationClient.lastLocation.addOnSuccessListener {
             val currentLat = it.latitude.toString()

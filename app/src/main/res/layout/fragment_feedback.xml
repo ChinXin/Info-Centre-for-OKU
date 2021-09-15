@@ -8,6 +8,7 @@
         android:layout_height="match_parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/constraintLayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="parent"
@@ -42,12 +43,13 @@
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Insert Your Feedback" />
+                    android:hint="Insert Your Feedback" >
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/feedback"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <Button
                     android:id="@+id/btnSubmit"
@@ -62,11 +64,12 @@
                     android:id="@+id/textView4"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/layout_margin"
+                    android:layout_marginTop="8dp"
                     android:fontFamily="@font/bungee"
                     android:text="Feedback"
                     android:textAlignment="center"
-                    android:textSize="24sp" />
+                    android:textSize="24sp"
+                    android:visibility="gone" />
 
             </LinearLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -81,6 +84,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
             tools:listitem="@layout/feedback_list" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
