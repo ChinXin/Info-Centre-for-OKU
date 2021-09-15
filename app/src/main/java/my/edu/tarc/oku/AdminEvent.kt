@@ -1,13 +1,17 @@
 package my.edu.tarc.oku
 
 import android.os.Bundle
+import android.util.Log
 import android.view.*
+import android.widget.SearchView
+import androidx.activity.OnBackPressedCallback
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.Query
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
@@ -19,11 +23,18 @@ import my.edu.tarc.oku.data.Event
 import my.edu.tarc.oku.data.EventAdapter
 import my.edu.tarc.oku.data.UserSessionManager
 import my.edu.tarc.oku.databinding.FragmentAdminEventBinding
+import okhttp3.internal.buildCache
+import okhttp3.internal.cacheGet
+import java.util.*
+import kotlin.collections.ArrayList
 
 class AdminEvent : Fragment() {
     private lateinit var binding: FragmentAdminEventBinding
     private var eventList: MutableList<Event> = ArrayList()
     private lateinit var session: UserSessionManager
+    private var valueEventListener: ValueEventListener? = null
+    val database = Firebase.database
+    val myRef = database.getReference("state")
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -33,11 +44,15 @@ class AdminEvent : Fragment() {
         session = UserSessionManager(requireContext().applicationContext)
 
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_admin_event, container, false)
-        CoroutineScope(IO).launch {
-            val database = Firebase.database
-            val myRef = database.getReference("state")
 
-            myRef.addValueEventListener(object : ValueEventListener {
+//        activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+//            override fun handleOnBackPressed() {
+//                binding.root.findNavController().navigate(R.id.homeAdminFragment)
+//            }
+//        })
+
+        CoroutineScope(IO).launch {
+            valueEventListener = myRef.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     eventList.clear()
                     for (s in snapshot.children) {//for each state
@@ -52,19 +67,7 @@ class AdminEvent : Fragment() {
                             val image = e.child("image").value.toString()
                             val link = e.child("link").value.toString()
                             val phone = e.child("phone").value.toString()
-                            val event =
-                                Event(
-                                    getId,
-                                    image,
-                                    title,
-                                    date,
-                                    time,
-                                    address,
-                                    state,
-                                    description,
-                                    link,
-                                    phone
-                                )
+                            val event = Event(getId, image, title, date, time, address, state, description, link, phone)
                             eventList.add(event)
                         }
                     }
@@ -73,14 +76,73 @@ class AdminEvent : Fragment() {
                         myRecyclerView.adapter = EventAdapter(eventList)
                         myRecyclerView.setHasFixedSize(true)
                     }
-
                 }
-
 
                 override fun onCancelled(error: DatabaseError) {}
 
             })
         }
+
+        binding.searchE.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String): Boolean {
+                if(valueEventListener != null){
+                    myRef.removeEventListener(valueEventListener!!)
+                }
+                var search = ""
+                if (newText != null && newText.trim().isNotEmpty()) {
+//                    binding.tvNotFound.visibility = View.INVISIBLE
+                    eventList.clear()
+                    val letters: CharArray = newText.toCharArray()
+                    val firstLetter = letters[0].toString().lowercase()
+                    val remainingLetters: String = newText.substring(1)
+                    search = "$firstLetter$remainingLetters"
+                    myRef.addValueEventListener(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+//                        Log.i("search", snapshot.toString())
+                            for (s in snapshot.children){
+                                for(e in s.child("Events").children) {
+                                    if (e.child("title").value.toString().lowercase().contains(search)) {
+                                        binding.tvNotFound.visibility = View.INVISIBLE
+                                        val getId = e.key.toString()
+                                        val title = e.child("title").value.toString()
+                                        val date = e.child("date").value.toString()
+                                        val time = e.child("time").value.toString()
+                                        val address = e.child("address").value.toString()
+                                        val state = e.child("state").value.toString()
+                                        val description = e.child("description").value.toString()
+                                        val image = e.child("image").value.toString()
+                                        val link = e.child("link").value.toString()
+                                        val phone = e.child("phone").value.toString()
+                                        val event = Event(getId, image, title, date, time, address, state, description, link, phone)
+                                        eventList.add(event)
+                                        Log.i("search", e.child("title").value.toString())
+                                    }
+                                }
+                            }
+                            if(eventList.isEmpty()){
+                                binding.tvNotFound.visibility = View.VISIBLE
+                            }
+                            val myRecyclerView: RecyclerView = binding.eventRecycleView
+                            myRecyclerView.adapter = EventAdapter(eventList)
+                            myRecyclerView.setHasFixedSize(true)
+
+                        }
+
+                        override fun onCancelled(error: DatabaseError) {}
+
+                    })
+                }
+                else{
+                    myRef.addValueEventListener(valueEventListener!!)
+                }
+
+                return false
+            }
+        })
 
 //        return inflater.inflate(R.layout.fragment_admin_event, container, false)
         return binding.root
@@ -93,6 +155,13 @@ class AdminEvent : Fragment() {
             setHasOptionsMenu(true)
         }
         super.onViewCreated(view, savedInstanceState)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (valueEventListener != null) {
+            myRef.removeEventListener(valueEventListener!!)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

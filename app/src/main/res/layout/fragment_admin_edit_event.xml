@@ -26,7 +26,7 @@
                 android:orientation="vertical">
 
                 <ImageView
-                    android:id="@+id/imgEvent"
+                    android:id="@+id/imgEventE"
                     android:layout_width="match_parent"
                     android:layout_height="100dp"
                     android:background="@android:color/background_light"
@@ -36,14 +36,14 @@
                     android:src="@drawable/ic_menu_gallery" />
 
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/titleLayout"
+                    android:id="@+id/titleELayout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Title">
 
                     <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/eTitle"
+                        android:id="@+id/eTitleE"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="text"
@@ -72,7 +72,7 @@
 
                     <!--                </com.google.android.material.textfield.TextInputLayout>-->
                     <Button
-                        android:id="@+id/btnDate"
+                        android:id="@+id/btnDateE"
                         android:layout_width="0dp"
                         android:layout_height="0dp"
                         android:layout_marginEnd="8dp"
@@ -80,7 +80,7 @@
                         android:text="Select Date"
                         app:backgroundTint="#7C4DFF"
                         app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/btnTime"
+                        app:layout_constraintEnd_toStartOf="@+id/btnTimeE"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintWidth_percent="0.5">
@@ -88,7 +88,7 @@
                     </Button>
 
                     <Button
-                        android:id="@+id/btnTime"
+                        android:id="@+id/btnTimeE"
                         android:layout_width="0dp"
                         android:layout_height="0dp"
                         android:drawableEnd="@drawable/ic_baseline_access_time_24"
@@ -96,20 +96,20 @@
                         app:backgroundTint="#7C4DFF"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toEndOf="@+id/btnDate"
+                        app:layout_constraintStart_toEndOf="@+id/btnDateE"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintWidth_percent="0.5"></Button>
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/ePhoneLayout"
+                    android:id="@+id/ePhoneELayout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Phone No.">
 
                     <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/ePhone"
+                        android:id="@+id/ePhoneE"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="phone" />
@@ -117,14 +117,14 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/eAddressLayout"
+                    android:id="@+id/eAddressELayout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Address">
 
                     <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/eAddress"
+                        android:id="@+id/eAddressE"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="text"
@@ -133,14 +133,14 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/eStateLayout"
+                    android:id="@+id/eStateELayout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Select State">
 
                     <AutoCompleteTextView
-                        android:id="@+id/eStateList"
+                        android:id="@+id/eStateListE"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="none" />
@@ -164,14 +164,14 @@
                 <!--            </com.google.android.material.textfield.TextInputLayout>-->
 
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/descriptionLayout"
+                    android:id="@+id/descriptionELayout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Description">
 
                     <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/description"
+                        android:id="@+id/descriptionE"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textMultiLine"
@@ -180,14 +180,14 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/eLinkLayout"
+                    android:id="@+id/eLinkELayout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Website">
 
                     <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/eLink"
+                        android:id="@+id/eLinkE"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="text"
@@ -196,7 +196,7 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <Button
-                    android:id="@+id/btnSave"
+                    android:id="@+id/btnSaveE"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
@@ -212,7 +212,7 @@
         </ScrollView>
 
         <FrameLayout
-            android:id="@+id/progressBarHolder"
+            android:id="@+id/progressBarHolderE"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:alpha="0.4"

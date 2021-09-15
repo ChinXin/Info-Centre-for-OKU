@@ -30,6 +30,7 @@ import android.util.Patterns
 import android.webkit.MimeTypeMap
 import android.webkit.URLUtil
 import androidx.core.view.isVisible
+import androidx.navigation.findNavController
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -69,16 +70,16 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
     private var timeSet = ""
 
     //event
-    private lateinit var id:String
-    private lateinit var title:String
-    private lateinit var date:String
-    private lateinit var time:String
-    private lateinit var address:String
-    private lateinit var img:String
-    private lateinit var description:String
-    private lateinit var state:String
-    private lateinit var phone:String
-    private lateinit var link:String
+    private lateinit var eventId: String
+    private lateinit var title: String
+    private lateinit var date: String
+    private lateinit var time: String
+    private lateinit var address: String
+    private lateinit var img: String
+    private lateinit var description: String
+    private lateinit var state: String
+    private lateinit var phone: String
+    private lateinit var link: String
 
     private var valueEventListener: ValueEventListener? = null
 
@@ -106,85 +107,74 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
         }
 
         binding.btnSave.setOnClickListener {
-            title = binding.eTitle.text.toString()
-            date = binding.btnDate.text.toString()
-            time = binding.btnTime.text.toString()
-            address = binding.eAddress.text.toString()
-            state = binding.eStateList.text.toString()
-            description = binding.description.text.toString()
-            phone = binding.ePhone.text.toString()
-            var totalEvents = 0
+            val title = binding.eTitle.text.toString()
+            val date = binding.btnDate.text.toString()
+            val time = binding.btnTime.text.toString()
+            val address = binding.eAddress.text.toString()
+            val state = binding.eStateList.text.toString()
+            val description = binding.description.text.toString()
+            val phone = binding.ePhone.text.toString()
 
             if (isValidate()) {
-                valueEventListener = myRef.addValueEventListener(object : ValueEventListener {
-                    var exist = false
-                    var eventId: String = ""
+                binding.imgEvent.isEnabled = false
+                binding.eTitle.isEnabled = false
+                binding.btnDate.isEnabled = false
+                binding.btnTime.isEnabled = false
+                binding.eAddress.isEnabled = false
+                binding.eStateList.isEnabled = false
+                binding.description.isEnabled = false
+                binding.eLink.isEnabled = false
+                binding.ePhone.isEnabled = false
 
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        for (s in snapshot.children) {//for each state
-                            for (e in s.child("Events").children) {//event in events
-                                totalEvents++
-                                if (e.key.toString() == eventId) {
-                                    exist = true
-                                }
-                            }
-                        }
-                        eventId = "E${totalEvents + 1}"
-                        if (!exist) {
-                            val fileRef: StorageReference =
-                                storage.child("$eventId.${getFileExtension(imgUri!!)}")
-                            fileRef.putFile(imgUri!!).addOnSuccessListener(object:OnSuccessListener<UploadTask.TaskSnapshot> {
-                                override fun onSuccess(p0: UploadTask.TaskSnapshot?) {
-                                    fileRef.downloadUrl.addOnSuccessListener {
-                                        savedImgUri = it.toString()
-                                        val event = Event(
-                                            eventId,
-                                            savedImgUri.toString(),
-                                            title,
-                                            date,
-                                            time,
-                                            address,
-                                            state,
-                                            description,
-                                            link,
-                                            phone
+                eventId = "${UUID.randomUUID()}"
+
+                val fileRef: StorageReference = storage.child("${eventId}.png")
+                fileRef.putFile(imgUri!!)
+                    .addOnSuccessListener(object : OnSuccessListener<UploadTask.TaskSnapshot> {
+                        override fun onSuccess(p0: UploadTask.TaskSnapshot?) {
+                            fileRef.downloadUrl.addOnSuccessListener {
+                                savedImgUri = it.toString()
+                                val event = Event(
+                                    eventId,
+                                    savedImgUri.toString(),
+                                    title,
+                                    date,
+                                    time,
+                                    address,
+                                    state,
+                                    description,
+                                    link,
+                                    phone
+                                )
+                                myRef.child(state).child("Events").child(eventId).setValue(event)
+                                    .addOnSuccessListener { _ ->
+                                        binding.progressBarHolder.visibility = View.INVISIBLE
+                                        Toast.makeText(
+                                            context,
+                                            "Event added successfully!!",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                        binding.root.findNavController()
+                                            .navigate(R.id.action_adminAddEvent_to_adminEvent)
+                                    }.addOnFailureListener {
+                                        Toast.makeText(
+                                            context,
+                                            "Unable to add event.",
+                                            Toast.LENGTH_LONG
                                         )
-                                        myRef.child(state).child("Events").child(eventId)
-                                            .setValue(event)
-                                            .addOnSuccessListener { _ ->
-                                                binding.progressBarHolder.visibility = View.INVISIBLE
-                                                Toast.makeText(
-                                                    context,
-                                                    "Event added successfully!!",
-                                                    Toast.LENGTH_LONG
-                                                ).show()
-                                            }.addOnFailureListener {
-                                                Toast.makeText(
-                                                    context,
-                                                    "Unable to add event.",
-                                                    Toast.LENGTH_LONG
-                                                )
-                                                    .show()
-                                            }
+                                            .show()
                                     }
-
-                                }
-
-                            }).addOnProgressListener {
-                                binding.progressBarHolder.visibility = View.VISIBLE
-                            }.addOnFailureListener {
-                                binding.progressBarHolder.visibility = View.INVISIBLE
-                                Toast.makeText(context, "Uploading Fail", Toast.LENGTH_LONG)
-                                    .show()
                             }
-                        } else {
-                            Navigation.findNavController(it)
-                                .navigate(R.id.action_adminAddEvent_to_adminEvent)
                         }
+
+                    }).addOnProgressListener {
+                        binding.progressBarHolder.visibility = View.VISIBLE
+                    }.addOnFailureListener {
+                        binding.progressBarHolder.visibility = View.INVISIBLE
+                        Toast.makeText(context, "Uploading Fail", Toast.LENGTH_LONG)
+                            .show()
                     }
 
-                    override fun onCancelled(error: DatabaseError) {}
-                })
             }
         }
 
@@ -192,12 +182,6 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
 //        return inflater.inflate(R.layout.fragment_admin_event, container, false)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        if (valueEventListener != null) {
-            myRef.removeEventListener(valueEventListener!!)
-        }
-    }
 
     @SuppressLint("SetTextI18n")
     override fun onClick(v: View?) {
@@ -210,11 +194,13 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
             mDay = c.get(Calendar.DAY_OF_MONTH)
 
             val datePickerDialog = DatePickerDialog(
-                requireContext(), { _, year, monthOfYear, dayOfMonth ->
+                requireContext(),
+                { _, year, monthOfYear, dayOfMonth ->
                     day = dayOfMonth
-                    month = monthOfYear+1
+                    month = monthOfYear + 1
                     binding.btnDate.text = "$day-$month-$year"
-                }, mYear, mMonth, mDay,
+                },
+                mYear, mMonth, mDay,
             )
             datePickerDialog.datePicker.minDate = c.timeInMillis
             c.add(Calendar.DATE, 90)
@@ -264,7 +250,7 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
     }
 
     private fun isValidate(): Boolean =
-        validatePhone() && validateURL() && validateImage() && validateTitle() && validateDate() && validateTime() && validateAddress() && validateState() && validateDescription()
+        validateImage() && validateTitle() && validateDate() && validateTime() && validatePhone() && validateAddress() && validateState() && validateDescription() && validateURL()
 
     private fun setupListener() {
         binding.eTitle.addTextChangedListener(TextFieldValidation(binding.eTitle))
@@ -342,18 +328,24 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
         }
         return true
     }
+
     private fun validatePhone(): Boolean {
         val REG = "^(01)([0-9]{8,9})\$"
-        val REG1 = "^(03)([0-9]{8,8})\$"
+        val REG1 = "^(03)([0-9]{8})\$"
 
         if (binding.ePhone.text.toString().trim().isEmpty()) {
             binding.ePhoneLayout.error = "Required Field!"
             binding.ePhone.requestFocus()
             return false
-        } else if (!Pattern.compile(REG).matcher(binding.ePhone.text.toString()).matches() || !Pattern.compile(REG1).matcher(binding.ePhone.text.toString()).matches()) {
-            binding.ePhoneLayout.error = "Invalid Phone Number! e.g 0123456789 / 0358764321"
-            binding.ePhone.requestFocus()
-            return false
+        } else if (!Pattern.compile(REG).matcher(binding.ePhone.text.toString()).matches()) {
+            if (!Pattern.compile(REG1).matcher(binding.ePhone.text.toString()).matches()) {
+                binding.ePhoneLayout.error = "Invalid Phone Number! e.g 0123456789 / 0358764321"
+                binding.ePhone.requestFocus()
+                return false
+            } else {
+                binding.ePhoneLayout.isErrorEnabled = false
+                return true
+            }
         } else {
             binding.ePhoneLayout.isErrorEnabled = false
             return true
@@ -425,8 +417,8 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
                 binding.eLink.requestFocus()
                 return false
             }
-        }else{
-            binding.ePhoneLayout.isErrorEnabled = false
+        } else {
+            binding.eLinkLayout.isErrorEnabled = false
         }
         return true
     }

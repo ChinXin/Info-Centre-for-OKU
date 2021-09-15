@@ -40,5 +40,21 @@
         <argument
             android:name="eventID"
             app:argType="string" />
+        <action
+            android:id="@+id/action_eventInfo_to_adminEvent"
+            app:destination="@id/adminEvent"
+            app:popUpTo="@+id/adminEvent"/>
+        <action
+            android:id="@+id/action_eventInfo_to_adminEditEvent"
+            app:destination="@id/adminEditEvent"/>
+    </fragment>
+    <fragment
+        android:id="@+id/adminEditEvent"
+        android:name="my.edu.tarc.oku.AdminEditEvent"
+        android:label="AdminEditEvent" >
+        <argument android:name="eventId" />
+        <action
+            android:id="@+id/action_adminEditEvent_to_eventInfo"
+            app:destination="@id/eventInfo" />
     </fragment>
 </navigation>

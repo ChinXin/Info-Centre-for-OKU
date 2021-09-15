@@ -12,4 +12,10 @@
         android:icon="@drawable/ic_baseline_delete_24"
         android:title="Delete"
         android:visible="false" />
+
+    <item
+        android:id="@+id/btnRegisterE"
+        android:icon="@drawable/ic_baseline_how_to_reg_24"
+        android:title="Register Event"
+        android:visible="false" />
 </menu>
