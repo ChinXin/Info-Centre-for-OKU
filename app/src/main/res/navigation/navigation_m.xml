@@ -20,5 +20,20 @@
     <fragment
         android:id="@+id/homeMemberFragment"
         android:name="my.edu.tarc.oku.HomeMemberFragment"
-        android:label="HomeMemberFragment" />
+        android:label="HomeMemberFragment" >
+        <action
+            android:id="@+id/action_homeMemberFragment_to_feedbackFragment2"
+            app:destination="@id/feedbackFragment2" />
+    </fragment>
+    <fragment
+        android:id="@+id/feedbackFragment2"
+        android:name="my.edu.tarc.oku.feedbackFragment"
+        android:label="feedbackFragment" >
+        <argument
+            android:name="markerId"
+            app:argType="string" />
+        <argument
+            android:name="username"
+            app:argType="string" />
+    </fragment>
 </navigation>

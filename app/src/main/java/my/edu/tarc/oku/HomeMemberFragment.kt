@@ -611,6 +611,7 @@ class HomeMemberFragment : Fragment() {
         val btnSave = content.findViewById<Button>(R.id.btnSave)
         val btnCancel = content.findViewById<Button>(R.id.btnCancel)
         val btnDelete = content.findViewById<Button>(R.id.btnDelete)
+        val btnFeedback = content.findViewById<Button>(R.id.btnGoFeedback)
 
         btnSave.setOnClickListener {
             val lat = latitude.toDouble()
@@ -805,6 +806,12 @@ class HomeMemberFragment : Fragment() {
                 dialog.dismiss()
             }
         }
+
+        btnFeedback.setOnClickListener{
+            dialog.dismiss()
+            val action = HomeMemberFragmentDirections.actionHomeMemberFragmentToFeedbackFragment2(markerId,name)
+            binding.root.findNavController().navigate(action)
+        }
     }
 
     fun viewAlert(defaultId: com.google.android.gms.maps.model.Marker, markerId: String) {
@@ -889,12 +896,18 @@ class HomeMemberFragment : Fragment() {
         builder.setCancelable(false)
 
         val dialog = builder.show()
-
+        val btnFeedback = content.findViewById<Button>(R.id.btnGoFeedback2)
         val btnClose = content.findViewById<Button>(R.id.btnClose)
 
         btnClose.setOnClickListener {
             defaultId.hideInfoWindow()
             dialog.dismiss()
+        }
+
+        btnFeedback.setOnClickListener{
+            dialog.dismiss()
+            val action = HomeMemberFragmentDirections.actionHomeMemberFragmentToFeedbackFragment2(markerId,name)
+            binding.root.findNavController().navigate(action)
         }
     }
 }
