@@ -38,6 +38,8 @@ import com.google.firebase.storage.OnProgressListener
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.UploadTask
 import com.google.firebase.storage.ktx.storage
+import java.text.SimpleDateFormat
+import java.util.regex.Pattern
 
 
 class AdminAddEvent : Fragment(), View.OnClickListener {
@@ -45,7 +47,6 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
     private lateinit var binding: FragmentAdminAddEventBinding
     private val myRef = Firebase.database.getReference("state")
     private val storage = Firebase.storage.getReference("EventImage")
-    private var link: String = "N/A"
 
     //Image
     private var savedImgUri: String? = null
@@ -66,6 +67,18 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
     private var hour = 0
     private var minutes = 0
     private var timeSet = ""
+
+    //event
+    private lateinit var id:String
+    private lateinit var title:String
+    private lateinit var date:String
+    private lateinit var time:String
+    private lateinit var address:String
+    private lateinit var img:String
+    private lateinit var description:String
+    private lateinit var state:String
+    private lateinit var phone:String
+    private lateinit var link:String
 
     private var valueEventListener: ValueEventListener? = null
 
@@ -93,12 +106,13 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
         }
 
         binding.btnSave.setOnClickListener {
-            val title = binding.eTitle.text.toString()
-            val date = binding.btnDate.text.toString()
-            val time = binding.btnTime.text.toString()
-            val address = binding.eAddress.text.toString()
-            val state = binding.eStateList.text.toString()
-            val description = binding.description.text.toString()
+            title = binding.eTitle.text.toString()
+            date = binding.btnDate.text.toString()
+            time = binding.btnTime.text.toString()
+            address = binding.eAddress.text.toString()
+            state = binding.eStateList.text.toString()
+            description = binding.description.text.toString()
+            phone = binding.ePhone.text.toString()
             var totalEvents = 0
 
             if (isValidate()) {
@@ -132,7 +146,8 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
                                             address,
                                             state,
                                             description,
-                                            link
+                                            link,
+                                            phone
                                         )
                                         myRef.child(state).child("Events").child(eventId)
                                             .setValue(event)
@@ -197,9 +212,9 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
             val datePickerDialog = DatePickerDialog(
                 requireContext(), { _, year, monthOfYear, dayOfMonth ->
                     day = dayOfMonth
-                    month = monthOfYear
-                    binding.btnDate.text = day.toString() + "-" + (month + 1) + "-" + year
-                }, mYear, mMonth, mDay
+                    month = monthOfYear+1
+                    binding.btnDate.text = "$day-$month-$year"
+                }, mYear, mMonth, mDay,
             )
             datePickerDialog.datePicker.minDate = c.timeInMillis
             c.add(Calendar.DATE, 90)
@@ -230,6 +245,7 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
                             timeSet = "AM"
                         }
                         hourOfDay == 12 -> {
+                            hour = hourOfDay
                             timeSet = "PM"
                         }
                     }
@@ -237,7 +253,6 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
                     if (minute < 10) {
                         binding.btnTime.text = "$hour:0$minutes $timeSet"
                     } else {
-                        minutes = minute
                         binding.btnTime.text = "$hour:$minutes $timeSet"
                     }
 
@@ -249,7 +264,7 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
     }
 
     private fun isValidate(): Boolean =
-        validateURL() && validateImage() && validateTitle() && validateDate() && validateTime() && validateAddress() && validateState() && validateDescription()
+        validatePhone() && validateURL() && validateImage() && validateTitle() && validateDate() && validateTime() && validateAddress() && validateState() && validateDescription()
 
     private fun setupListener() {
         binding.eTitle.addTextChangedListener(TextFieldValidation(binding.eTitle))
@@ -257,6 +272,7 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
         binding.eStateList.addTextChangedListener(TextFieldValidation(binding.eStateList))
         binding.description.addTextChangedListener(TextFieldValidation(binding.description))
         binding.eLink.addTextChangedListener(TextFieldValidation(binding.eLink))
+        binding.ePhone.addTextChangedListener(TextFieldValidation(binding.ePhone))
     }
 
     private fun validateImage(): Boolean {
@@ -326,6 +342,24 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
         }
         return true
     }
+    private fun validatePhone(): Boolean {
+        val REG = "^(01)([0-9]{8,9})\$"
+        val REG1 = "^(03)([0-9]{8,8})\$"
+
+        if (binding.ePhone.text.toString().trim().isEmpty()) {
+            binding.ePhoneLayout.error = "Required Field!"
+            binding.ePhone.requestFocus()
+            return false
+        } else if (!Pattern.compile(REG).matcher(binding.ePhone.text.toString()).matches() || !Pattern.compile(REG1).matcher(binding.ePhone.text.toString()).matches()) {
+            binding.ePhoneLayout.error = "Invalid Phone Number! e.g 0123456789 / 0358764321"
+            binding.ePhone.requestFocus()
+            return false
+        } else {
+            binding.ePhoneLayout.isErrorEnabled = false
+            return true
+        }
+        return true
+    }
 
     private fun validateAddress(): Boolean {
         if (binding.eAddress.text.toString().trim().isEmpty()) {
@@ -379,11 +413,7 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
     private fun validateURL(): Boolean {
         if (binding.eLink.text.toString().trim().isEmpty()) {
             link = "N/A"
-            binding.eLinkLayout.error = "Required Field!"
-            binding.eLink.requestFocus()
-            return false
-        } else {
-            binding.eLinkLayout.isErrorEnabled = false
+            return true
         }
         if (binding.eLink.text.toString().trim().isNotEmpty()) {
 //            if (URLUtil.isValidUrl(binding.eLink.text.toString())){
@@ -395,6 +425,8 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
                 binding.eLink.requestFocus()
                 return false
             }
+        }else{
+            binding.ePhoneLayout.isErrorEnabled = false
         }
         return true
     }
@@ -432,6 +464,9 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
                 }
                 R.id.eLink -> {
                     validateURL()
+                }
+                R.id.ePhone -> {
+                    validatePhone()
                 }
             }
         }

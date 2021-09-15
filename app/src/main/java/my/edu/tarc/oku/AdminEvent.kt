@@ -1,14 +1,9 @@
 package my.edu.tarc.oku
 
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.*
-import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.navigation.NavController
-import androidx.navigation.Navigation
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.database.DataSnapshot
@@ -56,6 +51,7 @@ class AdminEvent : Fragment() {
                             val description = e.child("description").value.toString()
                             val image = e.child("image").value.toString()
                             val link = e.child("link").value.toString()
+                            val phone = e.child("phone").value.toString()
                             val event =
                                 Event(
                                     getId,
@@ -66,7 +62,8 @@ class AdminEvent : Fragment() {
                                     address,
                                     state,
                                     description,
-                                    link
+                                    link,
+                                    phone
                                 )
                             eventList.add(event)
                         }
@@ -100,7 +97,9 @@ class AdminEvent : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        inflater.inflate(R.menu.event_add, menu)
+        inflater.inflate(R.menu.event, menu)
+        menu.findItem(R.id.btnAdd).isVisible = true
+        menu.findItem(R.id.btnAdd).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -108,7 +107,6 @@ class AdminEvent : Fragment() {
         return when (item.itemId) {
             R.id.btnAdd -> {
                 binding.root.findNavController().navigate(R.id.action_adminEvent_to_adminAddEvent)
-
                 true
             }
             else -> super.onOptionsItemSelected(item)

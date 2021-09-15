@@ -44,7 +44,6 @@ class EventAdapter (val eventList: List<Event>): RecyclerView.Adapter<EventAdapt
 //        holder.eventImage.setImageResource(currentEvent.image)
         Glide.with(holder.eventImage.context)
             .load(currentEvent.image)
-            .override(286,80)
             .fitCenter()// scale to fit entire image within ImageView
             .into(holder.eventImage)
         holder.itemView.setOnClickListener {

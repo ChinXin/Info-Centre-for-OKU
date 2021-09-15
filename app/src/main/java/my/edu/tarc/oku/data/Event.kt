@@ -12,5 +12,6 @@ data class Event (
     val address: String,
     val state:String,
     val description:String,
-    val link:String
+    val link:String,
+    val phone:String
 )
