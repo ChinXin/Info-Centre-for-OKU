@@ -18,6 +18,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.navigation.findNavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
@@ -51,17 +52,27 @@ class HomeMemberFragment : Fragment() {
     private val REQUEST_LOCATION_PERMISSION = 1
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var name: String
+    var infoWindowListener: ValueEventListener? = null
+    val database = Firebase.database
+    val myRef = database.getReference("state")
 
     @SuppressLint("MissingPermission")
     private val callback = OnMapReadyCallback { googleMap ->
         map = googleMap
-        val database = Firebase.database
-        val myRef = database.getReference("state")
 
         enableMyLocation()
-        //display all
+        //Go to my current location
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
+        fusedLocationClient.lastLocation.addOnSuccessListener {
+            val currentLat = it.latitude.toString()
+            val currentLong = it.longitude.toString()
+            val currentLocation= LatLng(currentLat.toDouble(),currentLong.toDouble())
+            val move = CameraUpdateFactory.newLatLngZoom(currentLocation,17f)
+            map.animateCamera(move)
+        }
 
-        Toast.makeText(context, "username = $name", Toast.LENGTH_LONG).show()
+        //display all
+        //Toast.makeText(context, "username = $name", Toast.LENGTH_LONG).show()
         myRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
 
@@ -211,7 +222,8 @@ class HomeMemberFragment : Fragment() {
                 map.setOnInfoWindowClickListener {
                     var markerId = p0.snippet
 
-                    myRef.addValueEventListener(object : ValueEventListener {
+                    infoWindowListener = myRef.addValueEventListener(object : ValueEventListener {
+
                         override fun onDataChange(snapshot: DataSnapshot) {
                             var check = false
                             var count = 0
@@ -524,12 +536,11 @@ class HomeMemberFragment : Fragment() {
         builder.show()
     }
 
-    fun basicAlert(
-        defaultId: com.google.android.gms.maps.model.Marker,
-        markerId: String,
-        latitude: String,
-        longitude: String
-    ) {
+    fun basicAlert(defaultId: com.google.android.gms.maps.model.Marker, markerId: String, latitude: String, longitude: String) {
+
+        if(infoWindowListener != null){
+            myRef.removeEventListener(infoWindowListener!!)
+        }
 
         val builder: AlertDialog.Builder = AlertDialog.Builder(this.requireContext())
         //builder.setTitle("Androidly Alert")
@@ -545,9 +556,6 @@ class HomeMemberFragment : Fragment() {
 
         autoId2.setAdapter(adapter2)
 
-        val database = Firebase.database
-        val myRef = database.getReference("state")
-
         val title = content.findViewById<TextInputEditText>(R.id.infoTitle)
         val description = content.findViewById<TextInputEditText>(R.id.description)
         val phoneNo = content.findViewById<TextInputEditText>(R.id.phoneNo)
@@ -560,20 +568,26 @@ class HomeMemberFragment : Fragment() {
             myRef.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     for (s in snapshot.children) {
-                        for (t in s.children) {
-                            if (t.hasChild(markerId)) {
-                                getId = t.child(markerId).key.toString()
-                                oldType = t.child(markerId).child("type").value.toString()
-                                autoId.setText("Individual")
-                                title.setText(t.child(markerId).child("title").value.toString())
-                                description.setText(
-                                    t.child(markerId).child("description").value.toString()
-                                )
-                                phoneNo.setText(t.child(markerId).child("phoneNo").value.toString())
-                                address.setText(t.child(markerId).child("address").value.toString())
-                                oldState = t.child(markerId).child("state").value.toString()
-                                autoId2.setText(oldState, false)
-                                break
+                        for (t in s.children) { //type
+                            if(t.key == "Individual"){
+                                for(a in t.children){ // check every member id
+                                    if(a.hasChild(markerId)){ //check the marker id is under the member or not
+                                        for(v in a.children){ //loop the member children(marker id)
+                                            if(v.key == markerId){ //marker same
+                                                getId = v.key.toString()
+                                                oldType = v.child("type").value.toString()
+                                                autoId.setText(oldType,false)
+                                                title.setText(v.child("title").value.toString())
+                                                description.setText(v.child("description").value.toString())
+                                                phoneNo.setText(v.child("phoneNo").value.toString())
+                                                address.setText(v.child("address").value.toString())
+                                                oldState = v.child("state").value.toString()
+                                                autoId2.setText(oldState, false)
+                                                break
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -603,8 +617,7 @@ class HomeMemberFragment : Fragment() {
             val long = longitude.toDouble()
             val type = autoId.text.toString()
             val title = content.findViewById<TextInputEditText>(R.id.infoTitle).text.toString()
-            val description =
-                content.findViewById<TextInputEditText>(R.id.description).text.toString()
+            val description = content.findViewById<TextInputEditText>(R.id.description).text.toString()
             val phoneNo = content.findViewById<TextInputEditText>(R.id.phoneNo).text.toString()
             val address = content.findViewById<TextInputEditText>(R.id.address).text.toString()
             val state = autoId2.text.toString()
@@ -628,9 +641,9 @@ class HomeMemberFragment : Fragment() {
                     content.findViewById<TextInputEditText>(R.id.phoneNo).requestFocus()
                 } else {
                     if (getId != "") {
-                        myRef.child(oldState).child(oldType).child(markerId).removeValue()
+                        myRef.child(oldState).child(oldType).child(name).child(markerId).removeValue()
                             .addOnSuccessListener {
-                                myRef.child(state).child(type).child(markerId).setValue(newMarker)
+                                myRef.child(state).child(type).child(name).child(markerId).setValue(newMarker)
                                     .addOnSuccessListener {
                                         Toast.makeText(
                                             context,
@@ -638,6 +651,7 @@ class HomeMemberFragment : Fragment() {
                                             Toast.LENGTH_SHORT
                                         ).show()
                                         getId = ""
+                                        defaultId.hideInfoWindow()
                                         dialog.dismiss()
                                     }
                             }
@@ -651,7 +665,7 @@ class HomeMemberFragment : Fragment() {
                     }
                     map.clear()
                     val mapFragment =
-                        childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
+                        childFragmentManager.findFragmentById(R.id.memberMap) as SupportMapFragment?
                     mapFragment?.getMapAsync(callback)
                 }
             } else {
@@ -715,7 +729,7 @@ class HomeMemberFragment : Fragment() {
 
         btnDelete.setOnClickListener {
             if (markerId != "") {
-                myRef.child(oldState).child(oldType).child(markerId).get().addOnSuccessListener {
+                myRef.child(oldState).child(oldType).child(name).child(markerId).get().addOnSuccessListener {
                     val markId = it.key
                     val markLat = it.child("latitude").value.toString()
                     val markLong = it.child("longitude").value.toString()
@@ -730,22 +744,22 @@ class HomeMemberFragment : Fragment() {
                         Marker(markLat, markLong, markType, markTitle, markDesc, phone, add, state)
 
 
-                    myRef.child(oldState).child(oldType).child(markerId).removeValue()
+                    myRef.child(oldState).child(oldType).child(name).child(markerId).removeValue()
                         .addOnSuccessListener {
+                            //defaultId.hideInfoWindow()
                             dialog.dismiss()
                             //Toast.makeText(context, "Delete Successful", Toast.LENGTH_SHORT).show()
                             //defaultId.remove()
                             //remove marker
                             map.clear()
                             val mapFragment =
-                                childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
+                                childFragmentManager.findFragmentById(R.id.memberMap) as SupportMapFragment?
                             mapFragment?.getMapAsync(callback)
 
                             val v: View = this.requireActivity().findViewById(android.R.id.content)
                             Snackbar.make(v, "Marker Deleted!", Snackbar.LENGTH_LONG)
                                 .setAction("UNDO", View.OnClickListener {
                                     val setMark = LatLng(markLat.toDouble(), markLong.toDouble())
-                                    if (oldType == "Services") {
                                         map.addMarker(
                                             MarkerOptions()
                                                 .position(setMark)
@@ -753,25 +767,12 @@ class HomeMemberFragment : Fragment() {
                                                 .snippet(markId)
                                                 .icon(
                                                     BitmapDescriptorFactory.defaultMarker(
-                                                        BitmapDescriptorFactory.HUE_GREEN
+                                                        BitmapDescriptorFactory.HUE_YELLOW
                                                     )
                                                 )
                                         )
-                                    } else {
-                                        map.addMarker(
-                                            MarkerOptions()
-                                                .position(setMark)
-                                                .title(markTitle)
-                                                .snippet(markId)
-                                                .icon(
-                                                    BitmapDescriptorFactory.defaultMarker(
-                                                        BitmapDescriptorFactory.HUE_CYAN
-                                                    )
-                                                )
-                                        )
-                                    }
 
-                                    myRef.child(state).child(markType).child(markId.toString())
+                                    myRef.child(state).child(markType).child(name).child(markId.toString())
                                         .setValue(undoMarker).addOnSuccessListener {
                                             Toast.makeText(
                                                 context,
@@ -813,9 +814,6 @@ class HomeMemberFragment : Fragment() {
         val content =
             LayoutInflater.from(this.requireContext()).inflate(R.layout.marker_details, null)
 
-        val database = Firebase.database
-        val myRef = database.getReference("state")
-
         val type = content.findViewById<TextView>(R.id.markerType)
         val title = content.findViewById<TextView>(R.id.markerTitle)
         val description = content.findViewById<TextView>(R.id.markerDescription)
@@ -837,8 +835,7 @@ class HomeMemberFragment : Fragment() {
                                             getId = a.key.toString()
                                             type.text = a.child("type").value.toString()
                                             title.text = a.child("title").value.toString()
-                                            description.text =
-                                                a.child("description").value.toString()
+                                            description.text = a.child("description").value.toString()
                                             phoneNo.text = a.child("phoneNo").value.toString()
                                             address.text = a.child("address").value.toString()
                                             state.text = a.child("state").value.toString()

@@ -70,25 +70,24 @@ class HomeAdminFragment : Fragment() {
         val myRef = database.getReference("state")
 
         enableMyLocation()
+
+        //Go to my current location
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
+        fusedLocationClient.lastLocation.addOnSuccessListener {
+            val currentLat = it.latitude.toString()
+            val currentLong = it.longitude.toString()
+            val currentLocation= LatLng(currentLat.toDouble(),currentLong.toDouble())
+            val move = CameraUpdateFactory.newLatLngZoom(currentLocation,17f)
+            map.animateCamera(move)
+        }
+
         //display all
         myRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-
-//                for(x in snapshot.children){
-//                    val id = x.key
-//                    val lat = x.child("latitude").value.toString().toDouble()
-//                    val long = x.child("longitude").value.toString().toDouble()
-//                    val title = x.child("title").value.toString()
-//                    val marker = LatLng(lat,long)
-//
-//                    googleMap.addMarker(MarkerOptions().position(marker).snippet(id).title(title))
-//                    //googleMap.moveCamera(CameraUpdateFactory.newLatLng(marker))
-//                    //googleMap.animateCamera
-//                }
                 for(s in snapshot.children){
                     //Log.i("test123","Line 78 = ${s.value}" )
                     for (t in s.children){
-                        if(t.key != "Events"){
+                        if(t.key == "Services" || t.key == "Facilities"){
                             //Log.i("test123","Line 80 = ${t.k}" )
                             for(m in t.children){
                                 //Log.i("test123","Line 80 = ${m.value}" )
@@ -116,6 +115,27 @@ class HomeAdminFragment : Fragment() {
                             }
                         }
 
+                        if(t.key == "Individual"){
+                            for(a in t.children){ //member id
+                                for(b in a.children){ //marker id
+                                    val id = b.key
+                                    val lat = b.child("latitude").value.toString().toDouble()
+                                    val long = b.child("longitude").value.toString().toDouble()
+                                    val title = b.child("title").value.toString()
+                                    val type = b.child("type").value.toString()
+                                    val marker = LatLng(lat,long)
+
+                                    googleMap.addMarker(
+                                        MarkerOptions()
+                                            .position(marker)
+                                            .snippet(id)
+                                            .title(title)
+                                            .icon(
+                                                BitmapDescriptorFactory.defaultMarker(
+                                                    BitmapDescriptorFactory.HUE_YELLOW)))
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -127,8 +147,8 @@ class HomeAdminFragment : Fragment() {
 
         //optional style map
         //setMapStyle(map)
-        //map.uiSettings.isZoomControlsEnabled = true
-        //map.uiSettings.isZoomGesturesEnabled = true
+        map.uiSettings.isZoomControlsEnabled = true
+        map.uiSettings.isZoomGesturesEnabled = true
         setMapLongClick(map)
         map.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this.requireContext()))
 
@@ -159,16 +179,15 @@ class HomeAdminFragment : Fragment() {
                 }
 
                 map.setOnInfoWindowClickListener {
+                    clear()
                     var markerId = p0.snippet
                     basicAlert(p0,markerId.toString(),p0.position.latitude.toString(),p0.position.longitude.toString())
-                    //Log.i("test123","lat = " + p0.position.latitude.toString())
-                    //Log.i("test123","lat = " + p0.position.longitude.toString())
                 }
                 return true
             }
         })
 
-        //googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney,5f))
+
     }
 
     private fun clear(){
@@ -306,9 +325,9 @@ class HomeAdminFragment : Fragment() {
             //Toast.makeText(context,test.tag.toString(),Toast.LENGTH_LONG).show()
             //getMarker(test)
             //test.showInfoWindow()
-            map.setOnInfoWindowClickListener {
+            //map.setOnInfoWindowClickListener {
                 basicAlert(test,test.snippet.toString(),latLng.latitude.toString(),latLng.longitude.toString())
-            }
+            //}
         }
     }
 
@@ -359,33 +378,62 @@ class HomeAdminFragment : Fragment() {
         var oldState = ""
 
         if(markerId != ""){
-//            myRef.child(markerId).get().addOnSuccessListener {
-//                getId = it.key.toString()
-//                autoId.setText(it.child("type").value.toString(),false)
-//                title.setText(it.child("title").value.toString())
-//                phoneNo.setText(it.child("phoneNo").value.toString())
-//                address.setText(it.child("address").value.toString())
-//                autoId2.setText(it.child("state").value.toString(),false)
-//            }
             myRef.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    for(s in snapshot.children){
-                        for (t in s.children){
-                            if(t.hasChild(markerId)){
-                                getId = t.child(markerId).key.toString()
-                                oldType = t.child(markerId).child("type").value.toString()
-                                autoId.setText(oldType,false)
-                                title.setText(t.child(markerId).child("title").value.toString())
-                                description.setText(t.child(markerId).child("description").value.toString())
-                                phoneNo.setText(t.child(markerId).child("phoneNo").value.toString())
-                                address.setText(t.child(markerId).child("address").value.toString())
-                                oldState = t.child(markerId).child("state").value.toString()
-                                autoId2.setText(oldState,false)
-                                break
+                    for(s in snapshot.children){ //state list
+                        for (t in s.children){ //type
+                            if(t.key == "Services" || t.key == "Facilities"){
+                                if(t.hasChild(markerId)){
+                                    getId = t.child(markerId).key.toString()
+                                    oldType = t.child(markerId).child("type").value.toString()
+                                    autoId.setText(oldType,false)
+                                    title.setText(t.child(markerId).child("title").value.toString())
+                                    description.setText(t.child(markerId).child("description").value.toString())
+                                    phoneNo.setText(t.child(markerId).child("phoneNo").value.toString())
+                                    address.setText(t.child(markerId).child("address").value.toString())
+                                    oldState = t.child(markerId).child("state").value.toString()
+                                    autoId2.setText(oldState,false)
+                                    break
+                                }
+                            }
+
+                            if(t.key == "Individual"){
+                                for(a in t.children){ // check every member id
+                                    if(a.hasChild(markerId)){ //check the marker id is under the member or not
+                                        getId = a.child(markerId).key.toString()
+                                        oldType = a.child(markerId).child("type").value.toString()
+                                        autoId.setText(oldType,false)
+                                        title.setText(a.child(markerId).child("title").value.toString())
+                                        description.setText(a.child(markerId).child("description").value.toString())
+                                        phoneNo.setText(a.child(markerId).child("phoneNo").value.toString())
+                                        address.setText(a.child(markerId).child("address").value.toString())
+                                        oldState = a.child(markerId).child("state").value.toString()
+                                        autoId2.setText(oldState,false)
+                                        break
+                                    }
+                                }
                             }
                         }
                     }
                 }
+//                override fun onDataChange(snapshot: DataSnapshot) {
+//                    for(s in snapshot.children){
+//                        for (t in s.children){
+//                            if(t.hasChild(markerId)){
+//                                getId = t.child(markerId).key.toString()
+//                                oldType = t.child(markerId).child("type").value.toString()
+//                                autoId.setText(oldType,false)
+//                                title.setText(t.child(markerId).child("title").value.toString())
+//                                description.setText(t.child(markerId).child("description").value.toString())
+//                                phoneNo.setText(t.child(markerId).child("phoneNo").value.toString())
+//                                address.setText(t.child(markerId).child("address").value.toString())
+//                                oldState = t.child(markerId).child("state").value.toString()
+//                                autoId2.setText(oldState,false)
+//                                break
+//                            }
+//                        }
+//                    }
+//                }
 
                 override fun onCancelled(error: DatabaseError) {}
             })
@@ -425,17 +473,50 @@ class HomeAdminFragment : Fragment() {
                     content.findViewById<TextInputEditText>(R.id.phoneNo).requestFocus()
                 }else{
                     if(getId != ""){
-                        myRef.child(oldState).child(oldType).child(markerId).removeValue().addOnSuccessListener {
-                            myRef.child(state).child(type).child(markerId).setValue(newMarker).addOnSuccessListener {
-                                Toast.makeText(context,"Update Successfully!!!",Toast.LENGTH_SHORT).show()
-                                getId = ""
-                                dialog.dismiss()
+                        if(oldType == "Facilities" || oldType == "Services"){
+                            myRef.child(oldState).child(oldType).child(markerId).removeValue().addOnSuccessListener {
+                                myRef.child(state).child(type).child(markerId).setValue(newMarker).addOnSuccessListener {
+                                    Log.i("test1234","Line 467")
+                                    Toast.makeText(context,"Update Successfully!!!",Toast.LENGTH_SHORT).show()
+                                    getId = ""
+                                    dialog.dismiss()
+                                }
                             }
+                        }else{
+                            var mId = ""
+                            myRef.child(oldState).child(oldType).addValueEventListener(object : ValueEventListener {
+                                override fun onDataChange(snapshot: DataSnapshot) {
+                                    for(x in snapshot.children){ //member id
+                                        if(x.hasChild(markerId)){
+                                            mId = x.key.toString()
+                                            myRef.child(oldState).child(oldType).child(mId).child(markerId).removeValue().addOnSuccessListener {
+                                                Log.i("test1234","Line 482")
+                                                myRef.child(state).child(type).child(mId).child(markerId).setValue(newMarker).addOnSuccessListener {
+                                                    Toast.makeText(context,"Update Successfully!!!",Toast.LENGTH_SHORT).show()
+                                                    Log.i("test1234","Line 485")
+                                                    getId = ""
+                                                    dialog.dismiss()
+                                                }
+                                            }
+                                            break
+                                        }
+                                    }
+                                }
+
+                                override fun onCancelled(error: DatabaseError) {}
+                            })
+
+
                         }
                     }else{
-                        myRef.child(state).child(type).push().setValue(newMarker).addOnSuccessListener {
-                            Toast.makeText(context,"Added Successfully!!!",Toast.LENGTH_SHORT).show()
-                            dialog.dismiss()
+                        if(type == "Individual"){
+                            content.findViewById<TextInputLayout>(R.id.typeLayout).error = "Admin cannot add individual marker!"
+                            autoId.requestFocus()
+                        }else{
+                            myRef.child(state).child(type).push().setValue(newMarker).addOnSuccessListener {
+                                Toast.makeText(context,"Added Successfully!!!",Toast.LENGTH_SHORT).show()
+                                dialog.dismiss()
+                            }
                         }
                     }
                     map.clear()
@@ -493,8 +574,11 @@ class HomeAdminFragment : Fragment() {
             }
         }
 
+        //val v: View = this.requireActivity().findViewById(android.R.id.content)
+
         btnDelete.setOnClickListener{
             if(markerId != ""){
+                if(oldType == "Facilities" || oldType == "Services"){
                     myRef.child(oldState).child(oldType).child(markerId).get().addOnSuccessListener {
                         val markId = it.key
                         val markLat = it.child("latitude").value.toString()
@@ -508,18 +592,14 @@ class HomeAdminFragment : Fragment() {
 
                         val undoMarker = Marker(markLat,markLong,markType,markTitle,markDesc,phone,add,state)
 
-
                         myRef.child(oldState).child(oldType).child(markerId).removeValue().addOnSuccessListener {
                             dialog.dismiss()
                             //Toast.makeText(context, "Delete Successful", Toast.LENGTH_SHORT).show()
                             //defaultId.remove()
                             //remove marker
-                            map.clear()
-                            val mapFragment =
-                                childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
-                            mapFragment?.getMapAsync(callback)
+                            clear()
 
-                            val v: View = this.requireActivity().findViewById(android.R.id.content)
+                          val v: View = this.requireActivity().findViewById(android.R.id.content)
                             Snackbar.make(v, "Marker Deleted!", Snackbar.LENGTH_LONG)
                                 .setAction("UNDO", View.OnClickListener {
                                     val setMark = LatLng(markLat.toDouble(),markLong.toDouble())
@@ -559,9 +639,136 @@ class HomeAdminFragment : Fragment() {
                                         android.R.color.white
                                     )
                                 )
-                            .show()
+                                .show()
                         }
                     }
+                }else{
+                    var mId = ""
+                    myRef.child(oldState).child(oldType).get().addOnSuccessListener {
+                        for(x in it.children){ //member id
+                            if(x.hasChild(markerId)){
+                                mId = x.key.toString()
+                                for(v in x.children){
+                                    if(v.key == markerId){
+                                        val markId = v.key
+                                        val markLat = v.child("latitude").value.toString()
+                                        val markLong = v.child("longitude").value.toString()
+                                        val markTitle = v.child("title").value.toString()
+                                        val markDesc = v.child("description").value.toString()
+                                        val markType = v.child("type").value.toString()
+                                        val phone = v.child("phoneNo").value.toString()
+                                        val add = v.child("address").value.toString()
+                                        val state = v.child("state").value.toString()
+
+                                        val undoMarker = Marker(markLat,markLong,markType,markTitle,markDesc,phone,add,state)
+
+                                        myRef.child(oldState).child(oldType).child(mId).child(markerId).removeValue().addOnSuccessListener {
+                                            Toast.makeText(context,"Delete Successfully!!!",Toast.LENGTH_SHORT).show()
+                                            Log.i("test1234","Line 656")
+                                            getId = ""
+                                            dialog.dismiss()
+                                            clear()
+
+                                            val v: View = requireActivity().findViewById(android.R.id.content)
+                                            Snackbar.make(v, "Marker Deleted!", Snackbar.LENGTH_LONG)
+                                                .setAction("UNDO", View.OnClickListener {
+                                                    val setMark = LatLng(markLat.toDouble(),markLong.toDouble())
+                                                    map.addMarker(
+                                                        MarkerOptions()
+                                                            .position(setMark)
+                                                            .title(markTitle)
+                                                            .snippet(markId)
+                                                            .icon(
+                                                                BitmapDescriptorFactory.defaultMarker(
+                                                                    BitmapDescriptorFactory.HUE_YELLOW
+                                                                )
+                                                            )
+                                                    )
+
+                                                    myRef.child(state).child(markType).child(mId).child(markId.toString()).setValue(undoMarker).addOnSuccessListener {
+                                                        Toast.makeText(context,"Undo Successfully!!!",Toast.LENGTH_SHORT).show()
+                                                    }
+                                                })
+                                                .setActionTextColor(
+                                                    ContextCompat.getColor(
+                                                        requireContext(),
+                                                        android.R.color.white
+                                                    )
+                                                ).show()
+                                        }
+                                        break
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    //duplicated delete
+//                    myRef.child(oldState).child(oldType).addValueEventListener(object : ValueEventListener {
+//                        override fun onDataChange(snapshot: DataSnapshot) {
+//                            for(x in snapshot.children){ //member id
+//                                if(x.hasChild(markerId)){
+//                                    mId = x.key.toString()
+//                                    for(v in x.children){
+//                                        if(v.key == markerId){
+//                                            val markId = v.key
+//                                            val markLat = v.child("latitude").value.toString()
+//                                            val markLong = v.child("longitude").value.toString()
+//                                            val markTitle = v.child("title").value.toString()
+//                                            val markDesc = v.child("description").value.toString()
+//                                            val markType = v.child("type").value.toString()
+//                                            val phone = v.child("phoneNo").value.toString()
+//                                            val add = v.child("address").value.toString()
+//                                            val state = v.child("state").value.toString()
+//
+//                                            val undoMarker = Marker(markLat,markLong,markType,markTitle,markDesc,phone,add,state)
+//
+//                                            myRef.child(oldState).child(oldType).child(mId).child(markerId).removeValue().addOnSuccessListener {
+//                                                Toast.makeText(context,"Delete Successfully!!!",Toast.LENGTH_SHORT).show()
+//                                                Log.i("test1234","Line 656")
+//                                                getId = ""
+//                                                dialog.dismiss()
+//                                                clear()
+//
+//                                                val v: View = requireActivity().findViewById(android.R.id.content)
+//                                                Snackbar.make(v, "Marker Deleted!", Snackbar.LENGTH_LONG)
+//                                                    .setAction("UNDO", View.OnClickListener {
+//                                                        val setMark = LatLng(markLat.toDouble(),markLong.toDouble())
+//                                                        map.addMarker(
+//                                                            MarkerOptions()
+//                                                                .position(setMark)
+//                                                                .title(markTitle)
+//                                                                .snippet(markId)
+//                                                                .icon(
+//                                                                    BitmapDescriptorFactory.defaultMarker(
+//                                                                        BitmapDescriptorFactory.HUE_YELLOW
+//                                                                    )
+//                                                                )
+//                                                        )
+//
+//                                                        myRef.child(state).child(markType).child(mId).child(markId.toString()).setValue(undoMarker).addOnSuccessListener {
+//                                                            Toast.makeText(context,"Undo Successfully!!!",Toast.LENGTH_SHORT).show()
+//                                                        }
+//                                                    })
+//                                                    .setActionTextColor(
+//                                                        ContextCompat.getColor(
+//                                                            requireContext(),
+//                                                            android.R.color.white
+//                                                        )
+//                                                    ).show()
+//                                            }
+//                                            break
+//                                        }
+//                                        break
+//                                    }
+//                                    //break
+//                                }
+//                            }
+//                        }
+//
+//                        override fun onCancelled(error: DatabaseError) {}
+//                    })
+                }
             }else{
                 defaultId.remove()
                 dialog.dismiss()

@@ -158,7 +158,18 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:text="Save" />
+
         </LinearLayout>
+
+        <Button
+            android:id="@+id/btnGoFeedback"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#00000000"
+            android:minHeight="48dp"
+            android:text="View Feedback"
+            android:textColor="@color/black"
+            tools:ignore="TouchTargetSizeCheck" />
 
     </LinearLayout>
 </layout>

@@ -17,8 +17,10 @@ import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
+import androidx.navigation.findNavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
@@ -52,6 +54,16 @@ class HomeFragment : Fragment() {
         val myRef = database.getReference("state")
 
         enableMyLocation()
+        //Go to my current location
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
+        fusedLocationClient.lastLocation.addOnSuccessListener {
+            val currentLat = it.latitude.toString()
+            val currentLong = it.longitude.toString()
+            val currentLocation= LatLng(currentLat.toDouble(),currentLong.toDouble())
+            val move = CameraUpdateFactory.newLatLngZoom(currentLocation,17f)
+            map.animateCamera(move)
+        }
+
         //display all
         myRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -85,7 +97,6 @@ class HomeFragment : Fragment() {
                                             BitmapDescriptorFactory.defaultMarker(
                                                 BitmapDescriptorFactory.HUE_CYAN)))
                                 }
-
                             }
                         }
 
@@ -442,10 +453,19 @@ class HomeFragment : Fragment() {
         val dialog = builder.show()
 
         val btnClose = content.findViewById<Button>(R.id.btnClose)
+        val btnFeedback = content.findViewById<Button>(R.id.btnGoFeedback2)
+        val username = ""
 
         btnClose.setOnClickListener{
                 defaultId.hideInfoWindow()
                 dialog.dismiss()
+        }
+
+        btnFeedback.setOnClickListener{
+            //navigate to feedback
+            dialog.dismiss()
+            val action = HomeFragmentDirections.actionHomeFragmentToFeedbackFragment(markerId,username)
+            binding.root.findNavController().navigate(action)
         }
     }
 }
