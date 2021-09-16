@@ -1,5 +1,6 @@
 package my.edu.tarc.oku
 
+import android.app.AlertDialog
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -9,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.core.view.isInvisible
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.database.DataSnapshot
@@ -32,6 +34,7 @@ class feedbackFragment : Fragment() {
 
     private lateinit var binding : FragmentFeedbackBinding
     private var feedbackList: MutableList<Feedback> = ArrayList()
+    var infoWindowListener: ValueEventListener? = null
 
     @RequiresApi(Build.VERSION_CODES.O)
     val currentDateTime = LocalDateTime.now()
@@ -51,28 +54,37 @@ class feedbackFragment : Fragment() {
         val markerId = args.markerId
         val username = args.username
 
+        if(username.isBlank()){
+            binding.linear1.visibility = View.GONE
+        }
+
         myRef.child(markerId).addValueEventListener(object: ValueEventListener{
             override fun onDataChange(snapshot: DataSnapshot) {
-                for(x in snapshot.children){ //marker id
-                    for(y in x.children){ //username
+                feedbackList.clear()
+                for(x in snapshot.children){ //username
+                    //for(y in x.children){ //username
                         //for(a in y.children){
-                            val markerId = y.child("marker_id").value.toString()
-                            val fDate = y.child("date").value.toString()
-                            val fTime = y.child("time").value.toString()
-                            val user = y.child("username").value.toString()
-                            val feed = y.child("feedback").value.toString()
+                            val markerId = x.child("marker_id").value.toString()
+                            val fDate = x.child("date").value.toString()
+                            val fTime = x.child("time").value.toString()
+                            val user = x.child("username").value.toString()
+                            val feed = x.child("feedback").value.toString()
 
                             val get_feedback = Feedback(markerId,user,feed,fDate,fTime)
 
                             feedbackList.add(get_feedback)
-                            Log.i("test1234","$feedbackList")
+                            Log.i("test12345","Line 70 = $feedbackList")
                         //}
-                    }
+                    //}
                 }
 
                 val myRecyclerView: RecyclerView = binding.feedbackRecycleView
                 myRecyclerView.adapter = FeedbackAdapter(feedbackList)
                 myRecyclerView.setHasFixedSize(true)
+
+                if(feedbackList.isEmpty()){
+                    Toast.makeText(context,"There is no feedback by other users.",Toast.LENGTH_LONG).show()
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {}
@@ -80,19 +92,65 @@ class feedbackFragment : Fragment() {
         })
 
         binding.btnSubmit.setOnClickListener{
+
             val feedback = binding.feedback.text.toString()
-            val date = currentDateTime.format(DateTimeFormatter.ISO_DATE)
-            val time = currentDateTime.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))
 
-            val new_feedback = Feedback(markerId,username,feedback,date,time)
-
-            if(username.isNotEmpty()){
-                myRef.child(markerId).child(username).push().setValue(new_feedback).addOnSuccessListener {
-                    Toast.makeText(context,"Submit Successful!",Toast.LENGTH_LONG).show()
-                }
-            }else{
+            if(username == ""){
                 Toast.makeText(context,"Please Log in Account and submit feedback!",Toast.LENGTH_LONG).show()
             }
+            else{
+                if(feedback.isNotEmpty()){
+                    Log.i("test12345","Line 92")
+                    val date = currentDateTime.format(DateTimeFormatter.ISO_DATE)
+                    val time = currentDateTime.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))
+                    val new_feedback = Feedback(markerId,username,feedback,date,time)
+
+                    //check whether the user has give feedback or not
+                    infoWindowListener = myRef.addValueEventListener(object : ValueEventListener{
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            if(infoWindowListener != null){
+                                myRef.removeEventListener(infoWindowListener!!)
+                            }
+                            for(x in snapshot.children){
+                                if(x.key == markerId){
+                                    Log.i("test12345","Line 102")
+                                    if(x.hasChild(username)){ ///marker id
+                                        Log.i("test12345","Line 103")
+                                        val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
+                                        builder.setTitle("Feedback")
+                                        builder.setMessage("You have submit feedback in this marker before, do you want to overwrite it?")
+
+                                        builder.setCancelable(false)
+
+                                        builder.setPositiveButton("Yes"){ which,dialog ->
+                                            myRef.child(markerId).child(username).setValue(new_feedback).addOnSuccessListener {
+                                                Toast.makeText(context,"Submit Successful!",Toast.LENGTH_LONG).show()
+                                            }
+                                        }
+
+                                        builder.setNegativeButton("No"){which,dialog ->
+
+                                        }
+
+                                        builder.show()
+                                        break
+                                    }else{
+                                        Log.i("test1234","Line 123")
+                                        myRef.child(markerId).child(username).setValue(new_feedback).addOnSuccessListener {
+                                            Toast.makeText(context,"Submit Successful!",Toast.LENGTH_LONG).show()
+                                        }
+                                        break
+                                    }
+                                }
+                            }
+                        }
+
+                        override fun onCancelled(error: DatabaseError) {}
+
+                    })
+                }
+            }
+
         }
         return binding.root
     }

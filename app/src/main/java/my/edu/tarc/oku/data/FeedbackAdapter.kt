@@ -24,7 +24,7 @@ class FeedbackAdapter (val feedbackList: List<Feedback>): RecyclerView.Adapter<F
 
         holder.fUsername.text = currentFeedback.username
         holder.fFeedback.text = currentFeedback.feedback
-        holder.fDateTime.text = currentFeedback.date + "" + currentFeedback.time
+        holder.fDateTime.text = currentFeedback.date + "" + " , " + "" + currentFeedback.time
     }
 
     override fun getItemCount(): Int {

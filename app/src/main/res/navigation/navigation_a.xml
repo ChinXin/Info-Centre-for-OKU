@@ -28,7 +28,11 @@
         android:id="@+id/homeAdminFragment"
         android:name="my.edu.tarc.oku.HomeAdminFragment"
         android:label="fragment_home_admin"
-        tools:layout="@layout/fragment_home_admin" />
+        tools:layout="@layout/fragment_home_admin" >
+        <action
+            android:id="@+id/action_homeAdminFragment_to_feedbackFragment3"
+            app:destination="@id/feedbackFragment3" />
+    </fragment>
     <fragment
         android:id="@+id/editProfileFragment"
         android:name="my.edu.tarc.oku.EditProfileFragment"
@@ -56,5 +60,16 @@
         <action
             android:id="@+id/action_adminEditEvent_to_eventInfo"
             app:destination="@id/eventInfo" />
+    </fragment>
+    <fragment
+        android:id="@+id/feedbackFragment3"
+        android:name="my.edu.tarc.oku.feedbackFragment"
+        android:label="feedbackFragment" >
+        <argument
+            android:name="markerId"
+            app:argType="string" />
+        <argument
+            android:name="username"
+            app:argType="string" />
     </fragment>
 </navigation>

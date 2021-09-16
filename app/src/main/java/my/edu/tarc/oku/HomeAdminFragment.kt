@@ -23,6 +23,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
+import androidx.navigation.findNavController
 import com.google.android.gms.location.*
 
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -453,6 +454,7 @@ class HomeAdminFragment : Fragment() {
         val btnSave = content.findViewById<Button>(R.id.btnSave)
         val btnCancel = content.findViewById<Button>(R.id.btnCancel)
         val btnDelete = content.findViewById<Button>(R.id.btnDelete)
+        val btnFeedback = content.findViewById<Button>(R.id.btnGoFeedback)
 
         btnSave.setOnClickListener{
             val lat = latitude.toDouble()
@@ -783,6 +785,13 @@ class HomeAdminFragment : Fragment() {
                 defaultId.hideInfoWindow()
                 dialog.dismiss()
             }
+        }
+
+        btnFeedback.setOnClickListener{
+            var name = ""
+            dialog.dismiss()
+            val action = HomeAdminFragmentDirections.actionHomeAdminFragmentToFeedbackFragment3(markerId,name)
+            binding.root.findNavController().navigate(action)
         }
 
         //--------------------------------------------------------
