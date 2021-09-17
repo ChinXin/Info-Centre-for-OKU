@@ -45,11 +45,11 @@ class AdminEvent : Fragment() {
 
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_admin_event, container, false)
 
-//        activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
-//            override fun handleOnBackPressed() {
-//                binding.root.findNavController().navigate(R.id.homeAdminFragment)
-//            }
-//        })
+        activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                binding.root.findNavController().navigate(R.id.homeAdminFragment)
+            }
+        })
 
         CoroutineScope(IO).launch {
             valueEventListener = myRef.addValueEventListener(object : ValueEventListener {
@@ -137,6 +137,8 @@ class AdminEvent : Fragment() {
                     })
                 }
                 else{
+                    eventList.clear()
+                    binding.tvNotFound.visibility = View.INVISIBLE
                     myRef.addValueEventListener(valueEventListener!!)
                 }
 

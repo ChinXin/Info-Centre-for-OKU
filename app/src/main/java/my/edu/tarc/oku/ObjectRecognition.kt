@@ -15,7 +15,6 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.lifecycleScope
@@ -36,9 +35,10 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
         const val TAG = "TFLite - ODT"
         const val REQUEST_IMAGE_CAPTURE: Int = 1
         private const val MAX_FONT_SIZE = 96F
+        private const val CHECK_CODE = 1234
     }
     //voice
-    private var tts: TextToSpeech? = null
+    private lateinit var tts: TextToSpeech
 
     private lateinit var captureImageFab: Button
     private lateinit var inputImageView: ImageView
@@ -64,20 +64,25 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
         imgSampleTwo.setOnClickListener(this)
         imgSampleThree.setOnClickListener(this)
 
-        tts = TextToSpeech(this, this)
-
-        tts!!.speak("Hello Sohai", TextToSpeech.QUEUE_FLUSH, null,"")
+//        tts = TextToSpeech(this, this)
+//        tts!!.speak("Hello Sohai", TextToSpeech.QUEUE_FLUSH, null,"")
         //tts.speak(result, TextToSpeech.QUEUE_FLUSH, null)
+
+        val checkIntent = Intent()
+        checkIntent.action = TextToSpeech.Engine.ACTION_CHECK_TTS_DATA
+        startActivityForResult(checkIntent, CHECK_CODE)
     }
 
     override fun onInit(status: Int) {
 
         if (status == TextToSpeech.SUCCESS) {
             // set US English as language for tts
-            val result = tts!!.setLanguage(Locale.US)
+            val result = tts.setLanguage(Locale.US)
 
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 Log.e("TTS","The Language specified is not supported!")
+            }else{
+                tts.setLanguage(Locale.getDefault())
             }
 
         } else {
@@ -94,6 +99,20 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
             resultCode == Activity.RESULT_OK
         ) {
             setViewAndDetect(getCapturedImage())
+        }
+        if (requestCode == CHECK_CODE) {
+            if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
+                // success, create the TTS instance
+                tts = TextToSpeech(this, this)
+                tts.setLanguage(Locale.US)
+                tts.setPitch(0.9f)
+                tts.setSpeechRate(0.8f)
+            } else {
+                // missing data, install it
+                val installIntent = Intent()
+                installIntent.action = TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA
+                startActivity(installIntent)
+            }
         }
     }
 
@@ -165,6 +184,7 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
         val test = results.map{
             val test3 = it.categories.first()
             val result = test3.label
+            tts.speak(result, TextToSpeech.QUEUE_FLUSH, null,null);
             //Log.i("test12346","$result")
             //tts.speak(result, TextToSpeech.QUEUE_FLUSH, null)
         }

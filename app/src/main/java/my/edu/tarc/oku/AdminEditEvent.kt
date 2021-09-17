@@ -204,7 +204,7 @@ class AdminEditEvent : Fragment(), View.OnClickListener {
                 binding.descriptionE.isEnabled = false
                 binding.eLinkE.isEnabled = false
                 binding.ePhoneE.isEnabled = false
-                val action = AdminEditEventDirections.actionAdminEditEventToEventInfo(eventId)
+                val action = AdminEditEventDirections.actionAdminEditEventToAdminEventInfo(eventId)
                 if (state == newState) {
                     if (newImg) {
                         storage.child("${eventId}.png").delete()

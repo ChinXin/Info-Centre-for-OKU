@@ -8,6 +8,12 @@
         android:visible="false"/>
 
     <item
+        android:id="@+id/btnParticipants"
+        android:icon="@drawable/ic_baseline_people_alt_24"
+        android:title="Participant(s)"
+        android:visible="false" />
+
+    <item
         android:id="@+id/btnDelete"
         android:icon="@drawable/ic_baseline_delete_24"
         android:title="Delete"

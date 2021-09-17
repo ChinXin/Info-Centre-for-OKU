@@ -13,8 +13,8 @@
             android:id="@+id/action_adminEvent_to_adminAddEvent"
             app:destination="@id/adminAddEvent" />
         <action
-            android:id="@+id/action_adminEvent_to_eventInfo"
-            app:destination="@id/eventInfo" />
+            android:id="@+id/action_adminEvent_to_adminEventInfo"
+            app:destination="@id/adminEventInfo" />
     </fragment>
     <fragment
         android:id="@+id/adminAddEvent"
@@ -38,28 +38,13 @@
         android:name="my.edu.tarc.oku.EditProfileFragment"
         android:label="EditProfileFragment" />
     <fragment
-        android:id="@+id/eventInfo"
-        android:name="my.edu.tarc.oku.EventInfo"
-        android:label="EventInfo" >
-        <argument
-            android:name="eventID"
-            app:argType="string" />
-        <action
-            android:id="@+id/action_eventInfo_to_adminEvent"
-            app:destination="@id/adminEvent"
-            app:popUpTo="@+id/adminEvent"/>
-        <action
-            android:id="@+id/action_eventInfo_to_adminEditEvent"
-            app:destination="@id/adminEditEvent"/>
-    </fragment>
-    <fragment
         android:id="@+id/adminEditEvent"
         android:name="my.edu.tarc.oku.AdminEditEvent"
         android:label="AdminEditEvent" >
         <argument android:name="eventId" />
         <action
-            android:id="@+id/action_adminEditEvent_to_eventInfo"
-            app:destination="@id/eventInfo" />
+            android:id="@+id/action_adminEditEvent_to_adminEventInfo"
+            app:destination="@id/adminEventInfo" />
     </fragment>
     <fragment
         android:id="@+id/feedbackFragment3"
@@ -71,5 +56,28 @@
         <argument
             android:name="username"
             app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/adminEventParticipant"
+        android:name="my.edu.tarc.oku.AdminEventParticipant"
+        android:label="AdminEventParticipant" >
+        <argument
+            android:name="eventId"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/adminEventInfo"
+        android:name="my.edu.tarc.oku.AdminEventInfo"
+        android:label="AdminEventInfo" >
+        <argument android:name="eventId" />
+        <action
+            android:id="@+id/action_adminEventInfo_to_adminEvent"
+            app:destination="@id/adminEvent" />
+        <action
+            android:id="@+id/action_adminEventInfo_to_adminEventParticipant"
+            app:destination="@id/adminEventParticipant" />
+        <action
+            android:id="@+id/action_adminEventInfo_to_adminEditEvent"
+            app:destination="@id/adminEditEvent" />
     </fragment>
 </navigation>

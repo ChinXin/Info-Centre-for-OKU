@@ -6,20 +6,33 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/homeMemberFragment"
-            android:icon="@drawable/ic_menu_camera"
+            android:icon="@drawable/ic_baseline_home_24"
             android:title="Home" />
+    </group>
+    <group android:id="@+id/registered">
+        <item android:title="Events">
+            <menu>
+                <item
+                    android:id="@+id/memberRegisteredEvent"
+                    android:icon="@drawable/ic_baseline_list_alt_24"
+                    android:title="Registered" />
+            </menu>
+        </item>
+
+    </group>
+    <group android:id="@+id/logout">
         <item
             android:id="@+id/Member_Logout"
             android:icon="@drawable/ic_baseline_logout_24"
             android:title="Logout" />
-
-        <!--        <item-->
-        <!--            android:id="@+id/nav_gallery"-->
-        <!--            android:icon="@drawable/ic_menu_gallery"-->
-        <!--            android:title="@string/menu_gallery" />-->
-        <!--        <item-->
-        <!--            android:id="@+id/nav_slideshow"-->
-        <!--            android:icon="@drawable/ic_menu_slideshow"-->
-        <!--            android:title="@string/menu_slideshow" />-->
     </group>
+    <!--        <item-->
+    <!--            android:id="@+id/nav_gallery"-->
+    <!--            android:icon="@drawable/ic_menu_gallery"-->
+    <!--            android:title="@string/menu_gallery" />-->
+    <!--        <item-->
+    <!--            android:id="@+id/nav_slideshow"-->
+    <!--            android:icon="@drawable/ic_menu_slideshow"-->
+    <!--            android:title="@string/menu_slideshow" />-->
+
 </menu>

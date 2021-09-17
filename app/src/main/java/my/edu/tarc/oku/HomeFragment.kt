@@ -206,23 +206,6 @@ class HomeFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        var session = UserSessionManager(requireContext().applicationContext)
-        if (session.checkLogin()){
-            val user = session.userDetails
-            val name = user[UserSessionManager.KEY_NAME]
-            val status = user[UserSessionManager.KEY_STATUS]
-            if(status =="admin") {
-                val intent = Intent(requireContext(), AdminActivity::class.java)
-                intent.putExtra("Username", name)
-                startActivity(intent)
-            }else if (status == "member"){
-                val intent = Intent(requireContext(), MemberActivity::class.java)
-                intent.putExtra("Username", name)
-                startActivity(intent)
-            }
-            return null
-        }
-
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater,R.layout.fragment_home, container, false)
         return binding.root

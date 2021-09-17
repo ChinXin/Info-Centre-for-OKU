@@ -36,4 +36,24 @@
             android:name="username"
             app:argType="string" />
     </fragment>
+    <fragment
+        android:id="@+id/memberRegisteredEvent"
+        android:name="my.edu.tarc.oku.MemberRegisteredEvent"
+        android:label="fragment_member_registered_event"
+        tools:layout="@layout/fragment_member_registered_event" >
+        <action
+            android:id="@+id/action_memberRegisteredEvent_to_eventInfo"
+            app:destination="@id/memberEventInfo" />
+    </fragment>
+    <fragment
+        android:id="@+id/memberEventInfo"
+        android:name="my.edu.tarc.oku.MemberEventInfo"
+        android:label="memberEventInfo">
+        <argument
+            android:name="eventId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_eventInfo_to_memberRegisteredEvent"
+            app:destination="@id/memberRegisteredEvent" />
+    </fragment>
 </navigation>

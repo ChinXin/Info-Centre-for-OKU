@@ -11,33 +11,27 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.*
-import my.edu.tarc.oku.databinding.FragmentEventInfoBinding
+import my.edu.tarc.oku.databinding.EventInfoBinding
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.speech.tts.TextToSpeech
 import android.view.*
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.addCallback
 import androidx.annotation.RequiresApi
-import androidx.navigation.Navigation
 import androidx.navigation.findNavController
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.storage.ktx.storage
-import kotlinx.coroutines.flow.callbackFlow
 import my.edu.tarc.oku.data.Event
-import my.edu.tarc.oku.data.EventRegistration
 import my.edu.tarc.oku.data.UserSessionManager
 import java.util.*
 import kotlin.collections.HashMap
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 
 
-class EventInfo : Fragment() {
-    private lateinit var binding: FragmentEventInfoBinding
+class AdminEventInfo : Fragment() {
+    private lateinit var binding: EventInfoBinding
     private lateinit var session: UserSessionManager
     private lateinit var user: HashMap<String?, String?>
     private lateinit var username:String
@@ -55,20 +49,19 @@ class EventInfo : Fragment() {
     private var link: String = ""
     private var phone: String = ""
     var state: String = ""
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        val callback = requireActivity().onBackPressedDispatcher.addCallback(this) {
-//            Navigation.findNavController().navigate()
-
-        }
-    }
+    lateinit var mTTS:TextToSpeech
+    private lateinit var tts: TextToSpeech
+    private val MY_DATA_CHECK_CODE = 1234
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_event_info, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.event_info, container, false)
+        session = UserSessionManager(requireContext().applicationContext)
+        user = session.userDetails
+        username = user[UserSessionManager.KEY_NAME].toString()
+        status = user[UserSessionManager.KEY_STATUS].toString()
 
         activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -76,20 +69,17 @@ class EventInfo : Fragment() {
             }
         })
 
-        session = UserSessionManager(requireContext().applicationContext)
-        user = session.userDetails
-        username = user[UserSessionManager.KEY_NAME].toString()
-        status = user[UserSessionManager.KEY_STATUS].toString()
-        // Inflate the layout for this fragment
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_event_info, container, false)
 
-        val args = EventInfoArgs.fromBundle(requireArguments())
+        // Inflate the layout for this fragment
+        binding = DataBindingUtil.inflate(inflater, R.layout.event_info, container, false)
+
+        val args = AdminEventInfoArgs.fromBundle(requireArguments())
 
         myRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 for (s in snapshot.children) {//for each state
                     for (e in s.child("Events").children) {//event in events
-                        if (e.key.toString() == args.eventID) {
+                        if (e.key.toString() == args.eventId) {
                             eventId = e.child("id").value.toString()
                             img = e.child("image").value.toString()
                             title = e.child("title").value.toString()
@@ -136,6 +126,7 @@ class EventInfo : Fragment() {
 
         })
 
+
         binding.tvLink.setOnClickListener {
             if (!link.startsWith("http://") && !link.startsWith("https://")) {
                 link = "http://" + link;
@@ -148,7 +139,7 @@ class EventInfo : Fragment() {
         if (status == "admin") {
             binding.edit.visibility = View.VISIBLE
             binding.edit.setOnClickListener { _ ->
-                val action = EventInfoDirections.actionEventInfoToAdminEditEvent(eventId)
+                val action = AdminEventInfoDirections.actionAdminEventInfoToAdminEditEvent(eventId)
                 binding.root.findNavController().navigate(action)
             }
         }
@@ -156,8 +147,9 @@ class EventInfo : Fragment() {
 //        return inflater.inflate(R.layout.fragment_event_info, container, false)
     }
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        if (status == "admin" || status == "member") {
+        if (status == "admin") {
             setHasOptionsMenu(true)
         }
         super.onViewCreated(view, savedInstanceState)
@@ -167,26 +159,11 @@ class EventInfo : Fragment() {
         // Inflate the menu; this adds items to the action bar if it is present.
         inflater.inflate(R.menu.event, menu)
         menu.findItem(R.id.btnAdd).isEnabled = false
-        val myReg = Firebase.database.getReference("register")
         if(status == "admin"){
-            myReg.child(eventId).addValueEventListener(object:ValueEventListener{
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    for (m in snapshot.children){
-                        if (m.key.toString() != username){
-                            menu.findItem(R.id.btnDelete).isEnabled = false
-                            menu.findItem(R.id.btnRegisterE).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
-                            menu.findItem(R.id.btnRegisterE).isVisible = true
-                        }
-                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {}
-
-            })
-        }
-        if(status != "admin"){
-            menu.findItem(R.id.btnDelete).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
+//            menu.findItem(R.id.btnDelete).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
             menu.findItem(R.id.btnDelete).isVisible = true
+//            menu.findItem(R.id.btnDelete).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
+            menu.findItem(R.id.btnParticipants).isVisible = true
         }
         super.onCreateOptionsMenu(menu, inflater)
     }
@@ -205,72 +182,64 @@ class EventInfo : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.btnDelete -> {
-                var snackBar: Snackbar
-                myRef.child(state).child("Events").child(eventId).removeValue()
-                    .addOnSuccessListener {
-                        Toast.makeText(context, "Deleted Successfully!", Toast.LENGTH_SHORT).show()
-                        binding.root.findNavController()
-                            .navigate(R.id.action_eventInfo_to_adminEvent)
-                        snackBar = Snackbar.make(binding.root,"Deleted Successfully!",Snackbar.LENGTH_LONG)
-                            .setAction("UNDO", View.OnClickListener {
-                                myRef.child(state).child("Events").child(eventId)
-                                    .setValue(event)
-                                    .addOnSuccessListener { _ ->
-                                        Toast.makeText(
-                                            context,
-                                            "Event restore successfully!!",
-                                            Toast.LENGTH_LONG
-                                        ).show()
-                                    }.addOnFailureListener {
-                                        Toast.makeText(
-                                            context,
-                                            "Unable to restore event.",
-                                            Toast.LENGTH_LONG
-                                        ).show()
-                                    }
-                            })
-                            .addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
-                                override fun onShown(transientBottomBar: Snackbar?) {
-                                    super.onShown(transientBottomBar)
-                                }
+                val builder: AlertDialog.Builder = AlertDialog.Builder(this.requireContext())
+                builder.setTitle("Delete Event")
+                builder.setMessage("Are you sure you want to delete this event?")
 
-                                override fun onDismissed(transientBottomBar: Snackbar?,event: Int) {
-                                    super.onDismissed(transientBottomBar, event)
-                                    if(event != 1){ //Indicates that the Snackbar was dismissed via an action click.
-                                        storage.child("$eventId.png").delete()
+                builder.setPositiveButton("Yes"){ which,dialog ->
+                    var snackBar: Snackbar
+                    myRef.child(state).child("Events").child(eventId).removeValue()
+                        .addOnSuccessListener {
+                            binding.root.findNavController()
+                                .navigate(R.id.action_adminEventInfo_to_adminEvent)
+                            snackBar = Snackbar.make(binding.root,"Event deleted successfully!",Snackbar.LENGTH_LONG)
+                                .setAction("UNDO", View.OnClickListener {
+                                    myRef.child(state).child("Events").child(eventId)
+                                        .setValue(event)
+                                        .addOnSuccessListener { _ ->
+                                            Toast.makeText(
+                                                context,
+                                                "Event restore successfully!!",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        }.addOnFailureListener {
+                                            Toast.makeText(
+                                                context,
+                                                "Unable to restore event.",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        }
+                                })
+                                .addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                                    override fun onShown(transientBottomBar: Snackbar?) {
+                                        super.onShown(transientBottomBar)
                                     }
-                                }
-                            })
 
-                        snackBar.show()
-                    }
+                                    override fun onDismissed(transientBottomBar: Snackbar?,event: Int) {
+                                        super.onDismissed(transientBottomBar, event)
+                                        if(event != 1){ //Indicates that the Snackbar was dismissed via an action click.
+                                            storage.child("$eventId.png").delete()
+                                        }
+                                    }
+                                })
+
+                            snackBar.show()
+                        }
+                }
+
+                builder.setNegativeButton("No"){ which,dialog ->}
+
+                builder.show()
+
 //                binding.root.findNavController().navigate(R.id.action_adminEvent_to_adminAddEvent)
 //                myRef.child(state)
 //                Toast.makeText(context, "delete", Toast.LENGTH_SHORT).show()
                 true
             }
-            R.id.btnRegisterE -> {
-                val myReg = Firebase.database.getReference("register")
-                val builder: AlertDialog.Builder = AlertDialog.Builder(this.requireContext())
-                val currentDateTime = LocalDateTime.now()
-                val date = currentDateTime.format(DateTimeFormatter.ISO_DATE)
-                val time = currentDateTime.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))
-                val registerE = EventRegistration(date,time)
-
-                builder.setTitle("Register Event")
-                builder.setMessage("Are you sure you want to register for this event?")
-
-                builder.setPositiveButton("Yes"){ which,dialog ->
-                    myReg.child(eventId).child(username).setValue(registerE).addOnSuccessListener{
-                        Toast.makeText(context,"Register successfully!", Toast.LENGTH_LONG).show()
-                    }
-                }
-
-                builder.setNegativeButton("No"){ which,dialog ->
-
-                }
-
-                builder.show()
+            R.id.btnParticipants ->{
+                val action = AdminEventInfoDirections.actionAdminEventInfoToAdminEventParticipant(eventId)
+                binding.root.findNavController()
+                    .navigate(action)
                 true
             }
             else -> super.onOptionsItemSelected(item)

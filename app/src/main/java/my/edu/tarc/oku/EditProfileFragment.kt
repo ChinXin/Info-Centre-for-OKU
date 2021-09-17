@@ -44,11 +44,12 @@ class EditProfileFragment : Fragment() {
         val myRef = database.getReference("users")
 
         //need modify(get username)
-        var tvUsername = "aeronchow"
+//        var tvUsername = "aeronchow"
         var tvPassword = ""
 
         myRef.child(status.toString()).child(name.toString()).addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val tvUsername = dataSnapshot.child("username").value.toString()
                 val tvFullName = dataSnapshot.child("fullName").value.toString()
                 val tvEmail = dataSnapshot.child("email").value.toString()
                 val tvPhoneNo = dataSnapshot.child("phoneNo").value.toString()

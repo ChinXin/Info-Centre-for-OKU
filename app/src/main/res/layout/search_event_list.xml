@@ -10,46 +10,44 @@
     app:cardUseCompatPadding="true"
     app:contentPadding="2dp">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="5dp"
-        android:orientation="vertical">
+        android:layout_margin="5dp">
 
         <ImageView
-            android:id="@+id/imageEvent"
-            android:layout_width="match_parent"
-            android:layout_height="80dp" />
+            android:id="@+id/eImage"
+            android:layout_width="100dp"
+            android:layout_height="80dp"
+            tools:srcCompat="@tools:sample/avatars"/>
 
         <TextView
-            android:id="@+id/tvTitleE"
+            android:id="@+id/eTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
             android:text="TextView"
             android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:layout_toEndOf="@id/eImage"/>
 
         <TextView
-            android:id="@+id/tvDateTimeE"
+            android:id="@+id/eDateTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="TextView"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:layout_toEndOf="@id/eImage"
+            android:layout_below="@+id/eTitle"/>
 
         <TextView
-            android:id="@+id/tvAddressE"
+            android:id="@+id/eAddress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="TextView"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:layout_toEndOf="@id/eImage"
+            android:layout_below="@+id/eDateTime"/>
 
-        <!--        <View-->
-        <!--            android:id="@+id/divider"-->
-        <!--            android:layout_width="match_parent"-->
-        <!--            android:layout_height="1dp"-->
-        <!--            android:background="?android:attr/listDivider" />-->
 
-    </LinearLayout>
-
+    </RelativeLayout>
 </androidx.cardview.widget.CardView>

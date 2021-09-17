@@ -10,10 +10,11 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import my.edu.tarc.oku.AdminEventDirections
+import my.edu.tarc.oku.MemberRegisteredEventDirections
 import my.edu.tarc.oku.R
 
 //class ProductAdapter (private val productList: List<Product>):RecyclerView.Adapter<ProductAdapter.myViewHolder>(){
-class EventAdapter (val eventList: List<Event>): RecyclerView.Adapter<EventAdapter.myViewHolder>() {
+class MemberRegisteredEventAdapter (val eventList: List<Event>): RecyclerView.Adapter<MemberRegisteredEventAdapter.myViewHolder>() {
 
 
     class myViewHolder (itemView: View) : RecyclerView.ViewHolder(itemView){
@@ -45,7 +46,7 @@ class EventAdapter (val eventList: List<Event>): RecyclerView.Adapter<EventAdapt
         holder.itemView.setOnClickListener {
             val eventId = currentEvent.id
             Toast.makeText(holder.itemView.context, "$eventId", Toast.LENGTH_SHORT).show()
-            val action = AdminEventDirections.actionAdminEventToAdminEventInfo(eventId)
+            val action = MemberRegisteredEventDirections.actionMemberRegisteredEventToEventInfo(eventId)
             Navigation.findNavController(it).navigate(action)
         }
     }

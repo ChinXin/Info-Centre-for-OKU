@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="10dp"
+    android:layout_marginTop="10dp"
+    android:layout_marginEnd="10dp"
+    android:orientation="vertical"
+    android:paddingStart="20dp"
+    android:paddingTop="10dp"
+    android:paddingEnd="20dp">
+
+    <TextView
+        android:id="@+id/tvRMUsername"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/RMName"
+        android:layout_marginBottom="-1dp"
+        android:text="Username"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/RMUsername"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/tvRMUsername"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/tvRMName"
+        android:layout_width="80dp"
+        android:layout_height="0dp"
+        android:layout_above="@+id/RMEmail"
+        android:layout_below="@+id/tvRMUsername"
+        android:layout_marginBottom="0dp"
+        android:text="Name"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/RMName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/RMUsername"
+        android:layout_toEndOf="@+id/tvRMName"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/tvRMEmail"
+        android:layout_width="80dp"
+        android:layout_height="0dp"
+        android:layout_above="@+id/RMPhoneNo"
+        android:layout_below="@+id/tvRMName"
+        android:layout_marginBottom="0dp"
+        android:text="Email"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/RMEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/RMName"
+        android:layout_toEndOf="@+id/tvRMEmail"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/tvRMPhoneNo"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvRMEmail"
+        android:text="Phone No"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/RMPhoneNo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/RMEmail"
+        android:layout_toEndOf="@+id/tvRMPhoneNo"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/tvRMAddress"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvRMPhoneNo"
+        android:text="Address"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/RMAddress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/RMPhoneNo"
+        android:layout_toEndOf="@+id/tvRMAddress"
+        android:textSize="16sp" />
+</RelativeLayout>

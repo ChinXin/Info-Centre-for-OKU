@@ -119,8 +119,20 @@
                 android:layout_marginEnd="12dp"
                 android:layout_marginBottom="12dp"
                 android:visibility="gone"
-                app:srcCompat="@drawable/ic_baseline_edit_24"
+                android:contentDescription="Text-to-Speech Button"
+                app:srcCompat="@drawable/ic_baseline_edit_24"/>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/btnTTS"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_marginEnd="12dp"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone"
+                app:srcCompat="@drawable/ic_baseline_volume_up_24"
                 tools:ignore="SpeakableTextPresentCheck" />
+
         </FrameLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
