@@ -64,10 +64,6 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
         imgSampleTwo.setOnClickListener(this)
         imgSampleThree.setOnClickListener(this)
 
-//        tts = TextToSpeech(this, this)
-//        tts!!.speak("Hello Sohai", TextToSpeech.QUEUE_FLUSH, null,"")
-        //tts.speak(result, TextToSpeech.QUEUE_FLUSH, null)
-
         val checkIntent = Intent()
         checkIntent.action = TextToSpeech.Engine.ACTION_CHECK_TTS_DATA
         startActivityForResult(checkIntent, CHECK_CODE)
@@ -126,7 +122,7 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
                 try {
                     dispatchTakePictureIntent()
                 } catch (e: ActivityNotFoundException) {
-                    Log.e(TAG, e.message.toString())
+                    Log.i("test12345","Line 125")
                 }
             }
             R.id.imgSampleOne -> {
@@ -189,15 +185,6 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
             //tts.speak(result, TextToSpeech.QUEUE_FLUSH, null)
         }
     }
-
-//    private fun speakOut(name:String) {
-//        tts.speak(name, TextToSpeech.QUEUE_FLUSH, null,"")
-//    }
-
-//    private fun getString(name:String){
-//        //Toast.makeText(applicationContext,"$name",Toast.LENGTH_SHORT).show()
-//        Log.i("test12346","${name}")
-//    }
 
     /**
      * debugPrint(visionObjects: List<Detection>)
@@ -343,7 +330,7 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
                 photoFile?.also {
                     val photoURI: Uri = FileProvider.getUriForFile(
                         this,
-                        "org.tensorflow.codelabs.objectdetection.fileprovider",
+                        "my.edu.tarc.oku.fileprovider",
                         it
                     )
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
