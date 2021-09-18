@@ -5,12 +5,17 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Canvas
+import android.graphics.Color
+import android.location.Address
+import android.location.Geocoder
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.Button
+import android.widget.SearchView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
@@ -18,6 +23,8 @@ import androidx.fragment.app.Fragment
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -30,8 +37,11 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
+import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
+import my.edu.tarc.oku.data.Event
+import my.edu.tarc.oku.data.MemberEventResultAdapter
 import my.edu.tarc.oku.data.UserSessionManager
 import my.edu.tarc.oku.databinding.FragmentHomeAdminBinding
 import my.edu.tarc.oku.databinding.FragmentHomeBinding
@@ -40,18 +50,34 @@ import okhttp3.Request
 import java.util.ArrayList
 
 
-class HomeFragment : Fragment() {
+class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
 
     private lateinit var binding : FragmentHomeBinding
     lateinit var map: GoogleMap
     private val REQUEST_LOCATION_PERMISSION = 1
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
+    val database = Firebase.database
+    val myRef = database.getReference("state")
+
+    private var eventList: MutableList<Event> = ArrayList()
+    private lateinit var session: UserSessionManager
+    private lateinit var user: HashMap<String?, String?>
+    private lateinit var username: String
+    private lateinit var status: String
+    private var eventClicked = false
+    private var facilitiesClicked = false
+    private var servicesClicked = false
+    private var search = ""
+    lateinit var myRecyclerView: RecyclerView
+
+    companion object {
+        private val strokeColor = 0xFFD8D7D7
+    }
+
     @SuppressLint("MissingPermission")
     private val callback = OnMapReadyCallback { googleMap ->
         map = googleMap
-        val database = Firebase.database
-        val myRef = database.getReference("state")
 
         enableMyLocation()
         //Go to my current location
@@ -206,8 +232,106 @@ class HomeFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        session = UserSessionManager(requireContext().applicationContext)
+        user = session.userDetails
+        username = user[UserSessionManager.KEY_NAME].toString()
+        status = user[UserSessionManager.KEY_STATUS].toString()
+
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater,R.layout.fragment_home, container, false)
+        myRecyclerView = binding.eventResultViewH
+
+        if (eventClicked) {
+            binding.btnEventH.setBackgroundColor(strokeColor.toInt())
+            searchEvent(search)
+        }
+        binding.btnEventH.setOnClickListener {
+            if (eventClicked) {
+                eventClicked = false
+                binding.btnServicesH.isClickable = true
+                binding.btnFacilitiesH.isClickable = true
+                if (search == "") {
+                    binding.eventResultViewH.visibility = View.INVISIBLE
+                } else {
+                    searchEvent(search)
+                }
+                Toast.makeText(context, "un click", Toast.LENGTH_SHORT).show()
+                binding.btnEventH.setBackgroundColor(Color.WHITE)
+            } else {
+                eventClicked = true
+                binding.btnServicesH.isClickable = false
+                binding.btnFacilitiesH.isClickable = false
+                eventList.clear()
+                searchEvent(search)
+                Toast.makeText(context, "click", Toast.LENGTH_SHORT).show()
+                binding.btnEventH.setBackgroundColor(strokeColor.toInt())
+            }
+        }
+        binding.btnFacilitiesH.setOnClickListener {
+            if (!facilitiesClicked) {
+                facilitiesClicked = true
+                binding.btnServicesH.isClickable = false
+                binding.btnEventH.isClickable = false
+                Toast.makeText(context, "click", Toast.LENGTH_SHORT).show()
+                it.setBackgroundColor(strokeColor.toInt())
+            } else {
+                facilitiesClicked = false
+                binding.btnServicesH.isClickable = true
+                binding.btnEventH.isClickable = true
+                Toast.makeText(context, "un click", Toast.LENGTH_SHORT).show()
+                it.setBackgroundColor(Color.WHITE)
+            }
+        }
+        binding.btnServicesH.setOnClickListener {
+            if (!servicesClicked) {
+                servicesClicked = true
+                binding.btnEventH.isClickable = false
+                binding.btnFacilitiesH.isClickable = false
+                Toast.makeText(context, "click", Toast.LENGTH_SHORT).show()
+                it.setBackgroundColor(strokeColor.toInt())
+            } else {
+                servicesClicked = false
+                binding.btnEventH.isClickable = true
+                binding.btnFacilitiesH.isClickable = true
+                Toast.makeText(context, "un click", Toast.LENGTH_SHORT).show()
+                it.setBackgroundColor(Color.WHITE)
+            }
+        }
+
+        binding.searchH.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String): Boolean {
+                if (newText != null && newText.trim().isNotEmpty()) {
+                    eventList.clear()
+                    val letters: CharArray = newText.toCharArray()
+                    val firstLetter = letters[0].toString().lowercase()
+                    val remainingLetters: String = newText.substring(1)
+                    search = "$firstLetter$remainingLetters"
+
+                    if (eventClicked) {
+                        searchEvent(search)
+                    }
+//                    else if (facilitiesClicked){
+//
+//                    }else if(servicesClicked){
+//
+//                    }
+                    else {
+                        searchEvent(search)
+                    }
+                } else {
+                    search = ""
+                    binding.eventResultViewH.visibility = View.INVISIBLE
+
+                }
+
+                return false
+            }
+        })
+
         return binding.root
     }
 
@@ -216,6 +340,160 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val mapFragment = childFragmentManager.findFragmentById(R.id.homeMap) as SupportMapFragment?
         mapFragment?.getMapAsync(callback)
+    }
+
+    override fun onPause() {
+        facilitiesClicked = false
+        servicesClicked = false
+        super.onPause()
+    }
+
+    // click function in recycleview
+    override fun onItemClick(position: Int) {
+        val clickedItem: Event = eventList[position]
+        Toast.makeText(context, "${clickedItem.address}", Toast.LENGTH_SHORT).show()
+
+        var coder = Geocoder(context)
+
+        val p1: GeoPoint? = null
+
+        var address: MutableList<Address> = coder.getFromLocationName(clickedItem.address, 5)
+
+        Log.i("address", address.toString())
+
+        if (address.isEmpty()) {
+            Toast.makeText(context, "no result", Toast.LENGTH_SHORT).show()
+        } else {
+            var location: Address = address[0]
+            var latLng = LatLng(location.latitude, location.longitude)
+
+            //to marker here
+
+            Toast.makeText(context, "$latLng", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun initSwipe() {
+        val simpleItemTouchCallback: ItemTouchHelper.SimpleCallback = object :
+            ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.UP) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
+
+            override fun onChildDraw(
+                c: Canvas,
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                dX: Float,
+                dY: Float,
+                actionState: Int,
+                isCurrentlyActive: Boolean
+            ) {
+                if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+                    if (dY <= 0) {
+                        val swipeItem: Event = eventList[viewHolder.adapterPosition]
+                        val action = HomeFragmentDirections.actionHomeFragmentToMemberEventInfo2(swipeItem.id)
+                        binding.root.findNavController().navigate(action)
+                        Toast.makeText(context, "$dY", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                super.onChildDraw(
+                    c,
+                    recyclerView,
+                    viewHolder,
+                    dX,
+                    dY,
+                    actionState,
+                    isCurrentlyActive
+                )
+            }
+
+        }
+        val itemTouchHelper = ItemTouchHelper(simpleItemTouchCallback)
+        itemTouchHelper.attachToRecyclerView(myRecyclerView)
+    }
+
+    private fun searchEvent(searchS: String) {
+        myRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                eventList.clear()
+                for (s in snapshot.children) {
+                    for (e in s.child("Events").children) {
+                        if (e.child("title").value.toString().lowercase().contains(searchS)) {
+                            binding.eventResultViewH.visibility = View.VISIBLE
+                            val getId = e.key.toString()
+                            val title = e.child("title").value.toString()
+                            val date = e.child("date").value.toString()
+                            val time = e.child("time").value.toString()
+                            val address = e.child("address").value.toString()
+                            val state = e.child("state").value.toString()
+                            val description = e.child("description").value.toString()
+                            val image = e.child("image").value.toString()
+                            val link = e.child("link").value.toString()
+                            val phone = e.child("phone").value.toString()
+                            val event = Event(
+                                getId,
+                                image,
+                                title,
+                                date,
+                                time,
+                                address,
+                                state,
+                                description,
+                                link,
+                                phone
+                            )
+                            eventList.add(event)
+                            Log.i("search", e.child("title").value.toString())
+
+                        } else if (searchS == "") {
+                            binding.eventResultViewH.visibility = View.VISIBLE
+                            val getId = e.key.toString()
+                            val title = e.child("title").value.toString()
+                            val date = e.child("date").value.toString()
+                            val time = e.child("time").value.toString()
+                            val address = e.child("address").value.toString()
+                            val state = e.child("state").value.toString()
+                            val description = e.child("description").value.toString()
+                            val image = e.child("image").value.toString()
+                            val link = e.child("link").value.toString()
+                            val phone = e.child("phone").value.toString()
+                            val event = Event(
+                                getId,
+                                image,
+                                title,
+                                date,
+                                time,
+                                address,
+                                state,
+                                description,
+                                link,
+                                phone
+                            )
+                            eventList.add(event)
+                        }
+                    }
+                }
+                if (eventList.isEmpty()) {
+                    binding.eventResultViewH.visibility = View.INVISIBLE
+                }
+//                val myRecyclerView: RecyclerView = binding.eventResultView
+                myRecyclerView.adapter =
+                    MemberEventResultAdapter(eventList, this@HomeFragment)
+                myRecyclerView.setHasFixedSize(true)
+                initSwipe()
+
+            }
+
+            override fun onCancelled(error: DatabaseError) {}
+
+        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

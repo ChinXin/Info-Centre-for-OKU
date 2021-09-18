@@ -20,6 +20,7 @@ import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import my.edu.tarc.oku.data.UserSessionManager
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.task.vision.detector.Detection
 import org.tensorflow.lite.task.vision.detector.ObjectDetector
@@ -48,9 +49,19 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
     private lateinit var tvPlaceholder: TextView
     private lateinit var currentPhotoPath: String
 
+    private lateinit var session: UserSessionManager
+    private lateinit var user: HashMap<String?, String?>
+    private lateinit var username: String
+    private lateinit var status: String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_object_recognition)
+
+        session = UserSessionManager(applicationContext)
+        user = session.userDetails
+        username = user[UserSessionManager.KEY_NAME].toString()
+        status = user[UserSessionManager.KEY_STATUS].toString()
 
         captureImageFab = findViewById(R.id.captureImageFab)
         inputImageView = findViewById(R.id.imageView)
@@ -67,6 +78,20 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
         val checkIntent = Intent()
         checkIntent.action = TextToSpeech.Engine.ACTION_CHECK_TTS_DATA
         startActivityForResult(checkIntent, CHECK_CODE)
+    }
+
+    override fun onBackPressed() {
+        if (status == "member"){
+            val intent = Intent(applicationContext, MemberActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            intent.putExtra("Username", username)
+            startActivity(intent)
+        }else{
+            val intent = Intent(applicationContext, MainActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            startActivity(intent)
+        }
+        super.onBackPressed()
     }
 
     override fun onInit(status: Int) {
@@ -147,12 +172,12 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
 
         // Step 2: Initialize the detector object
         val options = ObjectDetector.ObjectDetectorOptions.builder()
-            .setMaxResults(1)
+            .setMaxResults(3)
             .setScoreThreshold(0.3f)
             .build()
         val detector = ObjectDetector.createFromFileAndOptions(
             this,
-            "model2.tflite",
+            "lite-model_efficientdet_lite4_detection_metadata_2.tflite",
             options
         )
 
@@ -180,7 +205,10 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
         val test = results.map{
             val test3 = it.categories.first()
             val result = test3.label
-            tts.speak(result, TextToSpeech.QUEUE_FLUSH, null,null);
+            for (i in it.categories){
+                tts.speak(i.label.toString(), TextToSpeech.QUEUE_ADD, null,null);
+            }
+
             //Log.i("test12346","$result")
             //tts.speak(result, TextToSpeech.QUEUE_FLUSH, null)
         }

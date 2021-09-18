@@ -1,6 +1,7 @@
 package my.edu.tarc.oku
 
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NO_HISTORY
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler

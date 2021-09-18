@@ -12,12 +12,9 @@
             android:id="@+id/memberRelativeLayoutId"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="invisible"
             tools:context=".HomeMemberFragment">
 
-            <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:map="http://schemas.android.com/apk/res-auto"
-                xmlns:tools="http://schemas.android.com/tools"
+            <fragment
                 android:id="@+id/memberMap"
                 android:name="com.google.android.gms.maps.SupportMapFragment"
                 android:layout_width="match_parent"
@@ -46,7 +43,7 @@
         </FrameLayout>
 
         <SearchView
-            android:id="@+id/searchView"
+            android:id="@+id/search_m"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
@@ -62,55 +59,71 @@
 
 
         <Button
-            android:id="@+id/btnEvent"
-            android:layout_width="wrap_content"
+            android:id="@+id/btnEventM"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:backgroundTint="#FFFFFF"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
             android:text="Events"
             android:textColor="#000000"
             app:cornerRadius="40dp"
-            app:layout_constraintStart_toStartOf="@+id/searchView"
-            app:layout_constraintTop_toBottomOf="@+id/searchView"
+            app:layout_constraintStart_toStartOf="@+id/search_m"
+            app:layout_constraintTop_toBottomOf="@+id/search_m"
+            app:layout_constraintWidth_percent="0.3"
             app:strokeColor="#2962FF"
             app:strokeWidth="1dp" />
 
         <Button
-            android:id="@+id/btnFacilities"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:backgroundTint="#00FFFFFF"
-            android:text="Facilities"
-            android:textColor="#000000"
-            app:layout_constraintEnd_toStartOf="@+id/btnServices"
-            app:layout_constraintStart_toEndOf="@+id/btnEvent"
-            app:layout_constraintTop_toBottomOf="@+id/searchView"
-            app:cornerRadius="40dp"
-            app:strokeColor="#2962FF"
-            app:strokeWidth="1dp" />
-
-        <Button
-            android:id="@+id/btnServices"
-            android:layout_width="wrap_content"
+            android:id="@+id/btnFacilitiesM"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:backgroundTint="#FFFFFF"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:text="Facilities"
+            android:textColor="#000000"
+            app:cornerRadius="40dp"
+            app:layout_constraintEnd_toStartOf="@+id/btnServicesM"
+            app:layout_constraintStart_toEndOf="@+id/btnEventM"
+            app:layout_constraintTop_toBottomOf="@+id/search_m"
+            app:layout_constraintWidth_min="114dp"
+            app:strokeColor="#2962FF"
+            app:strokeWidth="1dp" />
+
+        <Button
+            android:id="@+id/btnServicesM"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:backgroundTint="#FFFFFF"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
             android:text="Services"
             android:textColor="#000000"
             app:cornerRadius="40dp"
-            app:layout_constraintEnd_toEndOf="@+id/searchView"
-            app:layout_constraintTop_toBottomOf="@+id/searchView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/search_m"
+            app:layout_constraintWidth_min="106dp"
+            app:layout_constraintWidth_percent="0.3"
             app:rippleColor="#FFFFFF"
             app:strokeColor="#2962FF"
             app:strokeWidth="1dp" />
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/eventResultView"
-            android:layout_width="0dp"
-            android:layout_height="100dp"
+            android:id="@+id/eventResultViewM"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:layout_marginBottom="15dp"
             android:background="#00F1EEEE"
+            android:orientation="horizontal"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_percent="0.3"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintWidth_percent="0.9"
             tools:listitem="@layout/search_event_list" />

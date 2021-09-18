@@ -62,6 +62,7 @@ class MemberRegisteredEvent : Fragment() {
                                     for (s in snapshot.children) {
                                         for (e in s.child("Events").children) {
                                             if (e.key.toString() == r.key.toString()){
+                                                binding.tvNotFound.visibility = View.INVISIBLE
                                                 val getId = e.key.toString()
                                                 val title = e.child("title").value.toString()
                                                 val date = e.child("date").value.toString()
@@ -76,6 +77,9 @@ class MemberRegisteredEvent : Fragment() {
                                                 eventList.add(event)
                                             }
                                         }
+                                    }
+                                    if(eventList.isEmpty()){
+                                        binding.tvNotFound.visibility = View.VISIBLE
                                     }
                                     CoroutineScope(Main).launch {
                                         val myRecyclerView: RecyclerView = binding.eventRecycleView

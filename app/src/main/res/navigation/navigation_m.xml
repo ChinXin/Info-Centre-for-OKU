@@ -24,6 +24,9 @@
         <action
             android:id="@+id/action_homeMemberFragment_to_feedbackFragment2"
             app:destination="@id/feedbackFragment2" />
+        <action
+            android:id="@+id/action_homeMemberFragment_to_memberEventInfo"
+            app:destination="@id/memberEventInfo" />
     </fragment>
     <fragment
         android:id="@+id/feedbackFragment2"
@@ -42,7 +45,7 @@
         android:label="fragment_member_registered_event"
         tools:layout="@layout/fragment_member_registered_event" >
         <action
-            android:id="@+id/action_memberRegisteredEvent_to_eventInfo"
+            android:id="@+id/action_memberRegisteredEvent_to_memberEventInfo"
             app:destination="@id/memberEventInfo" />
     </fragment>
     <fragment

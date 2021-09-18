@@ -5,6 +5,9 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.*
+import android.location.Address
+import android.location.Geocoder
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
@@ -16,9 +19,9 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.findNavController
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
@@ -26,7 +29,6 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
-import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -34,18 +36,20 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
+import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
-import my.edu.tarc.oku.data.Marker
-import my.edu.tarc.oku.data.UserSessionManager
-import my.edu.tarc.oku.databinding.FragmentHomeAdminBinding
 import my.edu.tarc.oku.databinding.FragmentHomeMemberBinding
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.util.ArrayList
 import java.util.regex.Pattern
 
-class HomeMemberFragment : Fragment() {
+import my.edu.tarc.oku.data.*
+import androidx.recyclerview.widget.ItemTouchHelper
+
+
+class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
 
     private lateinit var binding: FragmentHomeMemberBinding
     lateinit var map: GoogleMap
@@ -55,6 +59,20 @@ class HomeMemberFragment : Fragment() {
     var infoWindowListener: ValueEventListener? = null
     val database = Firebase.database
     val myRef = database.getReference("state")
+    private var eventList: MutableList<Event> = ArrayList()
+    private lateinit var session: UserSessionManager
+    private lateinit var user: HashMap<String?, String?>
+    private lateinit var username: String
+    private lateinit var status: String
+    private var eventClicked = false
+    private var facilitiesClicked = false
+    private var servicesClicked = false
+    private var search = ""
+    lateinit var myRecyclerView: RecyclerView
+
+    companion object {
+        private val strokeColor = 0xFFD8D7D7
+    }
 
     @SuppressLint("MissingPermission")
     private val callback = OnMapReadyCallback { googleMap ->
@@ -62,14 +80,14 @@ class HomeMemberFragment : Fragment() {
 
         enableMyLocation()
         //Go to my current location
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
-        fusedLocationClient.lastLocation.addOnSuccessListener {
-            val currentLat = it.latitude.toString()
-            val currentLong = it.longitude.toString()
-            val currentLocation= LatLng(currentLat.toDouble(),currentLong.toDouble())
-            val move = CameraUpdateFactory.newLatLngZoom(currentLocation,17f)
-            map.animateCamera(move)
-        }
+//        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
+//        fusedLocationClient.lastLocation.addOnSuccessListener{
+//            val currentLat = it.latitude.toString()
+//            val currentLong = it.longitude.toString()
+//            val currentLocation = LatLng(currentLat.toDouble(), currentLong.toDouble())
+//            val move = CameraUpdateFactory.newLatLngZoom(currentLocation, 17f)
+//            map.animateCamera(move)
+//        }
 
         //display all
         //Toast.makeText(context, "username = $name", Toast.LENGTH_LONG).show()
@@ -332,14 +350,262 @@ class HomeMemberFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
+        session = UserSessionManager(requireContext().applicationContext)
+        user = session.userDetails
+        username = user[UserSessionManager.KEY_NAME].toString()
+        status = user[UserSessionManager.KEY_STATUS].toString()
+
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_home_member, container, false)
-//        val rootView = binding.root.rootView.findViewById<NavigationView>(R.id.navView)
-//        val headerView = rootView.getHeaderView(0)
-//        val btnSul: Button = headerView.findViewById(R.id.btnLoginSignUp)
-//        name = btnSul.text.toString()
+
+        myRecyclerView = binding.eventResultViewM
+
+        if (eventClicked) {
+            binding.btnEventM.setBackgroundColor(strokeColor.toInt())
+            searchEvent(search)
+        }
+        binding.btnEventM.setOnClickListener {
+            if (eventClicked) {
+                eventClicked = false
+                binding.btnServicesM.isClickable = true
+                binding.btnFacilitiesM.isClickable = true
+                if (search == "") {
+                    binding.eventResultViewM.visibility = View.INVISIBLE
+                } else {
+                    searchEvent(search)
+                }
+                Toast.makeText(context, "un click", Toast.LENGTH_SHORT).show()
+                binding.btnEventM.setBackgroundColor(Color.WHITE)
+            } else {
+                eventClicked = true
+                binding.btnServicesM.isClickable = false
+                binding.btnFacilitiesM.isClickable = false
+                eventList.clear()
+                searchEvent(search)
+                Toast.makeText(context, "click", Toast.LENGTH_SHORT).show()
+                binding.btnEventM.setBackgroundColor(strokeColor.toInt())
+            }
+        }
+        binding.btnFacilitiesM.setOnClickListener {
+            if (!facilitiesClicked) {
+                facilitiesClicked = true
+                binding.btnServicesM.isClickable = false
+                binding.btnEventM.isClickable = false
+                Toast.makeText(context, "click", Toast.LENGTH_SHORT).show()
+                it.setBackgroundColor(strokeColor.toInt())
+            } else {
+                facilitiesClicked = false
+                binding.btnServicesM.isClickable = true
+                binding.btnEventM.isClickable = true
+                Toast.makeText(context, "un click", Toast.LENGTH_SHORT).show()
+                it.setBackgroundColor(Color.WHITE)
+            }
+        }
+        binding.btnServicesM.setOnClickListener {
+            if (!servicesClicked) {
+                servicesClicked = true
+                binding.btnEventM.isClickable = false
+                binding.btnFacilitiesM.isClickable = false
+                Toast.makeText(context, "click", Toast.LENGTH_SHORT).show()
+                it.setBackgroundColor(strokeColor.toInt())
+            } else {
+                servicesClicked = false
+                binding.btnEventM.isClickable = true
+                binding.btnFacilitiesM.isClickable = true
+                Toast.makeText(context, "un click", Toast.LENGTH_SHORT).show()
+                it.setBackgroundColor(Color.WHITE)
+            }
+        }
+
+        binding.searchM.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String): Boolean {
+                if (newText != null && newText.trim().isNotEmpty()) {
+                    eventList.clear()
+                    val letters: CharArray = newText.toCharArray()
+                    val firstLetter = letters[0].toString().lowercase()
+                    val remainingLetters: String = newText.substring(1)
+                    search = "$firstLetter$remainingLetters"
+
+                    if (eventClicked) {
+                        searchEvent(search)
+                    }
+//                    else if (facilitiesClicked){
+//
+//                    }else if(servicesClicked){
+//
+//                    }
+                    else {
+                        searchEvent(search)
+                    }
+                } else {
+                    search = ""
+                    binding.eventResultViewM.visibility = View.INVISIBLE
+
+                }
+
+                return false
+            }
+        })
 
         return binding.root
+    }
+
+    override fun onPause() {
+        facilitiesClicked = false
+        servicesClicked = false
+        super.onPause()
+    }
+
+    // click function in recycleview
+    override fun onItemClick(position: Int) {
+        val clickedItem: Event = eventList[position]
+        Toast.makeText(context, "${clickedItem.address}", Toast.LENGTH_SHORT).show()
+
+        var coder = Geocoder(context)
+
+        val p1: GeoPoint? = null
+
+        var address: MutableList<Address> = coder.getFromLocationName(clickedItem.address, 5)
+
+        Log.i("address", address.toString())
+
+        if (address.isEmpty()) {
+            Toast.makeText(context, "no result", Toast.LENGTH_SHORT).show()
+        } else {
+            var location: Address = address[0]
+            var latLng = LatLng(location.latitude, location.longitude)
+
+            //to marker here
+
+            Toast.makeText(context, "$latLng", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun initSwipe() {
+        val simpleItemTouchCallback: ItemTouchHelper.SimpleCallback = object :
+            ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.UP) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
+
+            override fun onChildDraw(
+                c: Canvas,
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                dX: Float,
+                dY: Float,
+                actionState: Int,
+                isCurrentlyActive: Boolean
+            ) {
+                if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+                    if (dY <= 0) {
+                        val swipeItem: Event = eventList[viewHolder.adapterPosition]
+                        val action = HomeMemberFragmentDirections.actionHomeMemberFragmentToMemberEventInfo(swipeItem.id)
+                        binding.root.findNavController().navigate(action)
+                        Toast.makeText(context, "$dY", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                super.onChildDraw(
+                    c,
+                    recyclerView,
+                    viewHolder,
+                    dX,
+                    dY,
+                    actionState,
+                    isCurrentlyActive
+                )
+            }
+
+        }
+        val itemTouchHelper = ItemTouchHelper(simpleItemTouchCallback)
+        itemTouchHelper.attachToRecyclerView(myRecyclerView)
+    }
+
+    private fun searchEvent(searchS: String) {
+        myRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                eventList.clear()
+                for (s in snapshot.children) {
+                    for (e in s.child("Events").children) {
+                        if (e.child("title").value.toString().lowercase().contains(searchS)) {
+                            binding.eventResultViewM.visibility = View.VISIBLE
+                            val getId = e.key.toString()
+                            val title = e.child("title").value.toString()
+                            val date = e.child("date").value.toString()
+                            val time = e.child("time").value.toString()
+                            val address = e.child("address").value.toString()
+                            val state = e.child("state").value.toString()
+                            val description = e.child("description").value.toString()
+                            val image = e.child("image").value.toString()
+                            val link = e.child("link").value.toString()
+                            val phone = e.child("phone").value.toString()
+                            val event = Event(
+                                getId,
+                                image,
+                                title,
+                                date,
+                                time,
+                                address,
+                                state,
+                                description,
+                                link,
+                                phone
+                            )
+                            eventList.add(event)
+                            Log.i("search", e.child("title").value.toString())
+
+                        } else if (searchS == "") {
+                            binding.eventResultViewM.visibility = View.VISIBLE
+                            val getId = e.key.toString()
+                            val title = e.child("title").value.toString()
+                            val date = e.child("date").value.toString()
+                            val time = e.child("time").value.toString()
+                            val address = e.child("address").value.toString()
+                            val state = e.child("state").value.toString()
+                            val description = e.child("description").value.toString()
+                            val image = e.child("image").value.toString()
+                            val link = e.child("link").value.toString()
+                            val phone = e.child("phone").value.toString()
+                            val event = Event(
+                                getId,
+                                image,
+                                title,
+                                date,
+                                time,
+                                address,
+                                state,
+                                description,
+                                link,
+                                phone
+                            )
+                            eventList.add(event)
+                        }
+                    }
+                }
+                if (eventList.isEmpty()) {
+                    binding.eventResultViewM.visibility = View.INVISIBLE
+                }
+//                val myRecyclerView: RecyclerView = binding.eventResultView
+                myRecyclerView.adapter =
+                    MemberEventResultAdapter(eventList, this@HomeMemberFragment)
+                myRecyclerView.setHasFixedSize(true)
+                initSwipe()
+
+            }
+
+            override fun onCancelled(error: DatabaseError) {}
+
+        })
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -536,9 +802,14 @@ class HomeMemberFragment : Fragment() {
         builder.show()
     }
 
-    fun basicAlert(defaultId: com.google.android.gms.maps.model.Marker, markerId: String, latitude: String, longitude: String) {
+    fun basicAlert(
+        defaultId: com.google.android.gms.maps.model.Marker,
+        markerId: String,
+        latitude: String,
+        longitude: String
+    ) {
 
-        if(infoWindowListener != null){
+        if (infoWindowListener != null) {
             myRef.removeEventListener(infoWindowListener!!)
         }
 
@@ -569,14 +840,14 @@ class HomeMemberFragment : Fragment() {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     for (s in snapshot.children) {
                         for (t in s.children) { //type
-                            if(t.key == "Individual"){
-                                for(a in t.children){ // check every member id
-                                    if(a.hasChild(markerId)){ //check the marker id is under the member or not
-                                        for(v in a.children){ //loop the member children(marker id)
-                                            if(v.key == markerId){ //marker same
+                            if (t.key == "Individual") {
+                                for (a in t.children) { // check every member id
+                                    if (a.hasChild(markerId)) { //check the marker id is under the member or not
+                                        for (v in a.children) { //loop the member children(marker id)
+                                            if (v.key == markerId) { //marker same
                                                 getId = v.key.toString()
                                                 oldType = v.child("type").value.toString()
-                                                autoId.setText(oldType,false)
+                                                autoId.setText(oldType, false)
                                                 title.setText(v.child("title").value.toString())
                                                 description.setText(v.child("description").value.toString())
                                                 phoneNo.setText(v.child("phoneNo").value.toString())
@@ -618,7 +889,8 @@ class HomeMemberFragment : Fragment() {
             val long = longitude.toDouble()
             val type = autoId.text.toString()
             val title = content.findViewById<TextInputEditText>(R.id.infoTitle).text.toString()
-            val description = content.findViewById<TextInputEditText>(R.id.description).text.toString()
+            val description =
+                content.findViewById<TextInputEditText>(R.id.description).text.toString()
             val phoneNo = content.findViewById<TextInputEditText>(R.id.phoneNo).text.toString()
             val address = content.findViewById<TextInputEditText>(R.id.address).text.toString()
             val state = autoId2.text.toString()
@@ -642,9 +914,11 @@ class HomeMemberFragment : Fragment() {
                     content.findViewById<TextInputEditText>(R.id.phoneNo).requestFocus()
                 } else {
                     if (getId != "") {
-                        myRef.child(oldState).child(oldType).child(name).child(markerId).removeValue()
+                        myRef.child(oldState).child(oldType).child(name).child(markerId)
+                            .removeValue()
                             .addOnSuccessListener {
-                                myRef.child(state).child(type).child(name).child(markerId).setValue(newMarker)
+                                myRef.child(state).child(type).child(name).child(markerId)
+                                    .setValue(newMarker)
                                     .addOnSuccessListener {
                                         Toast.makeText(
                                             context,
@@ -730,37 +1004,50 @@ class HomeMemberFragment : Fragment() {
 
         btnDelete.setOnClickListener {
             if (markerId != "") {
-                myRef.child(oldState).child(oldType).child(name).child(markerId).get().addOnSuccessListener {
-                    val markId = it.key
-                    val markLat = it.child("latitude").value.toString()
-                    val markLong = it.child("longitude").value.toString()
-                    val markTitle = it.child("title").value.toString()
-                    val markDesc = it.child("description").value.toString()
-                    val markType = it.child("type").value.toString()
-                    val phone = it.child("phoneNo").value.toString()
-                    val add = it.child("address").value.toString()
-                    val state = it.child("state").value.toString()
+                myRef.child(oldState).child(oldType).child(name).child(markerId).get()
+                    .addOnSuccessListener {
+                        val markId = it.key
+                        val markLat = it.child("latitude").value.toString()
+                        val markLong = it.child("longitude").value.toString()
+                        val markTitle = it.child("title").value.toString()
+                        val markDesc = it.child("description").value.toString()
+                        val markType = it.child("type").value.toString()
+                        val phone = it.child("phoneNo").value.toString()
+                        val add = it.child("address").value.toString()
+                        val state = it.child("state").value.toString()
 
-                    val undoMarker =
-                        Marker(markLat, markLong, markType, markTitle, markDesc, phone, add, state)
+                        val undoMarker =
+                            Marker(
+                                markLat,
+                                markLong,
+                                markType,
+                                markTitle,
+                                markDesc,
+                                phone,
+                                add,
+                                state
+                            )
 
 
-                    myRef.child(oldState).child(oldType).child(name).child(markerId).removeValue()
-                        .addOnSuccessListener {
-                            //defaultId.hideInfoWindow()
-                            dialog.dismiss()
-                            //Toast.makeText(context, "Delete Successful", Toast.LENGTH_SHORT).show()
-                            //defaultId.remove()
-                            //remove marker
-                            map.clear()
-                            val mapFragment =
-                                childFragmentManager.findFragmentById(R.id.memberMap) as SupportMapFragment?
-                            mapFragment?.getMapAsync(callback)
+                        myRef.child(oldState).child(oldType).child(name).child(markerId)
+                            .removeValue()
+                            .addOnSuccessListener {
+                                //defaultId.hideInfoWindow()
+                                dialog.dismiss()
+                                //Toast.makeText(context, "Delete Successful", Toast.LENGTH_SHORT).show()
+                                //defaultId.remove()
+                                //remove marker
+                                map.clear()
+                                val mapFragment =
+                                    childFragmentManager.findFragmentById(R.id.memberMap) as SupportMapFragment?
+                                mapFragment?.getMapAsync(callback)
 
-                            val v: View = this.requireActivity().findViewById(android.R.id.content)
-                            Snackbar.make(v, "Marker Deleted!", Snackbar.LENGTH_LONG)
-                                .setAction("UNDO", View.OnClickListener {
-                                    val setMark = LatLng(markLat.toDouble(), markLong.toDouble())
+                                val v: View =
+                                    this.requireActivity().findViewById(android.R.id.content)
+                                Snackbar.make(v, "Marker Deleted!", Snackbar.LENGTH_LONG)
+                                    .setAction("UNDO", View.OnClickListener {
+                                        val setMark =
+                                            LatLng(markLat.toDouble(), markLong.toDouble())
                                         map.addMarker(
                                             MarkerOptions()
                                                 .position(setMark)
@@ -773,24 +1060,25 @@ class HomeMemberFragment : Fragment() {
                                                 )
                                         )
 
-                                    myRef.child(state).child(markType).child(name).child(markId.toString())
-                                        .setValue(undoMarker).addOnSuccessListener {
-                                            Toast.makeText(
-                                                context,
-                                                "Undo Successfully!!!",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        }
-                                })
-                                .setActionTextColor(
-                                    ContextCompat.getColor(
-                                        this.requireContext(),
-                                        android.R.color.white
+                                        myRef.child(state).child(markType).child(name)
+                                            .child(markId.toString())
+                                            .setValue(undoMarker).addOnSuccessListener {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Undo Successfully!!!",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                    })
+                                    .setActionTextColor(
+                                        ContextCompat.getColor(
+                                            this.requireContext(),
+                                            android.R.color.white
+                                        )
                                     )
-                                )
-                                .show()
-                        }
-                }
+                                    .show()
+                            }
+                    }
             } else {
                 defaultId.remove()
                 dialog.dismiss()
@@ -807,9 +1095,12 @@ class HomeMemberFragment : Fragment() {
             }
         }
 
-        btnFeedback.setOnClickListener{
+        btnFeedback.setOnClickListener {
             dialog.dismiss()
-            val action = HomeMemberFragmentDirections.actionHomeMemberFragmentToFeedbackFragment2(markerId,name)
+            val action = HomeMemberFragmentDirections.actionHomeMemberFragmentToFeedbackFragment2(
+                markerId,
+                name
+            )
             binding.root.findNavController().navigate(action)
         }
     }
@@ -842,7 +1133,8 @@ class HomeMemberFragment : Fragment() {
                                             getId = a.key.toString()
                                             type.text = a.child("type").value.toString()
                                             title.text = a.child("title").value.toString()
-                                            description.text = a.child("description").value.toString()
+                                            description.text =
+                                                a.child("description").value.toString()
                                             phoneNo.text = a.child("phoneNo").value.toString()
                                             address.text = a.child("address").value.toString()
                                             state.text = a.child("state").value.toString()
@@ -904,9 +1196,12 @@ class HomeMemberFragment : Fragment() {
             dialog.dismiss()
         }
 
-        btnFeedback.setOnClickListener{
+        btnFeedback.setOnClickListener {
             dialog.dismiss()
-            val action = HomeMemberFragmentDirections.actionHomeMemberFragmentToFeedbackFragment2(markerId,name)
+            val action = HomeMemberFragmentDirections.actionHomeMemberFragmentToFeedbackFragment2(
+                markerId,
+                name
+            )
             binding.root.findNavController().navigate(action)
         }
     }

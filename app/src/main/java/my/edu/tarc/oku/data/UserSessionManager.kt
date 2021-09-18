@@ -99,10 +99,10 @@ class UserSessionManager(context: Context) {
         val i = Intent(_context, MainActivity::class.java)
 
         // Closing all the Activities
-        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
 
         // Add new Flag to start new Activity
-        i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
         // Staring Login Activity
         _context.startActivity(i)

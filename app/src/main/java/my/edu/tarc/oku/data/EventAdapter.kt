@@ -18,8 +18,8 @@ class EventAdapter (val eventList: List<Event>): RecyclerView.Adapter<EventAdapt
 
     class myViewHolder (itemView: View) : RecyclerView.ViewHolder(itemView){
         val eventTitle: TextView = itemView.findViewById(R.id.tvTitleE)
-        val eventDateTime: TextView = itemView.findViewById(R.id.tvAddressE)
-        val eventAddress: TextView = itemView.findViewById(R.id.tvDateTimeE)
+        val eventDateTime: TextView = itemView.findViewById(R.id.tvDateTimeE)
+        val eventAddress: TextView = itemView.findViewById(R.id.tvAddressE)
         val eventImage: ImageView = itemView.findViewById(R.id.imageEvent)
     }
 

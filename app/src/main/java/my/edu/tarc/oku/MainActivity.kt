@@ -35,32 +35,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-//        val session = UserSessionManager(applicationContext)
-
         @Suppress("UNUSED_VARIABLE")
         val binding = DataBindingUtil.setContentView<ActivityMainBinding>(this, R.layout.activity_main)
-//        binding = ActivityMainBinding.inflate(layoutInflater)
-//        setContentView(binding.root)
 
-//        if (session.checkLogin()){
-//            val user = session.userDetails
-//            val name = user[UserSessionManager.KEY_NAME]
-//            val status = user[UserSessionManager.KEY_STATUS]
-//            if(status =="admin") {
-//                val intent = Intent(applicationContext, AdminActivity::class.java)
-//                intent.putExtra("Username", name)
-//                startActivity(intent)
-//            }else if (status == "member"){
-//
-//            }
-//        }
 
         setSupportActionBar(binding.appBarMain.toolbar)
-
-        binding.appBarMain.fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
-        }
 
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
@@ -73,16 +52,15 @@ class MainActivity : AppCompatActivity() {
             findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.loginFragment)
             drawerLayout.closeDrawer(GravityCompat.START)
         }
+        val btnObjRecog = navView.menu.findItem(R.id.objectRecognize)
+
+        btnObjRecog.setOnMenuItemClickListener {
+            val intent = Intent(applicationContext, ObjectRecognition::class.java)
+            startActivity(intent)
+            true
+        }
 
 
-//        btnLogout.setOnClickListener(object : OnClickListener() {
-//            fun onClick(arg0: View?) {
-//
-//                // Clear the User session data
-//                // and redirect user to LoginActivity
-//                session.logoutUser()
-//            }
-//        })
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(

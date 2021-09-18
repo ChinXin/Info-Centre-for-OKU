@@ -8,19 +8,16 @@
             android:id="@+id/homeMemberFragment"
             android:icon="@drawable/ic_baseline_home_24"
             android:title="Home" />
-    </group>
-    <group android:id="@+id/registered">
-        <item android:title="Events">
-            <menu>
-                <item
-                    android:id="@+id/memberRegisteredEvent"
-                    android:icon="@drawable/ic_baseline_list_alt_24"
-                    android:title="Registered" />
-            </menu>
-        </item>
+        <item
+            android:id="@+id/memberRegisteredEvent"
+            android:icon="@drawable/ic_baseline_list_alt_24"
+            android:title="Joined Events" />
 
-    </group>
-    <group android:id="@+id/logout">
+        <item
+            android:id="@+id/objectRecognizeM"
+            android:icon="@drawable/ic_camera"
+            android:title="Object Recognition" />
+
         <item
             android:id="@+id/Member_Logout"
             android:icon="@drawable/ic_baseline_logout_24"

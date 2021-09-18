@@ -71,8 +71,8 @@ class LoginFragment : Fragment() {
 //                                btnSul.text = username.uppercase()
                                 session.createUserLoginSession(username,"member")
                                 val intent = Intent(activity, MemberActivity::class.java)
-                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                 intent.putExtra("Username", username)
                                 startActivity(intent)
                             } else {
@@ -101,8 +101,8 @@ class LoginFragment : Fragment() {
 //                                btnSul.text = username.uppercase()
                                 session.createUserLoginSession(username,"admin")
                                 val intent = Intent(activity, AdminActivity::class.java)
-                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                 intent.putExtra("Username", username)
                                 startActivity(intent)
                             } else {
@@ -134,6 +134,7 @@ class LoginFragment : Fragment() {
 
         return binding.root
     }
+
 
     //Hash Function
     private fun convertedPassword(data: ByteArray): String {

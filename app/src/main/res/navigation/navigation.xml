@@ -27,17 +27,15 @@
         android:label="fragment_about_us"
         tools:layout="@layout/fragment_about_us" />
     <fragment
-        android:id="@+id/homeAdminFragment"
-        android:name="my.edu.tarc.oku.HomeAdminFragment"
-        android:label="fragment_home_admin"
-        tools:layout="@layout/fragment_home_admin" />
-    <fragment
         android:id="@+id/homeFragment"
         android:name="my.edu.tarc.oku.HomeFragment"
         android:label="HomeFragment" >
         <action
             android:id="@+id/action_homeFragment_to_feedbackFragment"
             app:destination="@id/feedbackFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_memberEventInfo2"
+            app:destination="@id/memberEventInfo2" />
     </fragment>
     <fragment
         android:id="@+id/feedbackFragment"
@@ -48,6 +46,14 @@
             app:argType="string" />
         <argument
             android:name="username"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/memberEventInfo2"
+        android:name="my.edu.tarc.oku.MemberEventInfo"
+        android:label="MemberEventInfo" >
+        <argument
+            android:name="eventId"
             app:argType="string" />
     </fragment>
 </navigation>

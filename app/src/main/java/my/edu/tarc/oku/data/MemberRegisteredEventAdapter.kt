@@ -46,7 +46,7 @@ class MemberRegisteredEventAdapter (val eventList: List<Event>): RecyclerView.Ad
         holder.itemView.setOnClickListener {
             val eventId = currentEvent.id
             Toast.makeText(holder.itemView.context, "$eventId", Toast.LENGTH_SHORT).show()
-            val action = MemberRegisteredEventDirections.actionMemberRegisteredEventToEventInfo(eventId)
+            val action = MemberRegisteredEventDirections.actionMemberRegisteredEventToMemberEventInfo(eventId)
             Navigation.findNavController(it).navigate(action)
         }
     }

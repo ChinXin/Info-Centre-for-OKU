@@ -1,5 +1,6 @@
 package my.edu.tarc.oku
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
@@ -49,8 +50,14 @@ class MemberActivity : AppCompatActivity() {
             drawerLayout.closeDrawer(GravityCompat.START)
         }
 
-        val btnLogout = navView.menu.findItem(R.id.Member_Logout)
-        btnLogout.setOnMenuItemClickListener {
+        navView.menu.findItem(R.id.objectRecognizeM).setOnMenuItemClickListener {
+            val intent = Intent(applicationContext, ObjectRecognition::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
+            startActivity(intent)
+            true
+        }
+
+        navView.menu.findItem(R.id.Member_Logout).setOnMenuItemClickListener {
             session.logoutUser()
             true
         }
