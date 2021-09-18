@@ -10,13 +10,20 @@
         android:name="my.edu.tarc.oku.EditProfileFragment"
         android:label="EditProfileFragment" >
         <action
-            android:id="@+id/action_editProfileFragment2_to_changePasswordFragment2"
+            android:id="@+id/action_editProfileFragment_to_homeMemberFragment"
+            app:destination="@id/homeMemberFragment" />
+        <action
+            android:id="@+id/action_editProfileFragment_to_changePasswordFragment"
             app:destination="@id/changePasswordFragment" />
     </fragment>
     <fragment
         android:id="@+id/changePasswordFragment"
         android:name="my.edu.tarc.oku.ChangePasswordFragment"
-        android:label="ChangePasswordFragment" />
+        android:label="ChangePasswordFragment" >
+        <action
+            android:id="@+id/action_changePasswordFragment_to_homeMemberFragment"
+            app:destination="@id/homeMemberFragment" />
+    </fragment>
     <fragment
         android:id="@+id/homeMemberFragment"
         android:name="my.edu.tarc.oku.HomeMemberFragment"

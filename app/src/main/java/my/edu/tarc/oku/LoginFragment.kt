@@ -26,6 +26,9 @@ import kotlin.system.exitProcess
 
 class LoginFragment : Fragment() {
     private lateinit var binding: FragmentLoginBinding
+    private var loginValueListener:ValueEventListener? = null
+    val database = Firebase.database
+    val myRef = database.getReference("users")
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,15 +43,13 @@ class LoginFragment : Fragment() {
 
         binding.btnLogin.setOnClickListener {
 
-            val database = Firebase.database
-            val myRef = database.getReference("users")
 
             var checkMember: Boolean
             var checkAdmin: Boolean
             val username = binding.username.text.toString().lowercase().trim()
             val password = convertedPassword(binding.password.text.toString().toByteArray())
 
-            myRef.addValueEventListener(object : ValueEventListener {
+            loginValueListener = myRef.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
 
                     checkMember = dataSnapshot.child("member").hasChild(username)
@@ -135,6 +136,12 @@ class LoginFragment : Fragment() {
         return binding.root
     }
 
+    override fun onPause() {
+        if(loginValueListener != null){
+            myRef.removeEventListener(loginValueListener!!)
+        }
+        super.onPause()
+    }
 
     //Hash Function
     private fun convertedPassword(data: ByteArray): String {

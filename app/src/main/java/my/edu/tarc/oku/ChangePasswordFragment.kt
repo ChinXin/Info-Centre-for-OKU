@@ -1,5 +1,6 @@
 package my.edu.tarc.oku
 
+import android.content.Context
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -7,10 +8,13 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
+import androidx.navigation.findNavController
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import my.edu.tarc.oku.data.UserSessionManager
 import my.edu.tarc.oku.databinding.FragmentChangePasswordBinding
 import my.edu.tarc.oku.databinding.FragmentEditProfileBinding
 import java.lang.StringBuilder
@@ -24,6 +28,11 @@ class ChangePasswordFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        var session = UserSessionManager(requireContext().applicationContext)
+        val user = session.userDetails
+        val name = user[UserSessionManager.KEY_NAME].toString()
+        val status = user[UserSessionManager.KEY_STATUS].toString()
+
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_change_password, container, false)
 
@@ -32,19 +41,27 @@ class ChangePasswordFragment : Fragment() {
         val database = Firebase.database
         val myRef = database.getReference("users")
 
-        //need modify(get username)
-        val username = "aeronchow"
 
         binding.btnUpdate.setOnClickListener{
             val password = binding.password.text.toString().toByteArray()
             if(isValidate()){
-                myRef.child("member").child(username).child("password").setValue(convertedPassword(password))
+
+                val inputManager: InputMethodManager =
+                    activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                inputManager.hideSoftInputFromWindow(binding.root.rootView.windowToken, 0)
+
+                myRef.child(status).child(name).child("password").setValue(convertedPassword(password))
                     .addOnSuccessListener { _ ->
                         Toast.makeText(
                             context,
-                            "Update Successfully!!!",
+                            "Password Update Successfully!!!",
                             Toast.LENGTH_LONG
                         ).show()
+                        if(status == "admin"){
+                            binding.root.findNavController().navigate(R.id.action_changePasswordFragment2_to_homeAdminFragment)
+                        }else{
+                            binding.root.findNavController().navigate(R.id.action_changePasswordFragment_to_homeMemberFragment)
+                        }
                     }
             }
         }

@@ -34,10 +34,6 @@
             app:destination="@id/feedbackFragment3" />
     </fragment>
     <fragment
-        android:id="@+id/editProfileFragment"
-        android:name="my.edu.tarc.oku.EditProfileFragment"
-        android:label="EditProfileFragment" />
-    <fragment
         android:id="@+id/adminEditEvent"
         android:name="my.edu.tarc.oku.AdminEditEvent"
         android:label="AdminEditEvent" >
@@ -79,5 +75,24 @@
         <action
             android:id="@+id/action_adminEventInfo_to_adminEditEvent"
             app:destination="@id/adminEditEvent" />
+    </fragment>
+    <fragment
+        android:id="@+id/editProfileFragment2"
+        android:name="my.edu.tarc.oku.EditProfileFragment"
+        android:label="EditProfileFragment" >
+        <action
+            android:id="@+id/action_editProfileFragment2_to_homeAdminFragment"
+            app:destination="@id/homeAdminFragment" />
+        <action
+            android:id="@+id/action_editProfileFragment2_to_changePasswordFragment2"
+            app:destination="@id/changePasswordFragment2" />
+    </fragment>
+    <fragment
+        android:id="@+id/changePasswordFragment2"
+        android:name="my.edu.tarc.oku.ChangePasswordFragment"
+        android:label="ChangePasswordFragment" >
+        <action
+            android:id="@+id/action_changePasswordFragment2_to_homeAdminFragment"
+            app:destination="@id/homeAdminFragment" />
     </fragment>
 </navigation>

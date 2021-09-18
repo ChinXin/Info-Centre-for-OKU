@@ -44,6 +44,7 @@ class AdminEventParticipant : Fragment() {
                     registerList.clear()
                     for (e in snapshot.children) {
                         if(e.key.toString() == args.eventId){
+                            binding.tvNoParticipant.visibility = View.INVISIBLE
                             for (m in e.children) {
                                 val username = m.key.toString()
                                 val date = m.child("date").value.toString()
@@ -51,9 +52,10 @@ class AdminEventParticipant : Fragment() {
                                 val registeredM = EventRegistration(username, date, time)
                                 registerList.add(registeredM)
                             }
-                        }else{
-                            binding.tvNoParticipant.visibility = View.VISIBLE
                         }
+                    }
+                    if(registerList.isEmpty()){
+                        binding.tvNoParticipant.visibility = View.VISIBLE
                     }
                     CoroutineScope(Main).launch {
                         val myRecyclerView: RecyclerView = binding.eventRecycleView

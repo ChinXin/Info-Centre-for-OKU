@@ -51,7 +51,7 @@
     <fragment
         android:id="@+id/memberEventInfo2"
         android:name="my.edu.tarc.oku.MemberEventInfo"
-        android:label="MemberEventInfo" >
+        android:label="MemberEventInfo">
         <argument
             android:name="eventId"
             app:argType="string" />

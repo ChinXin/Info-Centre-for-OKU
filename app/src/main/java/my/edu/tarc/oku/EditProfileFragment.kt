@@ -1,5 +1,6 @@
 package my.edu.tarc.oku
 
+import android.content.Context
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -8,8 +9,11 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
+import androidx.navigation.Navigation
+import androidx.navigation.findNavController
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -33,8 +37,8 @@ class EditProfileFragment : Fragment() {
     ): View? {
         var session = UserSessionManager(requireContext().applicationContext)
         val user = session.userDetails
-        val name = user[UserSessionManager.KEY_NAME]
-        val status = user[UserSessionManager.KEY_STATUS]
+        val name = user[UserSessionManager.KEY_NAME].toString()
+        val status = user[UserSessionManager.KEY_STATUS].toString()
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_edit_profile, container, false)
 
@@ -44,10 +48,9 @@ class EditProfileFragment : Fragment() {
         val myRef = database.getReference("users")
 
         //need modify(get username)
-//        var tvUsername = "aeronchow"
         var tvPassword = ""
 
-        myRef.child(status.toString()).child(name.toString()).addValueEventListener(object : ValueEventListener {
+        myRef.child(status).child(name).addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val tvUsername = dataSnapshot.child("username").value.toString()
                 val tvFullName = dataSnapshot.child("fullName").value.toString()
@@ -77,14 +80,29 @@ class EditProfileFragment : Fragment() {
             val update_user = User (username,fullName,email,phoneNo,address, password)
 
             if(isValidate()){
-                myRef.child("member").child(username).setValue(update_user)
+                val inputManager: InputMethodManager =
+                    activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                inputManager.hideSoftInputFromWindow(binding.root.rootView.windowToken, 0)
+                myRef.child(status).child(name).setValue(update_user)
                     .addOnSuccessListener { _ ->
                         Toast.makeText(
                             context,
-                            "Update Successfully!!!",
+                            "Profile Update Successfully!!!",
                             Toast.LENGTH_LONG
                         ).show()
+                        if(status == "admin"){
+                            binding.root.findNavController().navigate(R.id.action_editProfileFragment2_to_homeAdminFragment)
+                        }else{
+                            binding.root.findNavController().navigate(R.id.action_editProfileFragment_to_homeMemberFragment)
+                        }
                     }
+            }
+        }
+        binding.btnChangePassword.setOnClickListener {
+            if (status == "admin"){
+                binding.root.findNavController().navigate(R.id.action_editProfileFragment2_to_changePasswordFragment2)
+            }else{
+                binding.root.findNavController().navigate(R.id.action_editProfileFragment_to_changePasswordFragment)
             }
         }
 
