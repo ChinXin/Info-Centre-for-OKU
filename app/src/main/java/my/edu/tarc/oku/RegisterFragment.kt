@@ -36,7 +36,6 @@ class RegisterFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_register, container, false)
 
         setupListener()
@@ -135,12 +134,12 @@ class RegisterFragment : Fragment() {
                     checkAdmin = dataSnapshot.child("admin").hasChild(username)
 
                     if (checkMember) {
-                        binding.usernameLayout.error = "Duplicated username"
+                        binding.usernameLayout.error = "Duplicated username!"
                         binding.username.requestFocus()
                         validated = false
                     } else {
                         if (checkAdmin) {
-                            binding.usernameLayout.error = "Duplicated username"
+                            binding.usernameLayout.error = "Duplicated username!"
                             binding.username.requestFocus()
                             validated = false
                         } else {
@@ -224,7 +223,7 @@ class RegisterFragment : Fragment() {
             binding.password.requestFocus()
             return false
         } else if (binding.password.text.toString().length < 6) {
-            binding.passwordLayout.error = "Password must more than 5"
+            binding.passwordLayout.error = "Password must more than 6!"
             binding.password.requestFocus()
             return false
         } else {
@@ -239,7 +238,7 @@ class RegisterFragment : Fragment() {
             binding.confirmPassword.requestFocus()
             return false
         } else if (binding.confirmPassword.text.toString() != binding.password.text.toString()) {
-            binding.confirmpasswordLayout.error = "Password not match"
+            binding.confirmpasswordLayout.error = "Password Not Match!"
             binding.confirmPassword.requestFocus()
             return false
         } else {

@@ -70,6 +70,9 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
     private var servicesClicked = false
     private var search = ""
     lateinit var myRecyclerView: RecyclerView
+    private var eventMarker = false
+    var eventLatLng : LatLng? = null
+    var eventTitle : String? = null
 
     companion object {
         private val strokeColor = 0xFFD8D7D7
@@ -80,6 +83,7 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
         map = googleMap
 
         enableMyLocation()
+
         //Go to my current location
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
         fusedLocationClient.lastLocation.addOnSuccessListener {
@@ -127,8 +131,8 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
                         }
 
                         if(t.key == "Individual"){
-                            for(a in t.children){ //member id
-                                for(b in a.children){ //marker id
+                            for(a in t.children){
+                                for(b in a.children){
                                     val id = b.key
                                     val lat = b.child("latitude").value.toString().toDouble()
                                     val long = b.child("longitude").value.toString().toDouble()
@@ -144,7 +148,6 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
                                             .icon(
                                                 BitmapDescriptorFactory.defaultMarker(
                                                     BitmapDescriptorFactory.HUE_YELLOW)))
-
                                 }
                             }
                         }
@@ -155,9 +158,9 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
             override fun onCancelled(error: DatabaseError) {}
 
         })
+
         map.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this.requireContext()))
 
-        //correct version
         map.setOnMarkerClickListener(object: GoogleMap.OnMarkerClickListener {
             override fun onMarkerClick(p0: Marker): Boolean {
                 var currentLat = ""
@@ -168,14 +171,26 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
                 binding.routeFab2.setOnClickListener{
                     clear()
 
+                    if(eventMarker == true){
+                        googleMap.addMarker(
+                            MarkerOptions()
+                                .position(eventLatLng)
+                                .snippet("Event Marker")
+                                .title(eventTitle)
+                                .icon(
+                                    BitmapDescriptorFactory.defaultMarker(
+                                        BitmapDescriptorFactory.HUE_ORANGE
+                                    )
+                                )
+                        )
+                    }
+
                     fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
                     fusedLocationClient.lastLocation.addOnSuccessListener {
                         currentLat = it.latitude.toString()
                         currentLong = it.longitude.toString()
                         val origin = LatLng(currentLat.toDouble(),currentLong.toDouble())
                         val destination = LatLng(p0.position.latitude,p0.position.longitude)
-                        //Log.i("test123","Line 148 = $origin")
-                        //Log.i("test123","Line 148 = $destination")
                         val URL = getDirectionURL(origin,destination)
 
                         GetDirection(URL).execute()
@@ -184,37 +199,12 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
                 }
 
                 map.setOnInfoWindowClickListener {
-                    var markerId = p0.snippet
-
-//                    myRef.addValueEventListener(object : ValueEventListener {
-//                        override fun onDataChange(snapshot: DataSnapshot) {
-//                            for(x in snapshot.children){
-//                                for(y in x.children){
-//                                    if(y.key == "Facilities" || y.key == "Services"){
-//                                        for(a in y.children){ //marker id
-//                                            if(y.hasChild(markerId)){
-//                                                //Toast.makeText(context,"Facilities or Services",Toast.LENGTH_SHORT).show()
-//                                                basicAlert(p0,markerId.toString())
-//                                            }
-//                                        }
-//                                    }
-//
-//                                    if(y.key == "Individual"){
-//                                        for(a in y.children){ //member ID
-//                                            for(b in a.children){ //member's markers id
-//                                                if(a.hasChild(markerId)){
-//                                                    Toast.makeText(context,"Individual",Toast.LENGTH_SHORT).show()
-//                                                }
-//                                            }
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                        }
-//
-//                        override fun onCancelled(error: DatabaseError) {}
-//                    })
-                    basicAlert(p0,markerId.toString())
+                    if(p0.snippet == "Event Marker"){
+                        Toast.makeText(context,"This marker is not able to view.",Toast.LENGTH_LONG).show()
+                    }else{
+                        var markerId = p0.snippet
+                        basicAlert(p0,markerId.toString())
+                    }
                 }
                 return true
             }
@@ -237,7 +227,6 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
         username = user[UserSessionManager.KEY_NAME].toString()
         status = user[UserSessionManager.KEY_STATUS].toString()
 
-        // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater,R.layout.fragment_home, container, false)
         myRecyclerView = binding.eventResultViewH
 
@@ -255,7 +244,6 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
                 } else {
                     searchEvent(search)
                 }
-                Toast.makeText(context, "un click", Toast.LENGTH_SHORT).show()
                 binding.btnEventH.setBackgroundColor(Color.WHITE)
             } else {
                 eventClicked = true
@@ -263,7 +251,6 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
                 binding.btnFacilitiesH.isClickable = false
                 eventList.clear()
                 searchEvent(search)
-                Toast.makeText(context, "click", Toast.LENGTH_SHORT).show()
                 binding.btnEventH.setBackgroundColor(strokeColor.toInt())
             }
         }
@@ -272,14 +259,14 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
                 facilitiesClicked = true
                 binding.btnServicesH.isClickable = false
                 binding.btnEventH.isClickable = false
-                Toast.makeText(context, "click", Toast.LENGTH_SHORT).show()
                 it.setBackgroundColor(strokeColor.toInt())
+                searchFacilities(search)
             } else {
                 facilitiesClicked = false
                 binding.btnServicesH.isClickable = true
                 binding.btnEventH.isClickable = true
-                Toast.makeText(context, "un click", Toast.LENGTH_SHORT).show()
                 it.setBackgroundColor(Color.WHITE)
+                clear()
             }
         }
         binding.btnServicesH.setOnClickListener {
@@ -287,14 +274,14 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
                 servicesClicked = true
                 binding.btnEventH.isClickable = false
                 binding.btnFacilitiesH.isClickable = false
-                Toast.makeText(context, "click", Toast.LENGTH_SHORT).show()
                 it.setBackgroundColor(strokeColor.toInt())
+                searchServices(search)
             } else {
                 servicesClicked = false
                 binding.btnEventH.isClickable = true
                 binding.btnFacilitiesH.isClickable = true
-                Toast.makeText(context, "un click", Toast.LENGTH_SHORT).show()
                 it.setBackgroundColor(Color.WHITE)
+                clear()
             }
         }
 
@@ -314,24 +301,27 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
                     if (eventClicked) {
                         searchEvent(search)
                     }
-//                    else if (facilitiesClicked){
-//
-//                    }else if(servicesClicked){
-//
-//                    }
+                    else if (facilitiesClicked){
+                        searchFacilities(search)
+                    }else if(servicesClicked){
+                        searchServices(search)
+                    }
                     else {
                         searchEvent(search)
                     }
                 } else {
                     search = ""
-                    binding.eventResultViewH.visibility = View.INVISIBLE
+                    binding.eventResultViewH.visibility = View.VISIBLE
 
+                    if (facilitiesClicked) {
+                        searchFacilities(search)
+                    }else if(servicesClicked){
+                        searchServices(search)
+                    }
                 }
-
                 return false
             }
         })
-
         return binding.root
     }
 
@@ -348,28 +338,33 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
         super.onPause()
     }
 
-    // click function in recycleview
     override fun onItemClick(position: Int) {
         val clickedItem: Event = eventList[position]
-        Toast.makeText(context, "${clickedItem.address}", Toast.LENGTH_SHORT).show()
-
         var coder = Geocoder(context)
-
-        val p1: GeoPoint? = null
-
         var address: MutableList<Address> = coder.getFromLocationName(clickedItem.address, 5)
 
-        Log.i("address", address.toString())
-
         if (address.isEmpty()) {
-            Toast.makeText(context, "no result", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Invalid address!", Toast.LENGTH_SHORT).show()
         } else {
             var location: Address = address[0]
             var latLng = LatLng(location.latitude, location.longitude)
 
-            //to marker here
-
-            Toast.makeText(context, "$latLng", Toast.LENGTH_SHORT).show()
+            map.addMarker(
+                MarkerOptions()
+                    .position(latLng)
+                    .snippet("Event Marker")
+                    .title(clickedItem.title)
+                    .icon(
+                        BitmapDescriptorFactory.defaultMarker(
+                            BitmapDescriptorFactory.HUE_ORANGE
+                        )
+                    )
+            )
+            eventMarker = true
+            eventLatLng = latLng
+            eventTitle = clickedItem.title
+            val move = CameraUpdateFactory.newLatLngZoom(latLng, 17f)
+            map.animateCamera(move)
         }
     }
 
@@ -398,7 +393,7 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
                 if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
                     if (dY <= 0) {
                         val swipeItem: Event = eventList[viewHolder.adapterPosition]
-                        val action = HomeFragmentDirections.actionHomeFragmentToMemberEventInfo2(swipeItem.id)
+                        val action = HomeFragmentDirections.actionHomeFragmentToMemberEventInfo3(swipeItem.id)
                         binding.root.findNavController().navigate(action)
                         Toast.makeText(context, "$dY", Toast.LENGTH_SHORT).show()
                     }
@@ -450,8 +445,6 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
                                 phone
                             )
                             eventList.add(event)
-                            Log.i("search", e.child("title").value.toString())
-
                         } else if (searchS == "") {
                             binding.eventResultViewH.visibility = View.VISIBLE
                             val getId = e.key.toString()
@@ -483,7 +476,7 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
                 if (eventList.isEmpty()) {
                     binding.eventResultViewH.visibility = View.INVISIBLE
                 }
-//                val myRecyclerView: RecyclerView = binding.eventResultView
+
                 myRecyclerView.adapter =
                     MemberEventResultAdapter(eventList, this@HomeFragment)
                 myRecyclerView.setHasFixedSize(true)
@@ -496,6 +489,110 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
         })
     }
 
+    private fun searchFacilities(searchS: String){
+        myRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                map.clear()
+                for (s in snapshot.children) {
+                    for (e in s.child("Facilities").children) {
+                        if(e.child("title").value.toString().lowercase().contains(searchS)){
+                            val id = e.key
+                            val lat = e.child("latitude").value.toString().toDouble()
+                            val long = e.child("longitude").value.toString().toDouble()
+                            val title = e.child("title").value.toString()
+                            val type = e.child("type").value.toString()
+                            val marker = LatLng(lat, long)
+
+                            map.addMarker(
+                                MarkerOptions()
+                                    .position(marker)
+                                    .snippet(id)
+                                    .title(title)
+                                    .icon(
+                                        BitmapDescriptorFactory.defaultMarker(
+                                            BitmapDescriptorFactory.HUE_CYAN
+                                        )
+                                    )
+                            )
+                        }else if(searchS == ""){
+                            val id = e.key
+                            val lat = e.child("latitude").value.toString().toDouble()
+                            val long = e.child("longitude").value.toString().toDouble()
+                            val title = e.child("title").value.toString()
+                            val type = e.child("type").value.toString()
+                            val marker = LatLng(lat, long)
+
+                            map.addMarker(
+                                MarkerOptions()
+                                    .position(marker)
+                                    .snippet(id)
+                                    .title(title)
+                                    .icon(
+                                        BitmapDescriptorFactory.defaultMarker(
+                                            BitmapDescriptorFactory.HUE_CYAN
+                                        )
+                                    )
+                            )
+                        }
+                    }
+                }
+            }
+            override fun onCancelled(error: DatabaseError) {}
+        })
+    }
+
+    private fun searchServices(searchS: String){
+        myRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                map.clear()
+                for (s in snapshot.children) {
+                    for (e in s.child("Services").children) {
+                        if(e.child("title").value.toString().lowercase().contains(searchS)){
+                            val id = e.key
+                            val lat = e.child("latitude").value.toString().toDouble()
+                            val long = e.child("longitude").value.toString().toDouble()
+                            val title = e.child("title").value.toString()
+                            val type = e.child("type").value.toString()
+                            val marker = LatLng(lat, long)
+
+                            map.addMarker(
+                                MarkerOptions()
+                                    .position(marker)
+                                    .snippet(id)
+                                    .title(title)
+                                    .icon(
+                                        BitmapDescriptorFactory.defaultMarker(
+                                            BitmapDescriptorFactory.HUE_GREEN
+                                        )
+                                    )
+                            )
+                        }else if(searchS == ""){
+                            val id = e.key
+                            val lat = e.child("latitude").value.toString().toDouble()
+                            val long = e.child("longitude").value.toString().toDouble()
+                            val title = e.child("title").value.toString()
+                            val type = e.child("type").value.toString()
+                            val marker = LatLng(lat, long)
+
+                            map.addMarker(
+                                MarkerOptions()
+                                    .position(marker)
+                                    .snippet(id)
+                                    .title(title)
+                                    .icon(
+                                        BitmapDescriptorFactory.defaultMarker(
+                                            BitmapDescriptorFactory.HUE_GREEN
+                                        )
+                                    )
+                            )
+                        }
+                    }
+                }
+            }
+            override fun onCancelled(error: DatabaseError) {}
+        })
+    }
+
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.map_options,menu)
         super.onCreateOptionsMenu(menu, inflater)
@@ -503,6 +600,7 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
+
         if(id == R.id.normal_map){
             map.mapType = GoogleMap.MAP_TYPE_NORMAL
         } else if(id == R.id.hybrid_map){
@@ -588,7 +686,6 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
 
 
     fun decodePolyline(encoded: String): List<LatLng> {
-
         val poly = ArrayList<LatLng>()
         var index = 0
         val len = encoded.length
@@ -637,9 +734,7 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
             startActivity(mapIntent)
         }
 
-        builder.setNegativeButton("Cancel"){ which,dialog ->
-
-        }
+        builder.setNegativeButton("Cancel"){ which,dialog -> }
 
         builder.show()
     }
@@ -664,8 +759,8 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
         if(markerId != ""){
             myRef.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    for(s in snapshot.children){ //state list
-                        for (t in s.children){ //type
+                    for(s in snapshot.children){
+                        for (t in s.children){
                             if(t.key == "Services" || t.key == "Facilities"){
                                 if(t.hasChild(markerId)){
                                     getId = t.child(markerId).key.toString()
@@ -680,7 +775,7 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
                             }
 
                             if(t.key == "Individual"){
-                                for(a in t.children){ //member ID
+                                for(a in t.children){
                                     if(a.hasChild(markerId)){
                                         getId = a.child(markerId).key.toString()
                                         type.text = a.child(markerId).child("type").value.toString()
@@ -723,7 +818,6 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
         }
 
         btnFeedback.setOnClickListener{
-            //navigate to feedback
             dialog.dismiss()
             val action = HomeFragmentDirections.actionHomeFragmentToFeedbackFragment(markerId,username)
             binding.root.findNavController().navigate(action)

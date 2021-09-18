@@ -43,7 +43,6 @@ class MemberRegisteredEvent : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_admin_event, container, false )
 
         session = UserSessionManager(requireContext().applicationContext)
@@ -55,7 +54,7 @@ class MemberRegisteredEvent : Fragment() {
             valueEventListener = myReg.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     eventList.clear()
-                    for (r in snapshot.children) {//for each state
+                    for (r in snapshot.children) {
                         if(r.hasChild(username)){
                             myRef.addValueEventListener(object : ValueEventListener {
                                 override fun onDataChange(snapshot: DataSnapshot) {
@@ -110,7 +109,6 @@ class MemberRegisteredEvent : Fragment() {
                 }
                 var search = ""
                 if (newText != null && newText.trim().isNotEmpty()) {
-//                    binding.tvNotFound.visibility = View.INVISIBLE
                     eventList.clear()
                     val letters: CharArray = newText.toCharArray()
                     val firstLetter = letters[0].toString().lowercase()
@@ -120,7 +118,7 @@ class MemberRegisteredEvent : Fragment() {
                     myReg.addValueEventListener(object : ValueEventListener {
                         override fun onDataChange(snapshot: DataSnapshot) {
                             eventList.clear()
-                            for (r in snapshot.children) {//for each state
+                            for (r in snapshot.children) {
                                 if(r.hasChild(username)){
                                     myRef.addValueEventListener(object : ValueEventListener {
                                         override fun onDataChange(snapshot: DataSnapshot) {
@@ -150,9 +148,9 @@ class MemberRegisteredEvent : Fragment() {
                                             myRecyclerView.adapter = MemberRegisteredEventAdapter(eventList)
                                             myRecyclerView.setHasFixedSize(true)
                                         }
-                                        override fun onCancelled(error: DatabaseError) {
 
-                                        }
+                                        override fun onCancelled(error: DatabaseError) {}
+
                                     })
                                 }
                             }
@@ -163,12 +161,10 @@ class MemberRegisteredEvent : Fragment() {
                 else{
                     eventList.clear()
                     binding.tvNotFound.visibility = View.INVISIBLE
-//                    myReg.addValueEventListener(valueEventListener!!)
                 }
                 return false
             }
         })
-
 
         return binding.root
     }

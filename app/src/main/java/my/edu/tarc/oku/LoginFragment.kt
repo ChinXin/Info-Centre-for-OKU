@@ -36,14 +36,9 @@ class LoginFragment : Fragment() {
     ): View? {
         var session = UserSessionManager(requireContext().applicationContext)
 
-        // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_login, container, false)
 
-//        session = UserSessionManager(requireContext().applicationContext)
-
         binding.btnLogin.setOnClickListener {
-
-
             var checkMember: Boolean
             var checkAdmin: Boolean
             val username = binding.username.text.toString().lowercase().trim()
@@ -57,19 +52,9 @@ class LoginFragment : Fragment() {
 
                     if (checkMember) {
                         myRef.child("member").child(username).get().addOnSuccessListener {
-//                            var getPassword = ""
-
                             val getPassword = it.child("password").value.toString()
 
                             if (password == getPassword) {
-                                // Navigate to Home Page
-                                Toast.makeText(context, "Welcome Member", Toast.LENGTH_LONG).show()
-
-//                                val rootView = binding.root.rootView.findViewById<NavigationView>(R.id.navView)
-//                                val headerView = rootView.getHeaderView(0)
-//                                val btnSul: Button = headerView.findViewById(R.id.btnLoginSignUp)
-//
-//                                btnSul.text = username.uppercase()
                                 session.createUserLoginSession(username,"member")
                                 val intent = Intent(activity, MemberActivity::class.java)
                                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -87,19 +72,9 @@ class LoginFragment : Fragment() {
                         }
                     } else if (checkAdmin) {
                         myRef.child("admin").child(username).get().addOnSuccessListener {
-//                            var getPassword = ""
-
                             val getPassword = it.child("password").value.toString()
 
                             if (password == getPassword) {
-                                // Navigate to Home Page
-                                Toast.makeText(context, "Welcome Admin", Toast.LENGTH_LONG).show()
-
-//                                val rootView = binding.root.rootView.findViewById<NavigationView>(R.id.navView)
-//                                val headerView = rootView.getHeaderView(0)
-//                                val btnSul: Button = headerView.findViewById(R.id.btnLoginSignUp)
-//
-//                                btnSul.text = username.uppercase()
                                 session.createUserLoginSession(username,"admin")
                                 val intent = Intent(activity, AdminActivity::class.java)
                                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -125,14 +100,12 @@ class LoginFragment : Fragment() {
                 override fun onCancelled(error: DatabaseError) {}
 
             })
-
         }
 
         binding.btnGoRegister.setOnClickListener()
         {
             Navigation.findNavController(it).navigate(R.id.action_loginFragment_to_registerFragment)
         }
-
         return binding.root
     }
 
@@ -154,5 +127,4 @@ class LoginFragment : Fragment() {
         }
         return r.toString()
     }
-
 }

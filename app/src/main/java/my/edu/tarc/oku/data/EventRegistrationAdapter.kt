@@ -15,7 +15,6 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import my.edu.tarc.oku.R
 
-//class ProductAdapter (private val productList: List<Product>):RecyclerView.Adapter<ProductAdapter.myViewHolder>(){
 class EventRegistrationAdapter (private val registerList: List<EventRegistration>): RecyclerView.Adapter<EventRegistrationAdapter.myViewHolder>() {
     private val myReg = Firebase.database.getReference("users/member" )
 

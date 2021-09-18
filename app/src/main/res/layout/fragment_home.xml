@@ -13,9 +13,7 @@
             android:layout_height="match_parent"
             tools:context=".HomeFragment">
 
-            <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:map="http://schemas.android.com/apk/res-auto"
-                xmlns:tools="http://schemas.android.com/tools"
+            <fragment
                 android:id="@+id/homeMap"
                 android:name="com.google.android.gms.maps.SupportMapFragment"
                 android:layout_width="match_parent"
@@ -27,8 +25,8 @@
         <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnServicesH">
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/routeFab2"

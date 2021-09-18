@@ -44,7 +44,14 @@
             android:exported="true"
             android:label="@string/title_activity_admin"
 
-            android:theme="@style/Theme.OKU.NoActionBar" />
+            android:theme="@style/Theme.OKU.NoActionBar"
+            >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
         <service
             android:name=".CustomInfoWindowForGoogleMap"

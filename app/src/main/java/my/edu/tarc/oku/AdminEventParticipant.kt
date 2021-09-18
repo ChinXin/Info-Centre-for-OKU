@@ -34,7 +34,6 @@ class AdminEventParticipant : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_admin_event_participant, container, false )
 
         val args = AdminEventParticipantArgs.fromBundle(requireArguments())
@@ -68,10 +67,7 @@ class AdminEventParticipant : Fragment() {
 
             })
         }
-
-
         return binding.root
-//        return inflater.inflate(R.layout.fragment_admin_event_participant, container, false)
     }
 
 }

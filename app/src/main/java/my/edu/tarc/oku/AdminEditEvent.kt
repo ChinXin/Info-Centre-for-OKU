@@ -100,7 +100,6 @@ class AdminEditEvent : Fragment(), View.OnClickListener {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         binding =
             DataBindingUtil.inflate(inflater, R.layout.fragment_admin_edit_event, container, false)
 
@@ -110,7 +109,7 @@ class AdminEditEvent : Fragment(), View.OnClickListener {
         val adapter = ArrayAdapter(this.requireContext(), R.layout.dropdown_state, stateList)
         addValueEventListener = myRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                for (s in snapshot.children) {//for each state
+                for (s in snapshot.children) {
                     for (e in s.child("Events").children) {
                         if (args.eventId == e.key.toString()) {
                             eventId = e.key.toString()
@@ -118,7 +117,7 @@ class AdminEditEvent : Fragment(), View.OnClickListener {
                             Glide.with(requireActivity().applicationContext)
                                 .load(img)
                                 .override(356, 100)
-                                .fitCenter() // scale to fit entire image within ImageView
+                                .fitCenter()
                                 .into(binding.imgEventE)
                             binding.eTitleE.setText(e.child("title").value.toString())
                             binding.btnDateE.text = e.child("date").value.toString()
@@ -193,7 +192,6 @@ class AdminEditEvent : Fragment(), View.OnClickListener {
             description = binding.descriptionE.text.toString()
             phone = binding.ePhoneE.text.toString()
 
-//            var totalEvents = 0
             if (isValidate()) {
                 binding.imgEventE.isEnabled = false
                 binding.eTitleE.isEnabled = false
@@ -384,16 +382,7 @@ class AdminEditEvent : Fragment(), View.OnClickListener {
         }
 
         return binding.root
-//        return inflater.inflate(R.layout.fragment_admin_event, container, false)
     }
-
-
-//    override fun onPause() {
-//        super.onPause()
-//        if (valueEventListener != null) {
-//            myRef.removeEventListener(valueEventListener!!)
-//        }
-//    }
 
     @SuppressLint("SetTextI18n")
     override fun onClick(v: View?) {
@@ -472,14 +461,6 @@ class AdminEditEvent : Fragment(), View.OnClickListener {
         binding.eLinkE.addTextChangedListener(TextFieldValidation(binding.eLinkE))
         binding.ePhoneE.addTextChangedListener(TextFieldValidation(binding.ePhoneE))
     }
-
-//    private fun validateImage(): Boolean {
-//        if (!newImg) {
-//            Toast.makeText(context, "Event Banner Is Required Field!", Toast.LENGTH_LONG).show()
-//            return false
-//        }
-//        return true
-//    }
 
     private fun validateTitle(): Boolean {
         if (binding.eTitleE.text.toString().trim().isEmpty()) {
@@ -620,7 +601,6 @@ class AdminEditEvent : Fragment(), View.OnClickListener {
             return true
         }
         if (binding.eLinkE.text.toString().trim().isNotEmpty()) {
-//            if (URLUtil.isValidUrl(binding.eLink.text.toString())){
             if (Patterns.WEB_URL.matcher(binding.eLinkE.text.toString()).matches()) {
                 binding.eLinkELayout.isErrorEnabled = false
                 link = binding.eLinkE.text.toString()
@@ -634,12 +614,6 @@ class AdminEditEvent : Fragment(), View.OnClickListener {
         }
         return true
     }
-
-//    private fun getFileExtension(mUri: Uri): String {
-//        val cr: ContentResolver = requireContext().contentResolver
-//        val mime: MimeTypeMap = MimeTypeMap.getSingleton()
-//        return mime.getExtensionFromMimeType(cr.getType(mUri)).toString()
-//    }
 
     inner class TextFieldValidation(private val view: View) : TextWatcher {
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}

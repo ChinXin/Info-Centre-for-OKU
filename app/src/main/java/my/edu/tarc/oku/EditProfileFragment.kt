@@ -39,15 +39,13 @@ class EditProfileFragment : Fragment() {
         val user = session.userDetails
         val name = user[UserSessionManager.KEY_NAME].toString()
         val status = user[UserSessionManager.KEY_STATUS].toString()
-        // Inflate the layout for this fragment
+
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_edit_profile, container, false)
 
         setupListener()
 
         val database = Firebase.database
         val myRef = database.getReference("users")
-
-        //need modify(get username)
         var tvPassword = ""
 
         myRef.child(status).child(name).addValueEventListener(object : ValueEventListener {

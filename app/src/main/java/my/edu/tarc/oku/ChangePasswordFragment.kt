@@ -33,7 +33,6 @@ class ChangePasswordFragment : Fragment() {
         val name = user[UserSessionManager.KEY_NAME].toString()
         val status = user[UserSessionManager.KEY_STATUS].toString()
 
-        // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_change_password, container, false)
 
         setupListener()

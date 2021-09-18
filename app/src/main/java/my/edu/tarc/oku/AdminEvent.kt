@@ -40,9 +40,7 @@ class AdminEvent : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         session = UserSessionManager(requireContext().applicationContext)
-
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_admin_event, container, false)
 
         activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
@@ -55,8 +53,8 @@ class AdminEvent : Fragment() {
             valueEventListener = myRef.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     eventList.clear()
-                    for (s in snapshot.children) {//for each state
-                        for (e in s.child("Events").children) {//event in events
+                    for (s in snapshot.children) {
+                        for (e in s.child("Events").children) {
                             val getId = e.key.toString()
                             val title = e.child("title").value.toString()
                             val date = e.child("date").value.toString()
@@ -94,7 +92,6 @@ class AdminEvent : Fragment() {
                 }
                 var search = ""
                 if (newText != null && newText.trim().isNotEmpty()) {
-//                    binding.tvNotFound.visibility = View.INVISIBLE
                     eventList.clear()
                     val letters: CharArray = newText.toCharArray()
                     val firstLetter = letters[0].toString().lowercase()
@@ -102,7 +99,6 @@ class AdminEvent : Fragment() {
                     search = "$firstLetter$remainingLetters"
                     myRef.addValueEventListener(object : ValueEventListener {
                         override fun onDataChange(snapshot: DataSnapshot) {
-//                        Log.i("search", snapshot.toString())
                             for (s in snapshot.children){
                                 for(e in s.child("Events").children) {
                                     if (e.child("title").value.toString().lowercase().contains(search)) {
@@ -119,7 +115,6 @@ class AdminEvent : Fragment() {
                                         val phone = e.child("phone").value.toString()
                                         val event = Event(getId, image, title, date, time, address, state, description, link, phone)
                                         eventList.add(event)
-                                        Log.i("search", e.child("title").value.toString())
                                     }
                                 }
                             }
@@ -145,8 +140,6 @@ class AdminEvent : Fragment() {
                 return false
             }
         })
-
-//        return inflater.inflate(R.layout.fragment_admin_event, container, false)
         return binding.root
     }
 
@@ -167,7 +160,6 @@ class AdminEvent : Fragment() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         inflater.inflate(R.menu.event, menu)
         menu.findItem(R.id.btnAdd).isVisible = true
         menu.findItem(R.id.btnAdd).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)

@@ -12,7 +12,6 @@ import com.bumptech.glide.Glide
 import my.edu.tarc.oku.AdminEventDirections
 import my.edu.tarc.oku.R
 
-//class ProductAdapter (private val productList: List<Product>):RecyclerView.Adapter<ProductAdapter.myViewHolder>(){
 class EventAdapter (val eventList: List<Event>): RecyclerView.Adapter<EventAdapter.myViewHolder>() {
 
 
@@ -36,11 +35,9 @@ class EventAdapter (val eventList: List<Event>): RecyclerView.Adapter<EventAdapt
         holder.eventTitle.text = currentEvent.title
         holder.eventDateTime.text = "Date/Time: ${currentEvent.date}, ${currentEvent.time}"
         holder.eventAddress.text = "Address: ${currentEvent.address}"
-//        holder.eventImage.setImageURI(currentEvent.image.toUri())
-//        holder.eventImage.setImageResource(currentEvent.image)
         Glide.with(holder.eventImage.context)
             .load(currentEvent.image)
-            .fitCenter()// scale to fit entire image within ImageView
+            .fitCenter()
             .into(holder.eventImage)
         holder.itemView.setOnClickListener {
             val eventId = currentEvent.id

@@ -64,8 +64,6 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
         username = user[UserSessionManager.KEY_NAME].toString()
         status = user[UserSessionManager.KEY_STATUS].toString()
 
-
-        // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.event_info, container, false)
 
         val args = MemberEventInfoArgs.fromBundle(requireArguments())
@@ -76,8 +74,8 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
 
         myRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                for (s in snapshot.children) {//for each state
-                    for (e in s.child("Events").children) {//event in events
+                for (s in snapshot.children) {
+                    for (e in s.child("Events").children) {
                         if (e.key.toString() == args.eventId) {
                             eventId = e.child("id").value.toString()
                             img = e.child("image").value.toString()
@@ -103,7 +101,7 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
                             )
                             Glide.with(requireContext())
                                 .load(img)
-                                .fitCenter() // scale to fit entire image within ImageView
+                                .fitCenter()
                                 .into(binding.imageView3)
                             binding.tvTitle.text = title
                             binding.tvTimeDate.text =
@@ -126,18 +124,9 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
         })
 
         binding.btnTTS.isEnabled = false
-        // Fire off an intent to check if a TTS engine is installed
-        // Fire off an intent to check if a TTS engine is installed
         val checkIntent = Intent()
         checkIntent.action = TextToSpeech.Engine.ACTION_CHECK_TTS_DATA
         startActivityForResult(checkIntent, MY_DATA_CHECK_CODE)
-
-//        mTTS = TextToSpeech(context, TextToSpeech.OnInitListener { status ->
-//            if (status != TextToSpeech.ERROR){
-//                //if there is no error then set language
-//                mTTS.language = Locale.UK
-//            }
-//        })
 
         binding.btnTTS.setOnClickListener {
             tts.speak(description, TextToSpeech.QUEUE_FLUSH, null,null);
@@ -152,7 +141,6 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
         }
 
         return binding.root
-//        return inflater.inflate(R.layout.fragment_event_info, container, false)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -165,7 +153,6 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
                 tts.setSpeechRate(0.8f)
                 binding.btnTTS.setEnabled(true)
             } else {
-                // missing data, install it
                 val installIntent = Intent()
                 installIntent.action = TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA
                 startActivity(installIntent)
@@ -174,9 +161,7 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
     }
 
     override fun onInit(status: Int) {
-
         if (status == TextToSpeech.SUCCESS) {
-            // set US English as language for tts
             val result = tts.setLanguage(Locale.US)
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 Log.e("TTS","The Language specified is not supported!")
@@ -187,7 +172,6 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
         } else {
             Log.e("TTS", "Initilization Failed!")
         }
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -198,7 +182,6 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         inflater.inflate(R.menu.event, menu)
         menu.findItem(R.id.btnAdd).isEnabled = false
         val myReg = Firebase.database.getReference("register")
@@ -208,8 +191,6 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
                     if(snapshot.value != null){
                         for (e in snapshot.children){
                             if(e.key.toString() == eventId ){
-//                                Toast.makeText(context, "${e.key.toString()}", Toast.LENGTH_LONG).show()
-//                                Toast.makeText(context, "${e.hasChild(username)}", Toast.LENGTH_LONG).show()
                                 if (!e.hasChild(username)){
                                     menu.findItem(R.id.btnDelete).isEnabled = false
                                     menu.findItem(R.id.btnRegisterE).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
@@ -243,7 +224,6 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
         return when (item.itemId) {
             R.id.btnRegisterE -> {
                 val myReg = Firebase.database.getReference("register")
-
                 val currentDateTime = LocalDateTime.now()
                 val date = currentDateTime.format(DateTimeFormatter.ISO_DATE)
                 val time = currentDateTime.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))
@@ -259,10 +239,7 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
                     }
                 }
 
-                builder.setNegativeButton("No"){ which,dialog ->
-
-                }
-
+                builder.setNegativeButton("No"){ which,dialog -> }
                 builder.show()
                 true
             }

@@ -60,10 +60,8 @@ class MemberEventResultAdapter(
 
         Glide.with(holder.eventImage.context)
             .load(currentEvent.image)
-            .fitCenter()// scale to fit entire image within ImageView
+            .fitCenter()
             .into(holder.eventImage)
-
-//        holder.itemView.set
     }
 
     override fun getItemCount(): Int {
@@ -73,59 +71,4 @@ class MemberEventResultAdapter(
     interface OnItemClickListener {
         fun onItemClick(position: Int)
     }
-
-//    override fun getFilter(): Filter {
-//
-//        return object : Filter() {
-//            override fun performFiltering(constraint: CharSequence?): FilterResults {
-//                val charSearch = constraint.toString()
-//
-//                if (charSearch.isEmpty()) {
-//                    search = eventList as ArrayList<Event>
-//                } else {
-//                    val resultList = ArrayList<Event>()
-//                    for (row in eventList) {
-//                        if(row.title.lowercase().contains(charSearch)) {
-//                            resultList.add(row)
-//                        }
-//                    }
-//                    search = resultList
-//                }
-//                val filterResults = FilterResults()
-//
-//                    filterResults.values = search
-//
-//
-//                return filterResults
-//            }
-//
-//            override fun publishResults(p0: CharSequence?, filterResults: FilterResults?) {
-//                search = filterResults!!.values as ArrayList<Event>
-//                notifyDataSetChanged()
-//            }
-//
-//        }
-//    }
-
-//    public GeoPoint getLocationFromAddress(String strAddress){
-//
-//        Geocoder coder = new Geocoder(this);
-//        List<Address> address;
-//        GeoPoint p1 = null;
-//
-//        try {
-//            address = coder.getFromLocationName(strAddress,5);
-//            if (address==null) {
-//                return null;
-//            }
-//            Address location=address.get(0);
-//            location.getLatitude();
-//            location.getLongitude();
-//
-//            p1 = new GeoPoint((double) (location.getLatitude() * 1E6),
-//            (double) (location.getLongitude() * 1E6));
-//
-//            return p1;
-//        }
-//    }
 }

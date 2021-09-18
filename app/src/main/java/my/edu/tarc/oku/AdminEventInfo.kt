@@ -69,16 +69,14 @@ class AdminEventInfo : Fragment() {
             }
         })
 
-
-        // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.event_info, container, false)
 
         val args = AdminEventInfoArgs.fromBundle(requireArguments())
 
         myRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                for (s in snapshot.children) {//for each state
-                    for (e in s.child("Events").children) {//event in events
+                for (s in snapshot.children) {
+                    for (e in s.child("Events").children) {
                         if (e.key.toString() == args.eventId) {
                             eventId = e.child("id").value.toString()
                             img = e.child("image").value.toString()
@@ -104,7 +102,7 @@ class AdminEventInfo : Fragment() {
                             )
                             Glide.with(requireContext())
                                 .load(img)
-                                .fitCenter() // scale to fit entire image within ImageView
+                                .fitCenter()
                                 .into(binding.imageView3)
                             binding.tvTitle.text = title
                             binding.tvTimeDate.text =
@@ -126,7 +124,6 @@ class AdminEventInfo : Fragment() {
 
         })
 
-
         binding.tvLink.setOnClickListener {
             if (!link.startsWith("http://") && !link.startsWith("https://")) {
                 link = "http://" + link;
@@ -134,7 +131,6 @@ class AdminEventInfo : Fragment() {
             val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(link))
             startActivity(browserIntent)
         }
-
 
         if (status == "admin") {
             binding.edit.visibility = View.VISIBLE
@@ -144,7 +140,6 @@ class AdminEventInfo : Fragment() {
             }
         }
         return binding.root
-//        return inflater.inflate(R.layout.fragment_event_info, container, false)
     }
 
 
@@ -156,28 +151,15 @@ class AdminEventInfo : Fragment() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         inflater.inflate(R.menu.event, menu)
         menu.findItem(R.id.btnAdd).isEnabled = false
         if(status == "admin"){
-//            menu.findItem(R.id.btnDelete).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
             menu.findItem(R.id.btnDelete).isVisible = true
-//            menu.findItem(R.id.btnDelete).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
             menu.findItem(R.id.btnParticipants).isVisible = true
         }
         super.onCreateOptionsMenu(menu, inflater)
     }
 
-    //    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-//        val item = menu.findItem(R.id.btnAdd)
-//
-//        menu.findItem(R.id.btnAdd).isVisible = false
-////        menu.findItem(R.id.btnDelete)
-//            // You can also use something like:
-//            // menu.findItem(R.id.example_foobar).setEnabled(false);
-//
-//        return true
-//    }
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
@@ -217,7 +199,7 @@ class AdminEventInfo : Fragment() {
 
                                     override fun onDismissed(transientBottomBar: Snackbar?,event: Int) {
                                         super.onDismissed(transientBottomBar, event)
-                                        if(event != 1){ //Indicates that the Snackbar was dismissed via an action click.
+                                        if(event != 1){
                                             storage.child("$eventId.png").delete()
                                         }
                                     }
@@ -230,10 +212,6 @@ class AdminEventInfo : Fragment() {
                 builder.setNegativeButton("No"){ which,dialog ->}
 
                 builder.show()
-
-//                binding.root.findNavController().navigate(R.id.action_adminEvent_to_adminAddEvent)
-//                myRef.child(state)
-//                Toast.makeText(context, "delete", Toast.LENGTH_SHORT).show()
                 true
             }
             R.id.btnParticipants ->{
@@ -246,5 +224,4 @@ class AdminEventInfo : Fragment() {
         }
         return super.onOptionsItemSelected(item)
     }
-
 }

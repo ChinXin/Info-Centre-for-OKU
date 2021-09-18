@@ -22,22 +22,15 @@ import my.edu.tarc.oku.data.UserSessionManager
 import org.w3c.dom.Text
 import android.text.Html
 
-
-
-
-
-
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
-//    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         @Suppress("UNUSED_VARIABLE")
         val binding = DataBindingUtil.setContentView<ActivityMainBinding>(this, R.layout.activity_main)
-
 
         setSupportActionBar(binding.appBarMain.toolbar)
 
@@ -60,9 +53,6 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
-
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.homeFragment, R.id.aboutUs, R.id.loginFragment, R.id.registerFragment
@@ -70,38 +60,10 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
-
     }
-
-//    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        menuInflater.inflate(R.menu.navdrawer_menu, menu)
-//        return true
-//    }
 
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
-//    private lateinit var drawerLayout: DrawerLayout
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//
-//        @Suppress("UNUSED_VARIABLE")
-//        val binding = DataBindingUtil.setContentView<ActivityMainBinding>(this, R.layout.activity_main)
-//
-//        drawerLayout = binding.drawerLayout
-//
-//        val navController = this.findNavController(R.id.myNavHostFragment)
-//
-//        NavigationUI.setupActionBarWithNavController(this,navController, drawerLayout)
-//
-//        NavigationUI.setupWithNavController(binding.navView, navController)
-//
-//    }
-//
-//    override fun onSupportNavigateUp(): Boolean {
-//        val navController = this.findNavController(R.id.myNavHostFragment)
-//        return NavigationUI.navigateUp(navController, drawerLayout)
-//    }
 }

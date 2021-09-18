@@ -87,7 +87,6 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         binding =
             DataBindingUtil.inflate(inflater, R.layout.fragment_admin_add_event, container, false)
 
@@ -179,7 +178,6 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
         }
 
         return binding.root
-//        return inflater.inflate(R.layout.fragment_admin_event, container, false)
     }
 
 
@@ -395,7 +393,7 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
                 Glide.with(this)
                     .load(imgUri)
                     .override(356, 150)
-                    .fitCenter() // scale to fit entire image within ImageView
+                    .fitCenter()
                     .into(binding.imgEvent)
                 newImg = true
             }

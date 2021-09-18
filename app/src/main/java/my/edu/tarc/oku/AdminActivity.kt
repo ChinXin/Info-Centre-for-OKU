@@ -24,7 +24,6 @@ import android.content.Intent
 
 class AdminActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
-//    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,8 +35,6 @@ class AdminActivity : AppCompatActivity() {
             DataBindingUtil.setContentView<ActivityAdminBinding>(this, R.layout.activity_admin)
         val bundle = intent.extras
         val username = bundle?.getString("Username").toString()
-//        binding = ActivityMainBinding.inflate(layoutInflater)
-//        setContentView(binding.root)
 
         setSupportActionBar(binding.appBarAdmin.toolbarA)
 
@@ -60,8 +57,7 @@ class AdminActivity : AppCompatActivity() {
             session.logoutUser()
             true
         }
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
+
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.homeAdminFragment, R.id.adminEvent
@@ -72,14 +68,6 @@ class AdminActivity : AppCompatActivity() {
 
 
     }
-
-
-    //    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        menuInflater.inflate(R.menu.navdrawer_menu, menu)
-//        return true
-//    }
-
 
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_content_admin)

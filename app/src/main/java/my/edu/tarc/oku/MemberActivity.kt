@@ -21,7 +21,6 @@ import my.edu.tarc.oku.databinding.ActivityMemberBinding
 class MemberActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
-//    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,8 +31,6 @@ class MemberActivity : AppCompatActivity() {
         val binding = DataBindingUtil.setContentView<ActivityMemberBinding>(this, R.layout.activity_member)
         val bundle = intent.extras
         val username = bundle?.getString("Username").toString()
-//        binding = ActivityMainBinding.inflate(layoutInflater)
-//        setContentView(binding.root)
 
         setSupportActionBar(binding.appBarMember.toolbarM)
 
@@ -62,8 +59,6 @@ class MemberActivity : AppCompatActivity() {
             true
         }
 
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.homeMemberFragment, R.id.memberRegisteredEvent
@@ -74,14 +69,6 @@ class MemberActivity : AppCompatActivity() {
 
 
     }
-
-
-//    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        menuInflater.inflate(R.menu.navdrawer_menu, menu)
-//        return true
-//    }
-
 
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_content_member)

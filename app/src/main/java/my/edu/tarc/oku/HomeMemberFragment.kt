@@ -47,6 +47,7 @@ import java.util.regex.Pattern
 
 import my.edu.tarc.oku.data.*
 import androidx.recyclerview.widget.ItemTouchHelper
+import com.google.android.gms.maps.CameraUpdateFactory
 
 
 class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
@@ -69,6 +70,9 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
     private var servicesClicked = false
     private var search = ""
     lateinit var myRecyclerView: RecyclerView
+    private var eventMarker = false
+    var eventLatLng : LatLng? = null
+    var eventTitle : String? = null
 
     companion object {
         private val strokeColor = 0xFFD8D7D7
@@ -79,39 +83,23 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
         map = googleMap
 
         enableMyLocation()
-        //Go to my current location
-//        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
-//        fusedLocationClient.lastLocation.addOnSuccessListener{
-//            val currentLat = it.latitude.toString()
-//            val currentLong = it.longitude.toString()
-//            val currentLocation = LatLng(currentLat.toDouble(), currentLong.toDouble())
-//            val move = CameraUpdateFactory.newLatLngZoom(currentLocation, 17f)
-//            map.animateCamera(move)
-//        }
 
-        //display all
-        //Toast.makeText(context, "username = $name", Toast.LENGTH_LONG).show()
+        //Go to my current location
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
+        fusedLocationClient.lastLocation.addOnSuccessListener{
+            val currentLat = it.latitude.toString()
+            val currentLong = it.longitude.toString()
+            val currentLocation = LatLng(currentLat.toDouble(), currentLong.toDouble())
+            val move = CameraUpdateFactory.newLatLngZoom(currentLocation, 17f)
+            map.animateCamera(move)
+        }
+
         myRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-
-//                for(x in snapshot.children){
-//                    val id = x.key
-//                    val lat = x.child("latitude").value.toString().toDouble()
-//                    val long = x.child("longitude").value.toString().toDouble()
-//                    val title = x.child("title").value.toString()
-//                    val marker = LatLng(lat,long)
-//
-//                    googleMap.addMarker(MarkerOptions().position(marker).snippet(id).title(title))
-//                    //googleMap.moveCamera(CameraUpdateFactory.newLatLng(marker))
-//                    //googleMap.animateCamera
-//                }
                 for (s in snapshot.children) {
-                    //Log.i("test123","Line 78 = ${s.value}" )
                     for (t in s.children) {
                         if (t.key == "Services" || t.key == "Facilities") {
-                            //Log.i("test123","Line 80 = ${t.k}" )
                             for (m in t.children) {
-                                //Log.i("test123","Line 80 = ${m.value}" )
                                 val id = m.key
                                 val lat = m.child("latitude").value.toString().toDouble()
                                 val long = m.child("longitude").value.toString().toDouble()
@@ -144,7 +132,6 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                                             )
                                     )
                                 }
-
                             }
                         }
 
@@ -203,14 +190,9 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
             override fun onCancelled(error: DatabaseError) {}
         })
 
-        //optional style map
-        //setMapStyle(map)
-        //map.uiSettings.isZoomControlsEnabled = true
-        //map.uiSettings.isZoomGesturesEnabled = true
         setMapLongClick(map)
         map.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this.requireContext()))
 
-        //correct version
         map.setOnMarkerClickListener(object : GoogleMap.OnMarkerClickListener {
             override fun onMarkerClick(p0: com.google.android.gms.maps.model.Marker): Boolean {
                 var currentLat = ""
@@ -221,6 +203,20 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                 binding.routeFab3.setOnClickListener {
                     clear()
 
+                    if(eventMarker == true){
+                        googleMap.addMarker(
+                            MarkerOptions()
+                                .position(eventLatLng)
+                                .snippet("Event Marker")
+                                .title(eventTitle)
+                                .icon(
+                                    BitmapDescriptorFactory.defaultMarker(
+                                        BitmapDescriptorFactory.HUE_ORANGE
+                                    )
+                                )
+                        )
+                    }
+
                     fusedLocationClient =
                         LocationServices.getFusedLocationProviderClient(requireContext())
                     fusedLocationClient.lastLocation.addOnSuccessListener {
@@ -228,8 +224,6 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                         currentLong = it.longitude.toString()
                         val origin = LatLng(currentLat.toDouble(), currentLong.toDouble())
                         val destination = LatLng(p0.position.latitude, p0.position.longitude)
-                        //Log.i("test123","Line 148 = $origin")
-                        //Log.i("test123","Line 148 = $destination")
                         val URL = getDirectionURL(origin, destination)
 
                         GetDirection(URL).execute()
@@ -238,7 +232,10 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                 }
 
                 map.setOnInfoWindowClickListener {
-                    var markerId = p0.snippet
+                    if(p0.snippet == "Event Marker"){
+                        Toast.makeText(context,"This marker is not able to view.",Toast.LENGTH_LONG).show()
+                    }else{
+                        var markerId = p0.snippet
 
                     infoWindowListener = myRef.addValueEventListener(object : ValueEventListener {
 
@@ -246,15 +243,13 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                             var check = false
                             var count = 0
                             for (x in snapshot.children) {
-                                val individual =
-                                    x.child("Individual").child(name).hasChild(markerId)
+                                val individual = x.child("Individual").child(name).hasChild(markerId)
                                 val facilities = x.child("Facilities").hasChild(markerId)
                                 val services = x.child("Services").hasChild(markerId)
 
                                 if (facilities || services) {
                                     viewAlert(p0, markerId.toString())
                                     check = true
-                                    Log.i("test1234", "Line 211")
                                     break
                                 } else if (individual) {
                                     basicAlert(
@@ -264,74 +259,19 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                                         p0.position.longitude.toString()
                                     )
                                     check = true
-                                    Log.i("test1234", "Line 215")
                                     break
                                 }
                                 count++
                             }
-                            if (count == snapshot.childrenCount.toInt() && !check) { //other member marker cannot display
-
+                            if (count == snapshot.childrenCount.toInt() && !check) {
                                 viewAlert(p0, markerId.toString())
                                 Log.i("test1234", "Line 219")
                             }
-
-
-//                            for(x in snapshot.children){
-//                                for(y in x.children){
-//
-//                                    if(y.key == "Facilities" || y.key == "Services"){
-//                                        if(y.hasChild(markerId)){
-//                                            for(a in y.children){ //marker id
-//                                                for(j in y.children){
-//                                                    if(a.key == markerId){
-//                                                        viewAlert(p0,markerId.toString())
-//                                                        Log.i("test1234","Line 212")
-//                                                        break
-//                                                    }
-//                                                }
-//                                            }
-//                                        }
-//                                    }
-//
-//                                    if(y.key == "Individual"){
-//                                        if(markerId == y.child(name).child(markerId).key){
-//                                            basicAlert(p0,markerId.toString(),p0.position.latitude.toString(),p0.position.longitude.toString())
-//                                            Log.i("test1234","Line 226")
-//                                            break
-//                                        }else{
-//                                            viewAlert(p0,markerId.toString())
-//                                            Log.i("test1234","Line 230")
-//                                            break
-//                                        }
-////                                        for(a in y.children){ //member ID
-////                                            if(y.hasChild(name)){ //check whether got this username or not
-////                                                //for(x in y.children){
-////                                                if(a.key == name){
-////                                                    //if(x.hasChild(markerId)){
-////                                                        for(m in a.children){
-////                                                            if(m.key == markerId){
-////                                                                basicAlert(p0,markerId.toString(),p0.position.latitude.toString(),p0.position.longitude.toString())
-////                                                                break
-////                                                            }
-////                                                        }
-////                                                    //}
-////                                                }
-////                                                //}
-////                                            }else{
-////                                                viewAlert(p0,markerId.toString())
-////                                                Log.i("test1234","Line 237")
-////                                                break
-////                                            }
-////                                        }
-//                                    }
-//                                }
-//                            }
                         }
 
                         override fun onCancelled(error: DatabaseError) {}
                     })
-
-                    //basicAlert(p0,markerId.toString(),p0.position.latitude.toString(),p0.position.longitude.toString())
+                    }
                 }
                 return true
             }
@@ -355,7 +295,6 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
         username = user[UserSessionManager.KEY_NAME].toString()
         status = user[UserSessionManager.KEY_STATUS].toString()
 
-        // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_home_member, container, false)
 
         myRecyclerView = binding.eventResultViewM
@@ -364,6 +303,7 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
             binding.btnEventM.setBackgroundColor(strokeColor.toInt())
             searchEvent(search)
         }
+
         binding.btnEventM.setOnClickListener {
             if (eventClicked) {
                 eventClicked = false
@@ -374,7 +314,6 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                 } else {
                     searchEvent(search)
                 }
-                Toast.makeText(context, "un click", Toast.LENGTH_SHORT).show()
                 binding.btnEventM.setBackgroundColor(Color.WHITE)
             } else {
                 eventClicked = true
@@ -382,7 +321,6 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                 binding.btnFacilitiesM.isClickable = false
                 eventList.clear()
                 searchEvent(search)
-                Toast.makeText(context, "click", Toast.LENGTH_SHORT).show()
                 binding.btnEventM.setBackgroundColor(strokeColor.toInt())
             }
         }
@@ -391,14 +329,14 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                 facilitiesClicked = true
                 binding.btnServicesM.isClickable = false
                 binding.btnEventM.isClickable = false
-                Toast.makeText(context, "click", Toast.LENGTH_SHORT).show()
                 it.setBackgroundColor(strokeColor.toInt())
+                searchFacilities(search)
             } else {
                 facilitiesClicked = false
                 binding.btnServicesM.isClickable = true
                 binding.btnEventM.isClickable = true
-                Toast.makeText(context, "un click", Toast.LENGTH_SHORT).show()
                 it.setBackgroundColor(Color.WHITE)
+                clear()
             }
         }
         binding.btnServicesM.setOnClickListener {
@@ -406,14 +344,14 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                 servicesClicked = true
                 binding.btnEventM.isClickable = false
                 binding.btnFacilitiesM.isClickable = false
-                Toast.makeText(context, "click", Toast.LENGTH_SHORT).show()
                 it.setBackgroundColor(strokeColor.toInt())
+                searchServices(search)
             } else {
                 servicesClicked = false
                 binding.btnEventM.isClickable = true
                 binding.btnFacilitiesM.isClickable = true
-                Toast.makeText(context, "un click", Toast.LENGTH_SHORT).show()
                 it.setBackgroundColor(Color.WHITE)
+                clear()
             }
         }
 
@@ -425,28 +363,35 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
             override fun onQueryTextChange(newText: String): Boolean {
                 if (newText != null && newText.trim().isNotEmpty()) {
                     eventList.clear()
+                    map.clear()
                     val letters: CharArray = newText.toCharArray()
                     val firstLetter = letters[0].toString().lowercase()
-                    val remainingLetters: String = newText.substring(1)
+                    val remainingLetters: String = newText.substring(1).lowercase()
                     search = "$firstLetter$remainingLetters"
 
                     if (eventClicked) {
                         searchEvent(search)
                     }
-//                    else if (facilitiesClicked){
-//
-//                    }else if(servicesClicked){
-//
-//                    }
+                    else if (facilitiesClicked){
+                        searchFacilities(search)
+                    }
+                    else if(servicesClicked){
+                        searchServices(search)
+                    }
                     else {
                         searchEvent(search)
+                        searchFacilities(search)
                     }
                 } else {
                     search = ""
-                    binding.eventResultViewM.visibility = View.INVISIBLE
+                    binding.eventResultViewM.visibility = View.VISIBLE
 
+                    if (facilitiesClicked) {
+                        searchFacilities(search)
+                    }else if(servicesClicked){
+                        searchServices(search)
+                    }
                 }
-
                 return false
             }
         })
@@ -460,28 +405,33 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
         super.onPause()
     }
 
-    // click function in recycleview
     override fun onItemClick(position: Int) {
         val clickedItem: Event = eventList[position]
-        Toast.makeText(context, "${clickedItem.address}", Toast.LENGTH_SHORT).show()
-
         var coder = Geocoder(context)
-
-        val p1: GeoPoint? = null
-
         var address: MutableList<Address> = coder.getFromLocationName(clickedItem.address, 5)
 
-        Log.i("address", address.toString())
-
         if (address.isEmpty()) {
-            Toast.makeText(context, "no result", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Invalid address!", Toast.LENGTH_SHORT).show()
         } else {
             var location: Address = address[0]
-            var latLng = LatLng(location.latitude, location.longitude)
+            val latLng = LatLng(location.latitude, location.longitude)
 
-            //to marker here
-
-            Toast.makeText(context, "$latLng", Toast.LENGTH_SHORT).show()
+            map.addMarker(
+                MarkerOptions()
+                    .position(latLng)
+                    .snippet("Event Marker")
+                    .title(clickedItem.title)
+                    .icon(
+                        BitmapDescriptorFactory.defaultMarker(
+                            BitmapDescriptorFactory.HUE_ORANGE
+                        )
+                    )
+            )
+            eventMarker = true
+            eventLatLng = latLng
+            eventTitle = clickedItem.title
+            val move = CameraUpdateFactory.newLatLngZoom(latLng, 17f)
+            map.animateCamera(move)
         }
     }
 
@@ -512,7 +462,6 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                         val swipeItem: Event = eventList[viewHolder.adapterPosition]
                         val action = HomeMemberFragmentDirections.actionHomeMemberFragmentToMemberEventInfo(swipeItem.id)
                         binding.root.findNavController().navigate(action)
-                        Toast.makeText(context, "$dY", Toast.LENGTH_SHORT).show()
                     }
                 }
                 super.onChildDraw(
@@ -525,7 +474,6 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                     isCurrentlyActive
                 )
             }
-
         }
         val itemTouchHelper = ItemTouchHelper(simpleItemTouchCallback)
         itemTouchHelper.attachToRecyclerView(myRecyclerView)
@@ -562,8 +510,6 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                                 phone
                             )
                             eventList.add(event)
-                            Log.i("search", e.child("title").value.toString())
-
                         } else if (searchS == "") {
                             binding.eventResultViewM.visibility = View.VISIBLE
                             val getId = e.key.toString()
@@ -595,12 +541,11 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                 if (eventList.isEmpty()) {
                     binding.eventResultViewM.visibility = View.INVISIBLE
                 }
-//                val myRecyclerView: RecyclerView = binding.eventResultView
+
                 myRecyclerView.adapter =
                     MemberEventResultAdapter(eventList, this@HomeMemberFragment)
                 myRecyclerView.setHasFixedSize(true)
                 initSwipe()
-
             }
 
             override fun onCancelled(error: DatabaseError) {}
@@ -608,10 +553,113 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
         })
     }
 
+    private fun searchFacilities(searchS: String){
+        myRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                map.clear()
+                for (s in snapshot.children) {
+                    for (e in s.child("Facilities").children) {
+                        if(e.child("title").value.toString().lowercase().contains(searchS)){
+                            val id = e.key
+                            val lat = e.child("latitude").value.toString().toDouble()
+                            val long = e.child("longitude").value.toString().toDouble()
+                            val title = e.child("title").value.toString()
+                            val type = e.child("type").value.toString()
+                            val marker = LatLng(lat, long)
+
+                            map.addMarker(
+                                MarkerOptions()
+                                    .position(marker)
+                                    .snippet(id)
+                                    .title(title)
+                                    .icon(
+                                        BitmapDescriptorFactory.defaultMarker(
+                                            BitmapDescriptorFactory.HUE_CYAN
+                                        )
+                                    )
+                            )
+                        }else if(searchS == ""){
+                            val id = e.key
+                            val lat = e.child("latitude").value.toString().toDouble()
+                            val long = e.child("longitude").value.toString().toDouble()
+                            val title = e.child("title").value.toString()
+                            val type = e.child("type").value.toString()
+                            val marker = LatLng(lat, long)
+
+                            map.addMarker(
+                                MarkerOptions()
+                                    .position(marker)
+                                    .snippet(id)
+                                    .title(title)
+                                    .icon(
+                                        BitmapDescriptorFactory.defaultMarker(
+                                            BitmapDescriptorFactory.HUE_CYAN
+                                        )
+                                    )
+                            )
+                        }
+                    }
+                }
+            }
+            override fun onCancelled(error: DatabaseError) {}
+        })
+    }
+
+    private fun searchServices(searchS: String){
+        myRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                map.clear()
+                for (s in snapshot.children) {
+                    for (e in s.child("Services").children) {
+                        if(e.child("title").value.toString().lowercase().contains(searchS)){
+                            val id = e.key
+                            val lat = e.child("latitude").value.toString().toDouble()
+                            val long = e.child("longitude").value.toString().toDouble()
+                            val title = e.child("title").value.toString()
+                            val type = e.child("type").value.toString()
+                            val marker = LatLng(lat, long)
+
+                            map.addMarker(
+                                MarkerOptions()
+                                    .position(marker)
+                                    .snippet(id)
+                                    .title(title)
+                                    .icon(
+                                        BitmapDescriptorFactory.defaultMarker(
+                                            BitmapDescriptorFactory.HUE_GREEN
+                                        )
+                                    )
+                            )
+                        }else if(searchS == ""){
+                            val id = e.key
+                            val lat = e.child("latitude").value.toString().toDouble()
+                            val long = e.child("longitude").value.toString().toDouble()
+                            val title = e.child("title").value.toString()
+                            val type = e.child("type").value.toString()
+                            val marker = LatLng(lat, long)
+
+                            map.addMarker(
+                                MarkerOptions()
+                                    .position(marker)
+                                    .snippet(id)
+                                    .title(title)
+                                    .icon(
+                                        BitmapDescriptorFactory.defaultMarker(
+                                            BitmapDescriptorFactory.HUE_GREEN
+                                        )
+                                    )
+                            )
+                        }
+                    }
+                }
+            }
+            override fun onCancelled(error: DatabaseError) {}
+        })
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setHasOptionsMenu(true)
         super.onViewCreated(view, savedInstanceState)
-
 
         var session = UserSessionManager(requireContext().applicationContext)
         val user = session.userDetails
@@ -622,7 +670,6 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
             childFragmentManager.findFragmentById(R.id.memberMap) as SupportMapFragment?
         mapFragment?.getMapAsync(callback)
 
-        //return long press action
         val v: View = this.requireActivity().findViewById(android.R.id.content)
         Snackbar.make(v, "Long press to add a marker!", Snackbar.LENGTH_SHORT)
             .setAction("OK", {})
@@ -693,17 +740,14 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                     .position(latLng)
                     .title("New Pin")
                     .snippet("")
-                    //.draggable(true)
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
             )
-            //map.setOnInfoWindowClickListener {
             basicAlert(
                 test,
                 test.snippet.toString(),
                 latLng.latitude.toString(),
                 latLng.longitude.toString()
             )
-            //}
         }
     }
 
@@ -719,11 +763,10 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
             val request = Request.Builder().url(url).build()
             val response = client.newCall(request).execute()
             val data = response.body!!.string()
-            Log.d("GoogleMap", " data : $data")
             val result = ArrayList<List<LatLng>>()
+
             try {
                 val respObj = Gson().fromJson(data, GoogleMapDTO::class.java)
-
                 val path = ArrayList<LatLng>()
 
                 for (i in 0..(respObj.routes[0].legs[0].steps.size - 1)) {
@@ -791,7 +834,6 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
         builder.setMessage("Start to Go?")
 
         builder.setPositiveButton("Start") { which, dialog ->
-            //val gmmIntentUri = Uri.parse("geo:" + p0.position.latitude.toString() + "," + p0.position.longitude.toString())
             val gmmIntentUri =
                 Uri.parse("google.navigation:q=" + p0.position.latitude.toString() + "," + p0.position.longitude.toString())
             val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
@@ -814,10 +856,7 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
         }
 
         val builder: AlertDialog.Builder = AlertDialog.Builder(this.requireContext())
-        //builder.setTitle("Androidly Alert")
-
         val content = LayoutInflater.from(this.requireContext()).inflate(R.layout.marker_form, null)
-
         val items = resources.getStringArray(R.array.types)
         val stateList = resources.getStringArray(R.array.stateList)
         val adapter = ArrayAdapter(this.requireContext(), R.layout.dropdown_type, items)
@@ -839,11 +878,11 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
             myRef.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     for (s in snapshot.children) {
-                        for (t in s.children) { //type
+                        for (t in s.children) {
                             if (t.key == "Individual") {
-                                for (a in t.children) { // check every member id
-                                    if (a.hasChild(markerId)) { //check the marker id is under the member or not
-                                        for (v in a.children) { //loop the member children(marker id)
+                                for (a in t.children) {
+                                    if (a.hasChild(markerId)) {
+                                        for (v in a.children) {
                                             if (v.key == markerId) { //marker same
                                                 getId = v.key.toString()
                                                 oldType = v.child("type").value.toString()
@@ -865,6 +904,7 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                 }
 
                 override fun onCancelled(error: DatabaseError) {}
+
             })
         } else {
             autoId.setText("Individual")
@@ -938,10 +978,7 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                                 dialog.dismiss()
                             }
                     }
-                    map.clear()
-                    val mapFragment =
-                        childFragmentManager.findFragmentById(R.id.memberMap) as SupportMapFragment?
-                    mapFragment?.getMapAsync(callback)
+                    clear()
                 }
             } else {
                 if (type.isEmpty()) {
@@ -1032,15 +1069,8 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                         myRef.child(oldState).child(oldType).child(name).child(markerId)
                             .removeValue()
                             .addOnSuccessListener {
-                                //defaultId.hideInfoWindow()
                                 dialog.dismiss()
-                                //Toast.makeText(context, "Delete Successful", Toast.LENGTH_SHORT).show()
-                                //defaultId.remove()
-                                //remove marker
-                                map.clear()
-                                val mapFragment =
-                                    childFragmentManager.findFragmentById(R.id.memberMap) as SupportMapFragment?
-                                mapFragment?.getMapAsync(callback)
+                                clear()
 
                                 val v: View =
                                     this.requireActivity().findViewById(android.R.id.content)
@@ -1106,12 +1136,8 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
     }
 
     fun viewAlert(defaultId: com.google.android.gms.maps.model.Marker, markerId: String) {
-
         val builder: AlertDialog.Builder = AlertDialog.Builder(this.requireContext())
-
-        val content =
-            LayoutInflater.from(this.requireContext()).inflate(R.layout.marker_details, null)
-
+        val content = LayoutInflater.from(this.requireContext()).inflate(R.layout.marker_details, null)
         val type = content.findViewById<TextView>(R.id.markerType)
         val title = content.findViewById<TextView>(R.id.markerTitle)
         val description = content.findViewById<TextView>(R.id.markerDescription)
@@ -1123,8 +1149,8 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
         if (markerId != "") {
             myRef.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    for (s in snapshot.children) { //state list
-                        for (t in s.children) { //type
+                    for (s in snapshot.children) {
+                        for (t in s.children) {
 
                             if (t.key == "Services" || t.key == "Facilities") {
                                 if (t.hasChild(markerId)) {
@@ -1145,7 +1171,7 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                             }
 
                             if (t.key == "Individual") {
-                                for (a in t.children) { //member ID
+                                for (a in t.children) {
                                     if (a.hasChild(markerId)) {
                                         for (v in a.children) {
                                             if (v.key == markerId) {
@@ -1175,14 +1201,6 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                 override fun onCancelled(error: DatabaseError) {}
             })
         }
-//        else{
-//            type.text = ""
-//            title.text = ""
-//            description.text = ""
-//            phoneNo.text = ""
-//            address.text = ""
-//            state.text = ""
-//        }
 
         builder.setView(content)
         builder.setCancelable(false)

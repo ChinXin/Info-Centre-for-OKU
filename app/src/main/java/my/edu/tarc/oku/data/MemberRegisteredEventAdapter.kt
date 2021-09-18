@@ -13,7 +13,6 @@ import my.edu.tarc.oku.AdminEventDirections
 import my.edu.tarc.oku.MemberRegisteredEventDirections
 import my.edu.tarc.oku.R
 
-//class ProductAdapter (private val productList: List<Product>):RecyclerView.Adapter<ProductAdapter.myViewHolder>(){
 class MemberRegisteredEventAdapter (val eventList: List<Event>): RecyclerView.Adapter<MemberRegisteredEventAdapter.myViewHolder>() {
 
 
@@ -37,11 +36,9 @@ class MemberRegisteredEventAdapter (val eventList: List<Event>): RecyclerView.Ad
         holder.eventTitle.text = currentEvent.title
         holder.eventDateTime.text = "Date/Time: ${currentEvent.date}, ${currentEvent.time}"
         holder.eventAddress.text = "Address: ${currentEvent.address}"
-//        holder.eventImage.setImageURI(currentEvent.image.toUri())
-//        holder.eventImage.setImageResource(currentEvent.image)
         Glide.with(holder.eventImage.context)
             .load(currentEvent.image)
-            .fitCenter()// scale to fit entire image within ImageView
+            .fitCenter()
             .into(holder.eventImage)
         holder.itemView.setOnClickListener {
             val eventId = currentEvent.id
