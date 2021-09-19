@@ -102,6 +102,10 @@ class LoginFragment : Fragment() {
             })
         }
 
+        binding.btnForgotPass.setOnClickListener(){
+            Navigation.findNavController(it).navigate(R.id.action_loginFragment_to_forgotPasswordFragment)
+        }
+
         binding.btnGoRegister.setOnClickListener()
         {
             Navigation.findNavController(it).navigate(R.id.action_loginFragment_to_registerFragment)

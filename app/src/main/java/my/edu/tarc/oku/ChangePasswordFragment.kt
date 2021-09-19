@@ -12,12 +12,19 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.findNavController
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import my.edu.tarc.oku.data.UserSessionManager
 import my.edu.tarc.oku.databinding.FragmentChangePasswordBinding
 import my.edu.tarc.oku.databinding.FragmentEditProfileBinding
 import java.lang.StringBuilder
+import javax.mail.Transport
 
 
 class ChangePasswordFragment : Fragment() {
@@ -42,29 +49,38 @@ class ChangePasswordFragment : Fragment() {
 
 
         binding.btnUpdate.setOnClickListener{
-            val password = binding.password.text.toString().toByteArray()
-            if(isValidate()){
+            var checkPassword: Boolean
 
-                val inputManager: InputMethodManager =
-                    activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                inputManager.hideSoftInputFromWindow(binding.root.rootView.windowToken, 0)
+            myRef.child(status).child(name).get().addOnSuccessListener {
+                val password = it.child("password").value.toString()
+                val currentPass = binding.currentpassword.text.toString().toByteArray()
+                if (convertedPassword(currentPass) == password) {
+                    binding.currentpasswordLayout.isErrorEnabled = false
+                    if(isValidate()){
+                        val password = binding.password.text.toString().toByteArray()
+                        val inputManager: InputMethodManager =
+                            activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                        inputManager.hideSoftInputFromWindow(binding.root.rootView.windowToken, 0)
 
-                myRef.child(status).child(name).child("password").setValue(convertedPassword(password))
-                    .addOnSuccessListener { _ ->
-                        Toast.makeText(
-                            context,
-                            "Password Update Successfully!!!",
-                            Toast.LENGTH_LONG
-                        ).show()
-                        if(status == "admin"){
-                            binding.root.findNavController().navigate(R.id.action_changePasswordFragment2_to_homeAdminFragment)
-                        }else{
-                            binding.root.findNavController().navigate(R.id.action_changePasswordFragment_to_homeMemberFragment)
-                        }
+                        myRef.child(status).child(name).child("password").setValue(convertedPassword(password))
+                            .addOnSuccessListener { _ ->
+                                Toast.makeText(
+                                    context,
+                                    "Password Update Successfully!!!",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                if(status == "admin"){
+                                    binding.root.findNavController().navigate(R.id.action_changePasswordFragment2_to_homeAdminFragment)
+                                }else{
+                                    binding.root.findNavController().navigate(R.id.action_changePasswordFragment_to_homeMemberFragment)
+                                }
+                            }
                     }
+                }else{
+                    binding.currentpasswordLayout.error = "Incorrect Password!"
+                }
             }
         }
-
         return binding.root
     }
 
