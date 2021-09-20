@@ -75,7 +75,7 @@ class feedbackFragment : Fragment() {
                 myRecyclerView.setHasFixedSize(true)
 
                 if(feedbackList.isEmpty()){
-                    Toast.makeText(context,"There is no feedback by other users.",Toast.LENGTH_LONG).show()
+                    Toast.makeText(context,"There is no feedback by other members.",Toast.LENGTH_LONG).show()
                 }
             }
 
@@ -102,6 +102,13 @@ class feedbackFragment : Fragment() {
                                 myRef.removeEventListener(infoWindowListener!!)
                             }
                             for(x in snapshot.children){
+                                if(!snapshot.hasChild(markerId)){
+                                    myRef.child(markerId).child(username).setValue(new_feedback).addOnSuccessListener {
+                                        Toast.makeText(context,"Submit Successful!",Toast.LENGTH_LONG).show()
+                                    }
+                                    break
+                                }
+
                                 if(x.key == markerId){
                                     if(x.hasChild(username)){ ///marker id
                                         val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
@@ -126,6 +133,8 @@ class feedbackFragment : Fragment() {
                                         break
                                     }
                                 }
+
+
                             }
                         }
 

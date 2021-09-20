@@ -1136,7 +1136,7 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
     }
 
     fun viewAlert(defaultId: com.google.android.gms.maps.model.Marker, markerId: String) {
-        val builder: AlertDialog.Builder = AlertDialog.Builder(this.requireContext())
+        val builder: AlertDialog.Builder = AlertDialog.Builder(context)
         val content = LayoutInflater.from(this.requireContext()).inflate(R.layout.marker_details, null)
         val type = content.findViewById<TextView>(R.id.markerType)
         val title = content.findViewById<TextView>(R.id.markerTitle)

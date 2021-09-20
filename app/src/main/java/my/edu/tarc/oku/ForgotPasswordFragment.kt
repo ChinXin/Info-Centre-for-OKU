@@ -110,7 +110,7 @@ class ForgotPasswordFragment : Fragment() {
             setFrom(InternetAddress(from))
 
             addRecipient(Message.RecipientType.TO, InternetAddress(to))
-            subject = "This is the long long long subject" //Email subject
+            subject = "Change Account Password" //Email subject
             setContent(
                 "<html><body><h1>$validateNumber</h1></body></html>",
                 "text/html; charset=utf-8"

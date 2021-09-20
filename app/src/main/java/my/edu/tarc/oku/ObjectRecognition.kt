@@ -68,9 +68,9 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
         tvPlaceholder = findViewById(R.id.tvPlaceholder)
 
         captureImageFab.setOnClickListener(this)
-        imgSampleOne.setOnClickListener(this)
-        imgSampleTwo.setOnClickListener(this)
-        imgSampleThree.setOnClickListener(this)
+//        imgSampleOne.setOnClickListener(this)
+//        imgSampleTwo.setOnClickListener(this)
+//        imgSampleThree.setOnClickListener(this)
 
 //        val checkIntent = Intent()
 //        checkIntent.action = TextToSpeech.Engine.ACTION_CHECK_TTS_DATA
