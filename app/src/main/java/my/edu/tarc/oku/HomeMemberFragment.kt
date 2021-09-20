@@ -874,6 +874,10 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
         var oldType = ""
         var oldState = ""
 
+        if(markerId == ""){
+            content.findViewById<Button>(R.id.btnGoFeedback).visibility = View.GONE
+        }
+
         if (markerId != "") {
             myRef.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {

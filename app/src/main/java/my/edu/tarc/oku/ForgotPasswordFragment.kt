@@ -61,7 +61,7 @@ class ForgotPasswordFragment : Fragment() {
                                 binding.emailFLayout.error = "Email is incorrect with your account!"
                             }else{
                                 GlobalScope.launch(IO){
-                                    Transport.send(plainMail())
+                                    Transport.send(plainMail(email))
                                 }
                                 val action = ForgotPasswordFragmentDirections.actionForgotPasswordFragmentToValidateNumberFragment(username.text.toString())
                                 binding.root.findNavController().navigate(action)
@@ -78,8 +78,7 @@ class ForgotPasswordFragment : Fragment() {
         return binding.root
     }
 
-    private fun plainMail(): MimeMessage {
-        val to = "aeronchow1@gmail.com" //receiver email
+    private fun plainMail(receiver:String): MimeMessage {
         val from = "okuapplication@gmail.com" //Sender email
 
         val properties = System.getProperties()
@@ -109,7 +108,7 @@ class ForgotPasswordFragment : Fragment() {
         with(message) {
             setFrom(InternetAddress(from))
 
-            addRecipient(Message.RecipientType.TO, InternetAddress(to))
+            addRecipient(Message.RecipientType.TO, InternetAddress(receiver))
             subject = "Change Account Password" //Email subject
             setContent(
                 "<html><body><h1>$validateNumber</h1></body></html>",

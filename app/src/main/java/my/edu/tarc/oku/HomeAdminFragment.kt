@@ -286,6 +286,10 @@ class HomeAdminFragment : Fragment() {
         autoId.setAdapter(adapter)
         autoId2.setAdapter(adapter2)
 
+        if(markerId == ""){
+            content.findViewById<Button>(R.id.btnGoFeedback).visibility = View.GONE
+        }
+
         val database = Firebase.database
         val myRef = database.getReference("state")
 
