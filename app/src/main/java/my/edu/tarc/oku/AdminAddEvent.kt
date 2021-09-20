@@ -25,6 +25,9 @@ import my.edu.tarc.oku.data.Event
 import my.edu.tarc.oku.databinding.FragmentAdminAddEventBinding
 
 import android.content.ContentResolver
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import android.util.Base64
 import android.util.Log
 import android.util.Patterns
 import android.webkit.MimeTypeMap
@@ -39,6 +42,7 @@ import com.google.firebase.storage.OnProgressListener
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.UploadTask
 import com.google.firebase.storage.ktx.storage
+import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.regex.Pattern
 
@@ -53,6 +57,7 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
     private var savedImgUri: String? = null
     private var newImg: Boolean = false
     private var imgUri: Uri? = null
+    private lateinit var strImg:String
 
     //System time
     private lateinit var c: Calendar
@@ -124,29 +129,19 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
                 binding.description.isEnabled = false
                 binding.eLink.isEnabled = false
                 binding.ePhone.isEnabled = false
+                binding.progressBarHolder.visibility = View.VISIBLE
 
                 eventId = "${UUID.randomUUID()}"
 
-                val fileRef: StorageReference = storage.child("${eventId}.png")
-                fileRef.putFile(imgUri!!)
-                    .addOnSuccessListener(object : OnSuccessListener<UploadTask.TaskSnapshot> {
-                        override fun onSuccess(p0: UploadTask.TaskSnapshot?) {
-                            fileRef.downloadUrl.addOnSuccessListener {
+//                val fileRef: StorageReference = storage.child("${eventId}.png")
+//                fileRef.putFile(imgUri!!)
+//                    .addOnSuccessListener(object : OnSuccessListener<UploadTask.TaskSnapshot> {
+//                        override fun onSuccess(p0: UploadTask.TaskSnapshot?) {
+//                            fileRef.downloadUrl.addOnSuccessListener {
                                 savedImgUri = it.toString()
-                                val event = Event(
-                                    eventId,
-                                    savedImgUri.toString(),
-                                    title,
-                                    date,
-                                    time,
-                                    address,
-                                    state,
-                                    description,
-                                    link,
-                                    phone
-                                )
+                                val event = Event(eventId, strImg, title, date, time, address, state, description, link, phone)
                                 myRef.child(state).child("Events").child(eventId).setValue(event)
-                                    .addOnSuccessListener { _ ->
+                                    .addOnSuccessListener {
                                         binding.progressBarHolder.visibility = View.INVISIBLE
                                         Toast.makeText(
                                             context,
@@ -163,16 +158,16 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
                                         )
                                             .show()
                                     }
-                            }
-                        }
-
-                    }).addOnProgressListener {
-                        binding.progressBarHolder.visibility = View.VISIBLE
-                    }.addOnFailureListener {
-                        binding.progressBarHolder.visibility = View.INVISIBLE
-                        Toast.makeText(context, "Uploading Fail", Toast.LENGTH_LONG)
-                            .show()
-                    }
+//                            }
+//                        }
+//
+//                    }).addOnProgressListener {
+//                        binding.progressBarHolder.visibility = View.VISIBLE
+//                    }.addOnFailureListener {
+//                        binding.progressBarHolder.visibility = View.INVISIBLE
+//                        Toast.makeText(context, "Uploading Fail", Toast.LENGTH_LONG)
+//                            .show()
+//                    }
 
             }
         }
@@ -234,11 +229,20 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
                         }
                     }
                     minutes = minute
-                    if (minute < 10) {
-                        binding.btnTime.text = "$hour:0$minutes $timeSet"
-                    } else {
-                        binding.btnTime.text = "$hour:$minutes $timeSet"
+                    if(hour < 10 ){
+                        if (minute < 10) {
+                            binding.btnTime.text = "0$hour:0$minutes $timeSet"
+                        } else {
+                            binding.btnTime.text = "0$hour:$minutes $timeSet"
+                        }
+                    }else{
+                        if (minute < 10) {
+                            binding.btnTime.text = "$hour:0$minutes $timeSet"
+                        } else {
+                            binding.btnTime.text = "$hour:$minutes $timeSet"
+                        }
                     }
+
 
                 }, mHour, mMinute, false
             )
@@ -263,6 +267,12 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
         if (!newImg) {
             Toast.makeText(context, "Event Banner Is Required Field!", Toast.LENGTH_LONG).show()
             return false
+        }else{
+            //convert bitmap to string
+            val bitmap = (binding.imgEvent.getDrawable() as BitmapDrawable).bitmap
+            val byteArray: ByteArrayOutputStream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArray)
+            strImg = Base64.encodeToString(byteArray.toByteArray(), Base64.DEFAULT)
         }
         return true
     }

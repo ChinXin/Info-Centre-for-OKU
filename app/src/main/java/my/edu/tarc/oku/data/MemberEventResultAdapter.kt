@@ -9,6 +9,7 @@ import com.bumptech.glide.Glide
 import com.google.firebase.firestore.GeoPoint
 import my.edu.tarc.oku.R
 import android.location.Address
+import android.util.Base64
 import android.util.Log
 import android.widget.*
 
@@ -57,9 +58,10 @@ class MemberEventResultAdapter(
         holder.eventTitle.text = currentEvent.title
         holder.eventDateTime.text = "Date/Time: ${currentEvent.date}, ${currentEvent.time}"
         holder.eventAddress.text = "Address: ${currentEvent.address}"
-
+        val bitmap = Base64.decode(currentEvent.image, Base64.DEFAULT)
         Glide.with(holder.eventImage.context)
-            .load(currentEvent.image)
+            .asBitmap()
+            .load(bitmap)
             .fitCenter()
             .into(holder.eventImage)
     }

@@ -54,16 +54,15 @@
         <action
             android:id="@+id/action_memberRegisteredEvent_to_memberEventInfo"
             app:destination="@id/memberEventInfo" />
+        <argument android:name="eventId" />
     </fragment>
     <fragment
         android:id="@+id/memberEventInfo"
         android:name="my.edu.tarc.oku.MemberEventInfo"
-        android:label="memberEventInfo">
-        <argument
-            android:name="eventId"
-            app:argType="string" />
+        android:label="MemberEventInfo" >
+        <argument android:name="eventId" />
         <action
-            android:id="@+id/action_eventInfo_to_memberRegisteredEvent"
+            android:id="@+id/action_memberEventInfo_to_memberRegisteredEvent"
             app:destination="@id/memberRegisteredEvent" />
     </fragment>
 </navigation>

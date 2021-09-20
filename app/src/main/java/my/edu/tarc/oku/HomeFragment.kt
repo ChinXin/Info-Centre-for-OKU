@@ -391,9 +391,9 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
                 isCurrentlyActive: Boolean
             ) {
                 if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
-                    if (dY <= 0) {
+                    if (dY == 0.0f) {
                         val swipeItem: Event = eventList[viewHolder.adapterPosition]
-                        val action = HomeFragmentDirections.actionHomeFragmentToMemberEventInfo3(swipeItem.id)
+                        val action = HomeFragmentDirections.actionHomeFragmentToHomeEventInfo(swipeItem.id)
                         binding.root.findNavController().navigate(action)
                         Toast.makeText(context, "$dY", Toast.LENGTH_SHORT).show()
                     }

@@ -37,8 +37,8 @@
             android:id="@+id/action_homeFragment_to_feedbackFragment"
             app:destination="@id/feedbackFragment" />
         <action
-            android:id="@+id/action_homeFragment_to_memberEventInfo3"
-            app:destination="@id/memberEventInfo3" />
+            android:id="@+id/action_homeFragment_to_homeEventInfo"
+            app:destination="@id/homeEventInfo" />
     </fragment>
     <fragment
         android:id="@+id/feedbackFragment"
@@ -52,9 +52,12 @@
             app:argType="string" />
     </fragment>
     <fragment
-        android:id="@+id/memberEventInfo3"
-        android:name="my.edu.tarc.oku.MemberEventInfo"
-        android:label="MemberEventInfo">
+        android:id="@+id/homeEventInfo"
+        android:name="my.edu.tarc.oku.HomeEventInfo"
+        android:label="HomeEventInfo" >
+        <action
+            android:id="@+id/action_homeEventInfo_to_homeFragment"
+            app:destination="@id/homeFragment" />
         <argument
             android:name="eventId"
             app:argType="string" />

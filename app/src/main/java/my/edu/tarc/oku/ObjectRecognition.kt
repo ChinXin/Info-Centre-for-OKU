@@ -72,9 +72,17 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
         imgSampleTwo.setOnClickListener(this)
         imgSampleThree.setOnClickListener(this)
 
+//        val checkIntent = Intent()
+//        checkIntent.action = TextToSpeech.Engine.ACTION_CHECK_TTS_DATA
+//        startActivityForResult(checkIntent, CHECK_CODE)
+    }
+
+    override fun onStart() {
+        // Fire off an intent to check if a TTS engine is installed
         val checkIntent = Intent()
         checkIntent.action = TextToSpeech.Engine.ACTION_CHECK_TTS_DATA
         startActivityForResult(checkIntent, CHECK_CODE)
+        super.onStart()
     }
 
     override fun onBackPressed() {

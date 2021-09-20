@@ -16,6 +16,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.speech.tts.TextToSpeech
+import android.util.Base64
 import android.view.*
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -34,10 +35,10 @@ class AdminEventInfo : Fragment() {
     private lateinit var binding: EventInfoBinding
     private lateinit var session: UserSessionManager
     private lateinit var user: HashMap<String?, String?>
-    private lateinit var username:String
+    private lateinit var username: String
     private lateinit var status: String
     private lateinit var event: Event
-    val myRef = Firebase.database.getReference("state" )
+    val myRef = Firebase.database.getReference("state")
     private val storage = Firebase.storage.getReference("EventImage")
     private var eventId: String = ""
     private var title: String = ""
@@ -49,9 +50,10 @@ class AdminEventInfo : Fragment() {
     private var link: String = ""
     private var phone: String = ""
     var state: String = ""
-    lateinit var mTTS:TextToSpeech
+    lateinit var mTTS: TextToSpeech
     private lateinit var tts: TextToSpeech
     private val MY_DATA_CHECK_CODE = 1234
+    private var infoValueEventListener: ValueEventListener? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -63,17 +65,19 @@ class AdminEventInfo : Fragment() {
         username = user[UserSessionManager.KEY_NAME].toString()
         status = user[UserSessionManager.KEY_STATUS].toString()
 
-        activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                binding.root.findNavController().navigate(R.id.adminEvent)
-            }
-        })
+        activity?.onBackPressedDispatcher?.addCallback(
+            viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    binding.root.findNavController().navigate(R.id.adminEvent)
+                }
+            })
 
         binding = DataBindingUtil.inflate(inflater, R.layout.event_info, container, false)
 
         val args = AdminEventInfoArgs.fromBundle(requireArguments())
 
-        myRef.addValueEventListener(object : ValueEventListener {
+        infoValueEventListener = myRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 for (s in snapshot.children) {
                     for (e in s.child("Events").children) {
@@ -100,9 +104,11 @@ class AdminEventInfo : Fragment() {
                                 link,
                                 phone
                             )
-                            Glide.with(requireContext())
-                                .load(img)
-                                .fitCenter()
+                            val bitmap = Base64.decode(img, Base64.DEFAULT)
+                            Glide.with(requireContext().applicationContext)
+                                .asBitmap()
+                                .load(bitmap)
+                                .fitCenter()// scale to fit entire image within ImageView
                                 .into(binding.imageView3)
                             binding.tvTitle.text = title
                             binding.tvTimeDate.text =
@@ -142,21 +148,24 @@ class AdminEventInfo : Fragment() {
         return binding.root
     }
 
+    override fun onPause() {
+        if (infoValueEventListener != null) {
+            myRef.removeEventListener(infoValueEventListener!!)
+        }
+        super.onPause()
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        if (status == "admin") {
-            setHasOptionsMenu(true)
-        }
+        setHasOptionsMenu(true)
         super.onViewCreated(view, savedInstanceState)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.event, menu)
         menu.findItem(R.id.btnAdd).isEnabled = false
-        if(status == "admin"){
-            menu.findItem(R.id.btnDelete).isVisible = true
-            menu.findItem(R.id.btnParticipants).isVisible = true
-        }
+        menu.findItem(R.id.btnDelete).isVisible = true
+        menu.findItem(R.id.btnParticipants).isVisible = true
+
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -168,13 +177,17 @@ class AdminEventInfo : Fragment() {
                 builder.setTitle("Delete Event")
                 builder.setMessage("Are you sure you want to delete this event?")
 
-                builder.setPositiveButton("Yes"){ which,dialog ->
+                builder.setPositiveButton("Yes") { which, dialog ->
                     var snackBar: Snackbar
                     myRef.child(state).child("Events").child(eventId).removeValue()
                         .addOnSuccessListener {
                             binding.root.findNavController()
                                 .navigate(R.id.action_adminEventInfo_to_adminEvent)
-                            snackBar = Snackbar.make(binding.root,"Event deleted successfully!",Snackbar.LENGTH_LONG)
+                            snackBar = Snackbar.make(
+                                binding.root,
+                                "Event deleted successfully!",
+                                Snackbar.LENGTH_LONG
+                            )
                                 .setAction("UNDO", View.OnClickListener {
                                     myRef.child(state).child("Events").child(eventId)
                                         .setValue(event)
@@ -192,16 +205,17 @@ class AdminEventInfo : Fragment() {
                                             ).show()
                                         }
                                 })
-                                .addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                                .addCallback(object :
+                                    BaseTransientBottomBar.BaseCallback<Snackbar>() {
                                     override fun onShown(transientBottomBar: Snackbar?) {
                                         super.onShown(transientBottomBar)
                                     }
 
-                                    override fun onDismissed(transientBottomBar: Snackbar?,event: Int) {
+                                    override fun onDismissed(
+                                        transientBottomBar: Snackbar?,
+                                        event: Int
+                                    ) {
                                         super.onDismissed(transientBottomBar, event)
-                                        if(event != 1){
-                                            storage.child("$eventId.png").delete()
-                                        }
                                     }
                                 })
 
@@ -209,13 +223,14 @@ class AdminEventInfo : Fragment() {
                         }
                 }
 
-                builder.setNegativeButton("No"){ which,dialog ->}
+                builder.setNegativeButton("No") { which, dialog -> }
 
                 builder.show()
                 true
             }
-            R.id.btnParticipants ->{
-                val action = AdminEventInfoDirections.actionAdminEventInfoToAdminEventParticipant(eventId)
+            R.id.btnParticipants -> {
+                val action =
+                    AdminEventInfoDirections.actionAdminEventInfoToAdminEventParticipant(eventId)
                 binding.root.findNavController()
                     .navigate(action)
                 true

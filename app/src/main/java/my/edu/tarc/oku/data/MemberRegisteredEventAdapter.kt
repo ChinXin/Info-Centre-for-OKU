@@ -1,5 +1,6 @@
 package my.edu.tarc.oku.data
 
+import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -36,9 +37,13 @@ class MemberRegisteredEventAdapter (val eventList: List<Event>): RecyclerView.Ad
         holder.eventTitle.text = currentEvent.title
         holder.eventDateTime.text = "Date/Time: ${currentEvent.date}, ${currentEvent.time}"
         holder.eventAddress.text = "Address: ${currentEvent.address}"
+        val bitmap = Base64.decode(currentEvent.image, Base64.DEFAULT)
+//        holder.eventImage.setImageURI(currentEvent.image.toUri())
+//        holder.eventImage.setImageResource(currentEvent.image)
         Glide.with(holder.eventImage.context)
-            .load(currentEvent.image)
-            .fitCenter()
+            .asBitmap()
+            .load(bitmap)
+            .fitCenter()// scale to fit entire image within ImageView
             .into(holder.eventImage)
         holder.itemView.setOnClickListener {
             val eventId = currentEvent.id

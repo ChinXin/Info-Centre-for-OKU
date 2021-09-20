@@ -49,7 +49,6 @@ class MemberActivity : AppCompatActivity() {
 
         navView.menu.findItem(R.id.objectRecognizeM).setOnMenuItemClickListener {
             val intent = Intent(applicationContext, ObjectRecognition::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
             startActivity(intent)
             true
         }

@@ -458,7 +458,7 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                 isCurrentlyActive: Boolean
             ) {
                 if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
-                    if (dY <= 0) {
+                    if (dY == 0.0f) {
                         val swipeItem: Event = eventList[viewHolder.adapterPosition]
                         val action = HomeMemberFragmentDirections.actionHomeMemberFragmentToMemberEventInfo(swipeItem.id)
                         binding.root.findNavController().navigate(action)
