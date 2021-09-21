@@ -106,7 +106,7 @@ class AdminEventInfo : Fragment() {
                                 )
                                 scopeMainThread.launch {
                                     val bitmap = Base64.decode(img, Base64.DEFAULT)
-                                    Glide.with(requireContext().applicationContext)
+                                    Glide.with(requireView())
                                         .asBitmap()
                                         .load(bitmap)
                                         .fitCenter()

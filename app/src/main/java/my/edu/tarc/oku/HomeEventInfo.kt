@@ -96,7 +96,7 @@ class HomeEventInfo : Fragment(), TextToSpeech.OnInitListener {
                                 phone
                             )
                             val bitmap = Base64.decode(img, Base64.DEFAULT)
-                            Glide.with(requireContext().applicationContext)
+                            Glide.with(requireView())
                                 .asBitmap()
                                 .load(bitmap)
                                 .fitCenter()// scale to fit entire image within ImageView
