@@ -1,22 +1,15 @@
 package my.edu.tarc.oku.data
 
-import android.location.Geocoder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.google.firebase.firestore.GeoPoint
 import my.edu.tarc.oku.R
-import android.location.Address
 import android.util.Base64
-import android.util.Log
 import android.widget.*
 
-class MemberEventResultAdapter(
-    val eventList: List<Event>,
-    val listener: OnItemClickListener
-) :
+class MemberEventResultAdapter( val eventList: List<Event>, val listener: OnItemClickListener ) :
     RecyclerView.Adapter<MemberEventResultAdapter.myViewHolder>(){
 
     inner class myViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView),

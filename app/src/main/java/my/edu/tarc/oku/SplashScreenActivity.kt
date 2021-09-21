@@ -1,7 +1,6 @@
 package my.edu.tarc.oku
 
 import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_NO_HISTORY
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
@@ -15,15 +14,11 @@ class SplashScreenActivity : AppCompatActivity() {
 
         val session = UserSessionManager(applicationContext)
 
-        // This is used to hide the status bar and make
-        // the splash screen as a full screen activity.
         window.setFlags(
             WindowManager.LayoutParams.FLAG_FULLSCREEN,
             WindowManager.LayoutParams.FLAG_FULLSCREEN
         )
 
-        // we used the postDelayed(Runnable, time) method
-        // to send a message with a delayed time.
         Handler().postDelayed({
             if (session.checkLogin()){
                 val user = session.userDetails
@@ -47,6 +42,6 @@ class SplashScreenActivity : AppCompatActivity() {
                 finish()
             }
 
-        }, 3000) // 3000 is the delayed time in milliseconds.
+        }, 3000)
     }
 }

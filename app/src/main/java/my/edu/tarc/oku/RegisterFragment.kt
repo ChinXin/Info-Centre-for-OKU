@@ -3,16 +3,13 @@ package my.edu.tarc.oku
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.util.Patterns
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.MutableLiveData
 import androidx.navigation.Navigation
 import com.google.firebase.database.*
 import com.google.firebase.database.ktx.database
@@ -21,10 +18,6 @@ import my.edu.tarc.oku.data.User
 import my.edu.tarc.oku.databinding.FragmentRegisterBinding
 import java.lang.StringBuilder
 import java.util.regex.Pattern
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import java.util.*
 
 
 class RegisterFragment : Fragment() {
@@ -60,7 +53,7 @@ class RegisterFragment : Fragment() {
                 val newUser =
                     User(username, fullName, email, phoneNo, address, convertedPassword(password))
                 myRef.child("member").child(username).setValue(newUser)
-                    .addOnSuccessListener { _ ->
+                    .addOnSuccessListener {
                         Toast.makeText(
                             context,
                             "Register Successfully! \n You can now log in your account",

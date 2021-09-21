@@ -9,11 +9,6 @@
         android:orientation="vertical"
         android:padding="20dp">
 
-        <!--        <ImageView-->
-        <!--            android:layout_width="80dp"-->
-        <!--            android:layout_height="80dp"-->
-        <!--            android:src="@drawable/logo"/>-->
-
         <TextView
             android:id="@+id/textView"
             android:layout_width="wrap_content"
@@ -41,8 +36,7 @@
             android:layout_marginBottom="20dp"
             android:orientation="vertical">
 
-            //username
-
+            <!--username-->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/usernameLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -57,8 +51,7 @@
                     android:inputType="textCapCharacters" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            //full name
-
+            <!--full name-->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/fullNameLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -74,8 +67,7 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            //email
-
+            <!--email-->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/emailLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -90,8 +82,7 @@
                     android:singleLine="true" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            //phone number
-
+            <!--phone number-->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/phoneNoLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -109,8 +100,7 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            //address
-
+            <!--address-->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/addressLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -125,8 +115,7 @@
                     android:singleLine="true" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            //password
-
+            <!--password-->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/passwordLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -142,8 +131,7 @@
                     android:inputType="textPassword" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            //confirmPassword
-
+            <!--confirmPassword-->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/confirmpasswordLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -158,8 +146,6 @@
                     android:layout_height="wrap_content"
                     android:inputType="textPassword" />
             </com.google.android.material.textfield.TextInputLayout>
-
-
         </LinearLayout>
 
         <Button
@@ -179,7 +165,5 @@
             android:text="Already have an account? Log In"
             android:textColor="@color/black"
             tools:ignore="TouchTargetSizeCheck" />
-
-
     </LinearLayout>
 </layout>

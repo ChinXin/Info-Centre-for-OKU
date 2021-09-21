@@ -7,7 +7,6 @@ import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.databinding.DataBindingUtil
 import java.util.*
-
 import android.app.TimePickerDialog
 import android.text.Editable
 import android.text.TextWatcher
@@ -16,34 +15,17 @@ import android.widget.*
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.navigation.Navigation
-
 import com.bumptech.glide.Glide
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import my.edu.tarc.oku.data.Event
 import my.edu.tarc.oku.databinding.FragmentAdminAddEventBinding
-
-import android.content.ContentResolver
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.util.Base64
-import android.util.Log
 import android.util.Patterns
-import android.webkit.MimeTypeMap
-import android.webkit.URLUtil
-import androidx.core.view.isVisible
 import androidx.navigation.findNavController
-import com.google.android.gms.tasks.OnSuccessListener
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
-import com.google.firebase.storage.OnProgressListener
-import com.google.firebase.storage.StorageReference
-import com.google.firebase.storage.UploadTask
-import com.google.firebase.storage.ktx.storage
 import java.io.ByteArrayOutputStream
-import java.text.SimpleDateFormat
 import java.util.regex.Pattern
 
 
@@ -51,13 +33,11 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
 
     private lateinit var binding: FragmentAdminAddEventBinding
     private val myRef = Firebase.database.getReference("state")
-    private val storage = Firebase.storage.getReference("EventImage")
 
     //Image
-    private var savedImgUri: String? = null
     private var newImg: Boolean = false
     private var imgUri: Uri? = null
-    private lateinit var strImg:String
+    private lateinit var strImg: String
 
     //System time
     private lateinit var c: Calendar
@@ -74,19 +54,8 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
     private var minutes = 0
     private var timeSet = ""
 
-    //event
-    private lateinit var eventId: String
-    private lateinit var title: String
-    private lateinit var date: String
-    private lateinit var time: String
-    private lateinit var address: String
-    private lateinit var img: String
-    private lateinit var description: String
-    private lateinit var state: String
-    private lateinit var phone: String
+    //Get input Website URL
     private lateinit var link: String
-
-    private var valueEventListener: ValueEventListener? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -97,6 +66,7 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
 
         val stateList = resources.getStringArray(R.array.stateList)
         val adapter = ArrayAdapter(this.requireContext(), R.layout.dropdown_state, stateList)
+
         binding.eStateList.setAdapter(adapter)
         setupListener()
 
@@ -106,7 +76,6 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
         binding.imgEvent.setOnClickListener {
             val intent = Intent(Intent.ACTION_PICK)
             intent.type = "image/*"
-
             launchGallery.launch(intent)
         }
 
@@ -131,44 +100,30 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
                 binding.ePhone.isEnabled = false
                 binding.progressBarHolder.visibility = View.VISIBLE
 
-                eventId = "${UUID.randomUUID()}"
+                val eventId = "${UUID.randomUUID()}"
 
-//                val fileRef: StorageReference = storage.child("${eventId}.png")
-//                fileRef.putFile(imgUri!!)
-//                    .addOnSuccessListener(object : OnSuccessListener<UploadTask.TaskSnapshot> {
-//                        override fun onSuccess(p0: UploadTask.TaskSnapshot?) {
-//                            fileRef.downloadUrl.addOnSuccessListener {
-                                savedImgUri = it.toString()
-                                val event = Event(eventId, strImg, title, date, time, address, state, description, link, phone)
-                                myRef.child(state).child("Events").child(eventId).setValue(event)
-                                    .addOnSuccessListener {
-                                        binding.progressBarHolder.visibility = View.INVISIBLE
-                                        Toast.makeText(
-                                            context,
-                                            "Event added successfully!!",
-                                            Toast.LENGTH_LONG
-                                        ).show()
-                                        binding.root.findNavController()
-                                            .navigate(R.id.action_adminAddEvent_to_adminEvent)
-                                    }.addOnFailureListener {
-                                        Toast.makeText(
-                                            context,
-                                            "Unable to add event.",
-                                            Toast.LENGTH_LONG
-                                        )
-                                            .show()
-                                    }
-//                            }
-//                        }
-//
-//                    }).addOnProgressListener {
-//                        binding.progressBarHolder.visibility = View.VISIBLE
-//                    }.addOnFailureListener {
-//                        binding.progressBarHolder.visibility = View.INVISIBLE
-//                        Toast.makeText(context, "Uploading Fail", Toast.LENGTH_LONG)
-//                            .show()
-//                    }
-
+                val event = Event(
+                    eventId,
+                    strImg,
+                    title,
+                    date,
+                    time,
+                    address,
+                    state,
+                    description,
+                    link,
+                    phone
+                )
+                myRef.child(state).child("Events").child(eventId).setValue(event)
+                    .addOnSuccessListener {
+                        binding.progressBarHolder.visibility = View.INVISIBLE
+                        Toast.makeText(context, "Event added successfully!!", Toast.LENGTH_LONG)
+                            .show()
+                        binding.root.findNavController()
+                            .navigate(R.id.action_adminAddEvent_to_adminEvent)
+                    }.addOnFailureListener {
+                        Toast.makeText(context, "Unable to add event.", Toast.LENGTH_LONG).show()
+                    }
             }
         }
 
@@ -186,6 +141,7 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
             mMonth = c.get(Calendar.MONTH)
             mDay = c.get(Calendar.DAY_OF_MONTH)
 
+            // Launch Date Picker Dialog
             val datePickerDialog = DatePickerDialog(
                 requireContext(),
                 { _, year, monthOfYear, dayOfMonth ->
@@ -200,6 +156,7 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
             datePickerDialog.datePicker.maxDate = c.timeInMillis
             datePickerDialog.show()
         }
+
         if (v === binding.btnTime) {
 
             // Get Current Time
@@ -229,24 +186,21 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
                         }
                     }
                     minutes = minute
-                    if(hour < 10 ){
+                    if (hour < 10) {
                         if (minute < 10) {
                             binding.btnTime.text = "0$hour:0$minutes $timeSet"
                         } else {
                             binding.btnTime.text = "0$hour:$minutes $timeSet"
                         }
-                    }else{
+                    } else {
                         if (minute < 10) {
                             binding.btnTime.text = "$hour:0$minutes $timeSet"
                         } else {
                             binding.btnTime.text = "$hour:$minutes $timeSet"
                         }
                     }
-
-
                 }, mHour, mMinute, false
             )
-
             timePickerDialog.show()
         }
     }
@@ -267,10 +221,10 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
         if (!newImg) {
             Toast.makeText(context, "Event Banner Is Required Field!", Toast.LENGTH_LONG).show()
             return false
-        }else{
+        } else {
             //convert bitmap to string
-            val bitmap = (binding.imgEvent.getDrawable() as BitmapDrawable).bitmap
-            val byteArray: ByteArrayOutputStream = ByteArrayOutputStream()
+            val bitmap = (binding.imgEvent.drawable as BitmapDrawable).bitmap
+            val byteArray = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArray)
             strImg = Base64.encodeToString(byteArray.toByteArray(), Base64.DEFAULT)
         }
@@ -346,19 +300,18 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
             binding.ePhone.requestFocus()
             return false
         } else if (!Pattern.compile(REG).matcher(binding.ePhone.text.toString()).matches()) {
-            if (!Pattern.compile(REG1).matcher(binding.ePhone.text.toString()).matches()) {
+            return if (!Pattern.compile(REG1).matcher(binding.ePhone.text.toString()).matches()) {
                 binding.ePhoneLayout.error = "Invalid Phone Number! e.g 0123456789 / 0358764321"
                 binding.ePhone.requestFocus()
-                return false
+                false
             } else {
                 binding.ePhoneLayout.isErrorEnabled = false
-                return true
+                true
             }
         } else {
             binding.ePhoneLayout.isErrorEnabled = false
             return true
         }
-        return true
     }
 
     private fun validateAddress(): Boolean {
@@ -416,7 +369,6 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
             return true
         }
         if (binding.eLink.text.toString().trim().isNotEmpty()) {
-//            if (URLUtil.isValidUrl(binding.eLink.text.toString())){
             if (Patterns.WEB_URL.matcher(binding.eLink.text.toString()).matches()) {
                 binding.eLinkLayout.isErrorEnabled = false
                 link = binding.eLink.text.toString()
@@ -431,11 +383,11 @@ class AdminAddEvent : Fragment(), View.OnClickListener {
         return true
     }
 
-    private fun getFileExtension(mUri: Uri): String {
-        val cr: ContentResolver = requireContext().contentResolver
-        val mime: MimeTypeMap = MimeTypeMap.getSingleton()
-        return mime.getExtensionFromMimeType(cr.getType(mUri)).toString()
-    }
+//    private fun getFileExtension(mUri: Uri): String {
+//        val cr: ContentResolver = requireContext().contentResolver
+//        val mime: MimeTypeMap = MimeTypeMap.getSingleton()
+//        return mime.getExtensionFromMimeType(cr.getType(mUri)).toString()
+//    }
 
     inner class TextFieldValidation(private val view: View) : TextWatcher {
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}

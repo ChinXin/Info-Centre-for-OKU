@@ -2,16 +2,13 @@ package my.edu.tarc.oku
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.Navigation
-import com.google.android.material.navigation.NavigationView
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -20,8 +17,6 @@ import com.google.firebase.ktx.Firebase
 import my.edu.tarc.oku.data.UserSessionManager
 import my.edu.tarc.oku.databinding.FragmentLoginBinding
 import java.lang.StringBuilder
-import java.lang.reflect.Member
-import kotlin.system.exitProcess
 
 
 class LoginFragment : Fragment() {
@@ -34,7 +29,7 @@ class LoginFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        var session = UserSessionManager(requireContext().applicationContext)
+        val session = UserSessionManager(requireContext().applicationContext)
 
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_login, container, false)
 
@@ -102,7 +97,7 @@ class LoginFragment : Fragment() {
             })
         }
 
-        binding.btnForgotPass.setOnClickListener(){
+        binding.btnForgotPass.setOnClickListener{
             Navigation.findNavController(it).navigate(R.id.action_loginFragment_to_forgotPasswordFragment)
         }
 

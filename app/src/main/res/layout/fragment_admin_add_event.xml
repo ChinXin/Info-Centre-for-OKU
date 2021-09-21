@@ -31,6 +31,7 @@
                     android:layout_height="100dp"
                     android:background="@android:color/background_light"
                     android:clickable="true"
+                    android:focusable="true"
                     android:contentDescription="Event Banner"
                     android:saveEnabled="true"
                     android:src="@drawable/ic_menu_gallery" />
@@ -57,20 +58,6 @@
                     android:layout_marginTop="2dp"
                     android:minHeight="50dip">
 
-                    <!--                <com.google.android.material.textfield.TextInputLayout-->
-                    <!--                    android:id="@+id/dateLayout"-->
-                    <!--                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"-->
-                    <!--                    android:layout_width="match_parent"-->
-                    <!--                    android:layout_height="wrap_content"-->
-                    <!--                    android:hint="Date">-->
-
-                    <!--                    <com.google.android.material.textfield.TextInputEditText-->
-                    <!--                        android:id="@+id/date"-->
-                    <!--                        android:layout_width="match_parent"-->
-                    <!--                        android:layout_height="wrap_content"-->
-                    <!--                        android:inputType="date" />-->
-
-                    <!--                </com.google.android.material.textfield.TextInputLayout>-->
                     <Button
                         android:id="@+id/btnDate"
                         android:layout_width="0dp"
@@ -84,7 +71,6 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintWidth_percent="0.5">
-
                     </Button>
 
                     <Button
@@ -98,7 +84,8 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toEndOf="@+id/btnDate"
                         app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintWidth_percent="0.5"></Button>
+                        app:layout_constraintWidth_percent="0.5" />
+
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -143,25 +130,11 @@
                         android:id="@+id/eStateList"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="none" />
+                        android:inputType="none" >
+
+                    </AutoCompleteTextView>
 
                 </com.google.android.material.textfield.TextInputLayout>
-
-                <!--            <com.google.android.material.textfield.TextInputLayout-->
-                <!--                android:id="@+id/cityLayout"-->
-                <!--                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"-->
-                <!--                android:layout_width="match_parent"-->
-                <!--                android:layout_height="wrap_content"-->
-                <!--                android:hint="Located City">-->
-
-                <!--                <com.google.android.material.textfield.TextInputEditText-->
-                <!--                    android:id="@+id/city"-->
-                <!--                    android:layout_width="match_parent"-->
-                <!--                    android:layout_height="wrap_content"-->
-                <!--                    android:inputType="text"-->
-                <!--                    android:singleLine="true" />-->
-
-                <!--            </com.google.android.material.textfield.TextInputLayout>-->
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/descriptionLayout"

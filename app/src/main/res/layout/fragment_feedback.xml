@@ -36,8 +36,7 @@
                     android:textAlignment="center"
                     android:textSize="24sp" />
 
-                //feedback
-
+                <!--feedback-->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/feedbackLayout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"

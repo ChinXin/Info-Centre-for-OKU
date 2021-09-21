@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/adminEvent"
         android:name="my.edu.tarc.oku.AdminEvent"
-        android:label="AdminEvent" >
+        android:label="All Event(s)">
         <action
             android:id="@+id/action_adminEvent_to_adminAddEvent"
             app:destination="@id/adminAddEvent" />
@@ -19,7 +19,7 @@
     <fragment
         android:id="@+id/adminAddEvent"
         android:name="my.edu.tarc.oku.AdminAddEvent"
-        android:label="AdminAddEvent" >
+        android:label="Add Event">
         <action
             android:id="@+id/action_adminAddEvent_to_adminEvent"
             app:destination="@id/adminEvent" />
@@ -27,8 +27,8 @@
     <fragment
         android:id="@+id/homeAdminFragment"
         android:name="my.edu.tarc.oku.HomeAdminFragment"
-        android:label="fragment_home_admin"
-        tools:layout="@layout/fragment_home_admin" >
+        android:label="Home"
+        tools:layout="@layout/fragment_home_admin">
         <action
             android:id="@+id/action_homeAdminFragment_to_feedbackFragment3"
             app:destination="@id/feedbackFragment3" />
@@ -36,16 +36,18 @@
     <fragment
         android:id="@+id/adminEditEvent"
         android:name="my.edu.tarc.oku.AdminEditEvent"
-        android:label="AdminEditEvent" >
+        android:label="Edit Event">
         <argument android:name="eventId" />
         <action
             android:id="@+id/action_adminEditEvent_to_adminEventInfo"
-            app:destination="@id/adminEventInfo" />
+            app:destination="@id/adminEventInfo"
+            app:popUpTo="@id/adminEventInfo"
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/feedbackFragment3"
-        android:name="my.edu.tarc.oku.feedbackFragment"
-        android:label="feedbackFragment" >
+        android:name="my.edu.tarc.oku.FeedbackFragment"
+        android:label="Feedback">
         <argument
             android:name="markerId"
             app:argType="string" />
@@ -56,7 +58,7 @@
     <fragment
         android:id="@+id/adminEventParticipant"
         android:name="my.edu.tarc.oku.AdminEventParticipant"
-        android:label="AdminEventParticipant" >
+        android:label="All Participant(s)">
         <argument
             android:name="eventId"
             app:argType="string" />
@@ -64,7 +66,7 @@
     <fragment
         android:id="@+id/adminEventInfo"
         android:name="my.edu.tarc.oku.AdminEventInfo"
-        android:label="AdminEventInfo" >
+        android:label="Event Info">
         <argument android:name="eventId" />
         <action
             android:id="@+id/action_adminEventInfo_to_adminEvent"
@@ -79,7 +81,7 @@
     <fragment
         android:id="@+id/editProfileFragment2"
         android:name="my.edu.tarc.oku.EditProfileFragment"
-        android:label="EditProfileFragment" >
+        android:label="Edit Profile">
         <action
             android:id="@+id/action_editProfileFragment2_to_homeAdminFragment"
             app:destination="@id/homeAdminFragment" />
@@ -90,7 +92,7 @@
     <fragment
         android:id="@+id/changePasswordFragment2"
         android:name="my.edu.tarc.oku.ChangePasswordFragment"
-        android:label="ChangePasswordFragment" >
+        android:label="Change Password">
         <action
             android:id="@+id/action_changePasswordFragment2_to_homeAdminFragment"
             app:destination="@id/homeAdminFragment" />

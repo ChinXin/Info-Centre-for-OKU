@@ -32,18 +32,15 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
-import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
-import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import my.edu.tarc.oku.data.Event
 import my.edu.tarc.oku.data.MemberEventResultAdapter
 import my.edu.tarc.oku.data.UserSessionManager
-import my.edu.tarc.oku.databinding.FragmentHomeAdminBinding
 import my.edu.tarc.oku.databinding.FragmentHomeBinding
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -75,7 +72,7 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
     var eventTitle : String? = null
 
     companion object {
-        private val strokeColor = 0xFFD8D7D7
+        private const val strokeColor = 0xFFD8D7D7
     }
 
     @SuppressLint("MissingPermission")
@@ -137,7 +134,6 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
                                     val lat = b.child("latitude").value.toString().toDouble()
                                     val long = b.child("longitude").value.toString().toDouble()
                                     val title = b.child("title").value.toString()
-                                    val type = b.child("type").value.toString()
                                     val marker = LatLng(lat,long)
 
                                     googleMap.addMarker(
@@ -171,7 +167,7 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
                 binding.routeFab2.setOnClickListener{
                     clear()
 
-                    if(eventMarker == true){
+                    if(eventMarker){
                         googleMap.addMarker(
                             MarkerOptions()
                                 .position(eventLatLng)
@@ -340,14 +336,14 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
 
     override fun onItemClick(position: Int) {
         val clickedItem: Event = eventList[position]
-        var coder = Geocoder(context)
-        var address: MutableList<Address> = coder.getFromLocationName(clickedItem.address, 5)
+        val coder = Geocoder(context)
+        val address: MutableList<Address> = coder.getFromLocationName(clickedItem.address, 5)
 
         if (address.isEmpty()) {
             Toast.makeText(context, "Invalid address!", Toast.LENGTH_SHORT).show()
         } else {
-            var location: Address = address[0]
-            var latLng = LatLng(location.latitude, location.longitude)
+            val location: Address = address[0]
+            val latLng = LatLng(location.latitude, location.longitude)
 
             map.addMarker(
                 MarkerOptions()
@@ -395,7 +391,6 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
                         val swipeItem: Event = eventList[viewHolder.adapterPosition]
                         val action = HomeFragmentDirections.actionHomeFragmentToHomeEventInfo(swipeItem.id)
                         binding.root.findNavController().navigate(action)
-                        Toast.makeText(context, "$dY", Toast.LENGTH_SHORT).show()
                     }
                 }
                 super.onChildDraw(
@@ -500,7 +495,6 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
                             val lat = e.child("latitude").value.toString().toDouble()
                             val long = e.child("longitude").value.toString().toDouble()
                             val title = e.child("title").value.toString()
-                            val type = e.child("type").value.toString()
                             val marker = LatLng(lat, long)
 
                             map.addMarker(
@@ -519,7 +513,6 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
                             val lat = e.child("latitude").value.toString().toDouble()
                             val long = e.child("longitude").value.toString().toDouble()
                             val title = e.child("title").value.toString()
-                            val type = e.child("type").value.toString()
                             val marker = LatLng(lat, long)
 
                             map.addMarker(
@@ -552,7 +545,6 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
                             val lat = e.child("latitude").value.toString().toDouble()
                             val long = e.child("longitude").value.toString().toDouble()
                             val title = e.child("title").value.toString()
-                            val type = e.child("type").value.toString()
                             val marker = LatLng(lat, long)
 
                             map.addMarker(
@@ -571,7 +563,6 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
                             val lat = e.child("latitude").value.toString().toDouble()
                             val long = e.child("longitude").value.toString().toDouble()
                             val title = e.child("title").value.toString()
-                            val type = e.child("type").value.toString()
                             val marker = LatLng(lat, long)
 
                             map.addMarker(
@@ -627,7 +618,7 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
         else {
             ActivityCompat.requestPermissions(
                 this.requireActivity(),
-                arrayOf<String>(Manifest.permission.ACCESS_FINE_LOCATION),
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 REQUEST_LOCATION_PERMISSION
             )
         }
@@ -722,7 +713,7 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
     }
 
     //Call route
-    fun callRoute(p0:com.google.android.gms.maps.model.Marker,map:GoogleMap){
+    fun callRoute(p0:Marker,map:GoogleMap){
         val builder: AlertDialog.Builder = AlertDialog.Builder(this.requireContext())
         builder.setTitle("Google Maps")
         builder.setMessage("Start to Go?")
@@ -739,7 +730,7 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
         builder.show()
     }
 
-    fun basicAlert(defaultId:com.google.android.gms.maps.model.Marker,markerId:String){
+    fun basicAlert(defaultId:Marker,markerId:String){
 
         val builder:AlertDialog.Builder = AlertDialog.Builder(this.requireContext())
 
@@ -754,7 +745,6 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
         val phoneNo = content.findViewById<TextView>(R.id.markerPhoneNo)
         val address = content.findViewById<TextView>(R.id.markerAddress)
         val state = content.findViewById<TextView>(R.id.markerState)
-        var getId = ""
 
         if(markerId != ""){
             myRef.addValueEventListener(object : ValueEventListener {
@@ -763,7 +753,6 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
                         for (t in s.children){
                             if(t.key == "Services" || t.key == "Facilities"){
                                 if(t.hasChild(markerId)){
-                                    getId = t.child(markerId).key.toString()
                                     type.text = t.child(markerId).child("type").value.toString()
                                     title.text = t.child(markerId).child("title").value.toString()
                                     description.text = t.child(markerId).child("description").value.toString()
@@ -777,7 +766,6 @@ class HomeFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
                             if(t.key == "Individual"){
                                 for(a in t.children){
                                     if(a.hasChild(markerId)){
-                                        getId = a.child(markerId).key.toString()
                                         type.text = a.child(markerId).child("type").value.toString()
                                         title.text = a.child(markerId).child("title").value.toString()
                                         description.text = a.child(markerId).child("description").value.toString()

@@ -57,20 +57,6 @@
                     android:layout_marginTop="2dp"
                     android:minHeight="50dip">
 
-                    <!--                <com.google.android.material.textfield.TextInputLayout-->
-                    <!--                    android:id="@+id/dateLayout"-->
-                    <!--                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"-->
-                    <!--                    android:layout_width="match_parent"-->
-                    <!--                    android:layout_height="wrap_content"-->
-                    <!--                    android:hint="Date">-->
-
-                    <!--                    <com.google.android.material.textfield.TextInputEditText-->
-                    <!--                        android:id="@+id/date"-->
-                    <!--                        android:layout_width="match_parent"-->
-                    <!--                        android:layout_height="wrap_content"-->
-                    <!--                        android:inputType="date" />-->
-
-                    <!--                </com.google.android.material.textfield.TextInputLayout>-->
                     <Button
                         android:id="@+id/btnDateE"
                         android:layout_width="0dp"
@@ -98,7 +84,9 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toEndOf="@+id/btnDateE"
                         app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintWidth_percent="0.5"></Button>
+                        app:layout_constraintWidth_percent="0.5">
+
+                    </Button>
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -146,22 +134,6 @@
                         android:inputType="none" />
 
                 </com.google.android.material.textfield.TextInputLayout>
-
-                <!--            <com.google.android.material.textfield.TextInputLayout-->
-                <!--                android:id="@+id/cityLayout"-->
-                <!--                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"-->
-                <!--                android:layout_width="match_parent"-->
-                <!--                android:layout_height="wrap_content"-->
-                <!--                android:hint="Located City">-->
-
-                <!--                <com.google.android.material.textfield.TextInputEditText-->
-                <!--                    android:id="@+id/city"-->
-                <!--                    android:layout_width="match_parent"-->
-                <!--                    android:layout_height="wrap_content"-->
-                <!--                    android:inputType="text"-->
-                <!--                    android:singleLine="true" />-->
-
-                <!--            </com.google.android.material.textfield.TextInputLayout>-->
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/descriptionELayout"

@@ -10,7 +10,6 @@ import android.widget.Toast
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import my.edu.tarc.oku.AdminEventDirections
 import my.edu.tarc.oku.MemberRegisteredEventDirections
 import my.edu.tarc.oku.R
 
@@ -38,12 +37,10 @@ class MemberRegisteredEventAdapter (val eventList: List<Event>): RecyclerView.Ad
         holder.eventDateTime.text = "Date/Time: ${currentEvent.date}, ${currentEvent.time}"
         holder.eventAddress.text = "Address: ${currentEvent.address}"
         val bitmap = Base64.decode(currentEvent.image, Base64.DEFAULT)
-//        holder.eventImage.setImageURI(currentEvent.image.toUri())
-//        holder.eventImage.setImageResource(currentEvent.image)
         Glide.with(holder.eventImage.context)
             .asBitmap()
             .load(bitmap)
-            .fitCenter()// scale to fit entire image within ImageView
+            .fitCenter()
             .into(holder.eventImage)
         holder.itemView.setOnClickListener {
             val eventId = currentEvent.id

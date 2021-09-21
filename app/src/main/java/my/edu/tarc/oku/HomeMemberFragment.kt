@@ -36,7 +36,6 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
-import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import my.edu.tarc.oku.databinding.FragmentHomeMemberBinding
@@ -44,7 +43,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.util.ArrayList
 import java.util.regex.Pattern
-
 import my.edu.tarc.oku.data.*
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -53,18 +51,20 @@ import com.google.android.gms.maps.CameraUpdateFactory
 class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListener {
 
     private lateinit var binding: FragmentHomeMemberBinding
+    val myRef = Firebase.database.getReference("state")
+
+    private lateinit var session: UserSessionManager
+    private lateinit var user: HashMap<String?, String?>
+    private lateinit var username: String
+    private lateinit var status: String
+
     lateinit var map: GoogleMap
     private val REQUEST_LOCATION_PERMISSION = 1
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var name: String
     var infoWindowListener: ValueEventListener? = null
-    val database = Firebase.database
-    val myRef = database.getReference("state")
+
     private var eventList: MutableList<Event> = ArrayList()
-    private lateinit var session: UserSessionManager
-    private lateinit var user: HashMap<String?, String?>
-    private lateinit var username: String
-    private lateinit var status: String
     private var eventClicked = false
     private var facilitiesClicked = false
     private var servicesClicked = false
@@ -75,7 +75,7 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
     var eventTitle : String? = null
 
     companion object {
-        private val strokeColor = 0xFFD8D7D7
+        private const val strokeColor = 0xFFD8D7D7
     }
 
     @SuppressLint("MissingPermission")
@@ -144,7 +144,6 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                                         val lat = b.child("latitude").value.toString().toDouble()
                                         val long = b.child("longitude").value.toString().toDouble()
                                         val title = b.child("title").value.toString()
-                                        val type = b.child("type").value.toString()
                                         val marker = LatLng(lat, long)
 
                                         googleMap.addMarker(
@@ -165,7 +164,6 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                                         val lat = b.child("latitude").value.toString().toDouble()
                                         val long = b.child("longitude").value.toString().toDouble()
                                         val title = b.child("title").value.toString()
-                                        val type = b.child("type").value.toString()
                                         val marker = LatLng(lat, long)
 
                                         googleMap.addMarker(
@@ -235,7 +233,7 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                     if(p0.snippet == "Event Marker"){
                         Toast.makeText(context,"This marker is not able to view.",Toast.LENGTH_LONG).show()
                     }else{
-                        var markerId = p0.snippet
+                        val markerId = p0.snippet
 
                     infoWindowListener = myRef.addValueEventListener(object : ValueEventListener {
 
@@ -407,13 +405,13 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
 
     override fun onItemClick(position: Int) {
         val clickedItem: Event = eventList[position]
-        var coder = Geocoder(context)
-        var address: MutableList<Address> = coder.getFromLocationName(clickedItem.address, 5)
+        val coder = Geocoder(context)
+        val address: MutableList<Address> = coder.getFromLocationName(clickedItem.address, 5)
 
         if (address.isEmpty()) {
             Toast.makeText(context, "Invalid address!", Toast.LENGTH_SHORT).show()
         } else {
-            var location: Address = address[0]
+            val location: Address = address[0]
             val latLng = LatLng(location.latitude, location.longitude)
 
             map.addMarker(
@@ -564,7 +562,6 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                             val lat = e.child("latitude").value.toString().toDouble()
                             val long = e.child("longitude").value.toString().toDouble()
                             val title = e.child("title").value.toString()
-                            val type = e.child("type").value.toString()
                             val marker = LatLng(lat, long)
 
                             map.addMarker(
@@ -583,7 +580,6 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                             val lat = e.child("latitude").value.toString().toDouble()
                             val long = e.child("longitude").value.toString().toDouble()
                             val title = e.child("title").value.toString()
-                            val type = e.child("type").value.toString()
                             val marker = LatLng(lat, long)
 
                             map.addMarker(
@@ -616,7 +612,6 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                             val lat = e.child("latitude").value.toString().toDouble()
                             val long = e.child("longitude").value.toString().toDouble()
                             val title = e.child("title").value.toString()
-                            val type = e.child("type").value.toString()
                             val marker = LatLng(lat, long)
 
                             map.addMarker(
@@ -635,7 +630,6 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                             val lat = e.child("latitude").value.toString().toDouble()
                             val long = e.child("longitude").value.toString().toDouble()
                             val title = e.child("title").value.toString()
-                            val type = e.child("type").value.toString()
                             val marker = LatLng(lat, long)
 
                             map.addMarker(
@@ -661,10 +655,9 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
         setHasOptionsMenu(true)
         super.onViewCreated(view, savedInstanceState)
 
-        var session = UserSessionManager(requireContext().applicationContext)
+        val session = UserSessionManager(requireContext().applicationContext)
         val user = session.userDetails
         name = user[UserSessionManager.KEY_NAME].toString()
-        val status = user[UserSessionManager.KEY_STATUS]
 
         val mapFragment =
             childFragmentManager.findFragmentById(R.id.memberMap) as SupportMapFragment?
@@ -715,7 +708,7 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
         } else {
             ActivityCompat.requestPermissions(
                 this.requireActivity(),
-                arrayOf<String>(Manifest.permission.ACCESS_FINE_LOCATION),
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 REQUEST_LOCATION_PERMISSION
             )
         }
@@ -864,6 +857,12 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
         val autoId = content.findViewById<AutoCompleteTextView>(R.id.autoCompleteList)
         val autoId2 = content.findViewById<AutoCompleteTextView>(R.id.autoCompleteList2)
 
+        val dialog = builder.show()
+        val btnSave = content.findViewById<Button>(R.id.btnSave)
+        val btnCancel = content.findViewById<Button>(R.id.btnCancel)
+        val btnDelete = content.findViewById<Button>(R.id.btnDelete)
+        val btnFeedback = content.findViewById<Button>(R.id.btnGoFeedback)
+
         autoId2.setAdapter(adapter2)
 
         val title = content.findViewById<TextInputEditText>(R.id.infoTitle)
@@ -875,7 +874,7 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
         var oldState = ""
 
         if(markerId == ""){
-            content.findViewById<Button>(R.id.btnGoFeedback).visibility = View.GONE
+            btnFeedback.visibility = View.GONE
         }
 
         if (markerId != "") {
@@ -921,12 +920,6 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
 
         builder.setView(content)
         builder.setCancelable(false)
-
-        val dialog = builder.show()
-        val btnSave = content.findViewById<Button>(R.id.btnSave)
-        val btnCancel = content.findViewById<Button>(R.id.btnCancel)
-        val btnDelete = content.findViewById<Button>(R.id.btnDelete)
-        val btnFeedback = content.findViewById<Button>(R.id.btnGoFeedback)
 
         btnSave.setOnClickListener {
             val lat = latitude.toDouble()

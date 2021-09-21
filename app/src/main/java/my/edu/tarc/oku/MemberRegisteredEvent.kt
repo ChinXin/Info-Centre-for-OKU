@@ -1,16 +1,12 @@
 package my.edu.tarc.oku
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SearchView
-import android.widget.Toast
-import androidx.activity.OnBackPressedCallback
 import androidx.databinding.DataBindingUtil
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -18,7 +14,6 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
@@ -31,11 +26,12 @@ class MemberRegisteredEvent : Fragment() {
 
     private val myRef = Firebase.database.getReference("state")
     private val myReg = Firebase.database.getReference("register")
+
     private lateinit var session: UserSessionManager
     private lateinit var user: HashMap<String?, String?>
     private lateinit var username:String
     private lateinit var status: String
-    private var registeredList: MutableList<String> = ArrayList()
+
     private var eventList: MutableList<Event> = ArrayList()
     private var valueEventListener: ValueEventListener? = null
 
@@ -49,7 +45,9 @@ class MemberRegisteredEvent : Fragment() {
         user = session.userDetails
         username = user[UserSessionManager.KEY_NAME].toString()
         status = user[UserSessionManager.KEY_STATUS].toString()
+
         eventList.clear()
+
         CoroutineScope(IO).launch {
             valueEventListener = myReg.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {

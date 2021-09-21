@@ -24,15 +24,6 @@
             android:textSize="14sp"
             android:textStyle="bold" />
 
-<!--        <TextView-->
-<!--            android:id="@+id/snippet"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:ellipsize="end"-->
-<!--            android:maxLines="10"-->
-<!--            android:textColor="#000"-->
-<!--            android:textSize="14sp" />-->
-
         <TextView
             android:id="@+id/displayText"
             android:layout_width="wrap_content"
@@ -44,7 +35,5 @@
             android:textColor="@color/design_default_color_secondary_variant"
             android:textSize="14sp"
             android:textStyle="bold" />
-
-
     </LinearLayout>
 </LinearLayout>

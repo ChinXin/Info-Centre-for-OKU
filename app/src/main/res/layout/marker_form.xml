@@ -27,8 +27,7 @@
             android:layout_marginBottom="20dp"
             android:orientation="vertical">
 
-            //drop-down-list(type)
-
+            <!--drop-down-list(type)-->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/typeLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
@@ -44,9 +43,7 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-
-            //title
-
+            <!--title-->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/TitleLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -62,8 +59,7 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            //description
-
+            <!--description-->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/descriptionLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -79,8 +75,7 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            //phone number
-
+            <!--phone number-->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/phoneNoLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -98,8 +93,7 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            //address
-
+            <!--address-->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/addressLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -114,8 +108,7 @@
                     android:singleLine="true" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            //drop-down-list(state)
-
+            <!--drop-down-list(state)-->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/stateLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
@@ -170,6 +163,5 @@
             android:text="View Feedback"
             android:textColor="@color/black"
             tools:ignore="TouchTargetSizeCheck" />
-
     </LinearLayout>
 </layout>

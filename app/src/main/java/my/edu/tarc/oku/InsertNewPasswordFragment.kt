@@ -1,6 +1,5 @@
 package my.edu.tarc.oku
 
-import android.content.Context
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -8,11 +7,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.Navigation
-import androidx.navigation.findNavController
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import my.edu.tarc.oku.databinding.FragmentInsertNewPasswordBinding
@@ -22,17 +19,12 @@ class InsertNewPasswordFragment : Fragment() {
 
     private lateinit var binding : FragmentInsertNewPasswordBinding
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
 
+        // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_insert_new_password, container, false)
 
         val args = InsertNewPasswordFragmentArgs.fromBundle(requireArguments())
@@ -48,7 +40,7 @@ class InsertNewPasswordFragment : Fragment() {
                 val password = binding.passwordN.text.toString().toByteArray()
 
                 myRef.child("member").child(username.lowercase()).child("password").setValue(convertedPassword(password))
-                    .addOnSuccessListener { _ ->
+                    .addOnSuccessListener {
                         Toast.makeText(
                             context,
                             "Password Update Successfully!!!",

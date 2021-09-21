@@ -2,17 +2,12 @@ package my.edu.tarc.oku
 
 import android.app.*
 import android.content.Context
-import android.content.Context.ALARM_SERVICE
-import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.*
-import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
@@ -21,37 +16,24 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.ktx.storage
-import kotlinx.coroutines.*
 import my.edu.tarc.oku.data.Event
-import my.edu.tarc.oku.data.EventRegistration
 import my.edu.tarc.oku.data.UserSessionManager
 import my.edu.tarc.oku.databinding.EventInfoBinding
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 import java.util.*
-import android.graphics.BitmapFactory
-
-import android.graphics.Bitmap
-import android.graphics.Color
-import android.os.StrictMode
 import android.util.Base64
-import java.io.IOException
-import java.net.URL
-import java.io.InputStream
-import java.net.HttpURLConnection
 
 
 class HomeEventInfo : Fragment(), TextToSpeech.OnInitListener {
+
     private lateinit var binding: EventInfoBinding
+    val myRef = Firebase.database.getReference("state" )
+
     private lateinit var session: UserSessionManager
     private lateinit var user: HashMap<String?, String?>
     private lateinit var username:String
     private lateinit var status: String
+
     private lateinit var event: Event
-    val myRef = Firebase.database.getReference("state" )
-    private val storage = Firebase.storage.getReference("EventImage")
     private var eventId: String = ""
     private var title: String = ""
     private var date: String = ""
@@ -62,8 +44,8 @@ class HomeEventInfo : Fragment(), TextToSpeech.OnInitListener {
     private var link: String = ""
     private var phone: String = ""
     var state: String = ""
-    lateinit var mTTS:TextToSpeech
-    private lateinit var tts: TextToSpeech
+
+    private var tts: TextToSpeech? = null
     private val MY_DATA_CHECK_CODE = 1234
     private lateinit var alarmManager:AlarmManager
 
@@ -121,7 +103,7 @@ class HomeEventInfo : Fragment(), TextToSpeech.OnInitListener {
                                 .into(binding.imageView3)
                             binding.tvTitle.text = title
                             binding.tvTimeDate.text =
-                                "Date/Time: ${date}, ${time}"
+                                "Date/Time: $date, $time"
                             binding.tvPhoneNo.text =
                                 "Contact: $phone"
                             binding.tvAddress.text =
@@ -144,12 +126,12 @@ class HomeEventInfo : Fragment(), TextToSpeech.OnInitListener {
         binding.btnTTS.isEnabled = false
 
         binding.btnTTS.setOnClickListener {
-            tts.speak(description, TextToSpeech.QUEUE_FLUSH, null,null);
+            tts?.speak(description, TextToSpeech.QUEUE_FLUSH, null,null)
         }
 
         binding.tvLink.setOnClickListener {
             if (!link.startsWith("http://") && !link.startsWith("https://")) {
-                link = "http://" + link;
+                link = "http://" + link
             }
             val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(link))
             startActivity(browserIntent)
@@ -163,10 +145,10 @@ class HomeEventInfo : Fragment(), TextToSpeech.OnInitListener {
             if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
                 // success, create the TTS instance
                 tts = TextToSpeech(context, this)
-                tts.setLanguage(Locale.US)
-                tts.setPitch(0.9f)
-                tts.setSpeechRate(0.8f)
-                binding.btnTTS.setEnabled(true)
+                tts!!.language = Locale.US
+                tts!!.setPitch(0.9f)
+                tts!!.setSpeechRate(0.8f)
+                binding.btnTTS.isEnabled = true
             } else {
                 // missing data, install it
                 val installIntent = Intent()
@@ -180,15 +162,15 @@ class HomeEventInfo : Fragment(), TextToSpeech.OnInitListener {
 
         if (status == TextToSpeech.SUCCESS) {
             // set US English as language for tts
-            val result = tts.setLanguage(Locale.US)
+            val result = tts!!.setLanguage(Locale.US)
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 Log.e("TTS","The Language specified is not supported!")
             } else {
-                tts.setLanguage(Locale.getDefault())
+                tts!!.language = Locale.getDefault()
                 binding.btnTTS.isEnabled = true
             }
         } else {
-            Log.e("TTS", "Initilization Failed!")
+            Log.e("TTS", "Initialization Failed!")
         }
 
     }

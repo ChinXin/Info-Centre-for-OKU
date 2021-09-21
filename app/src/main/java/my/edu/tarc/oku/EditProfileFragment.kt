@@ -12,7 +12,6 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
-import androidx.navigation.Navigation
 import androidx.navigation.findNavController
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -22,8 +21,6 @@ import com.google.firebase.ktx.Firebase
 import my.edu.tarc.oku.data.User
 import my.edu.tarc.oku.data.UserSessionManager
 import my.edu.tarc.oku.databinding.FragmentEditProfileBinding
-import my.edu.tarc.oku.databinding.FragmentRegisterBinding
-import java.lang.StringBuilder
 import java.util.regex.Pattern
 
 
@@ -35,7 +32,7 @@ class EditProfileFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        var session = UserSessionManager(requireContext().applicationContext)
+        val session = UserSessionManager(requireContext().applicationContext)
         val user = session.userDetails
         val name = user[UserSessionManager.KEY_NAME].toString()
         val status = user[UserSessionManager.KEY_STATUS].toString()
@@ -82,7 +79,7 @@ class EditProfileFragment : Fragment() {
                     activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 inputManager.hideSoftInputFromWindow(binding.root.rootView.windowToken, 0)
                 myRef.child(status).child(name).setValue(update_user)
-                    .addOnSuccessListener { _ ->
+                    .addOnSuccessListener {
                         Toast.makeText(
                             context,
                             "Profile Update Successfully!!!",

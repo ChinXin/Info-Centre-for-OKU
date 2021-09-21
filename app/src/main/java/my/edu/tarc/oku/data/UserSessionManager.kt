@@ -2,10 +2,8 @@ package my.edu.tarc.oku.data
 
 import android.content.Context
 import android.content.Intent
-
 import android.content.SharedPreferences
 import my.edu.tarc.oku.MainActivity
-
 
 class UserSessionManager(context: Context) {
     var pref: SharedPreferences

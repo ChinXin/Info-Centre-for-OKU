@@ -15,7 +15,6 @@ import my.edu.tarc.oku.databinding.EventInfoBinding
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
-import android.speech.tts.TextToSpeech
 import android.util.Base64
 import android.view.*
 import android.widget.Toast
@@ -24,22 +23,21 @@ import androidx.annotation.RequiresApi
 import androidx.navigation.findNavController
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
-import com.google.firebase.storage.ktx.storage
 import my.edu.tarc.oku.data.Event
 import my.edu.tarc.oku.data.UserSessionManager
-import java.util.*
 import kotlin.collections.HashMap
 
 
 class AdminEventInfo : Fragment() {
     private lateinit var binding: EventInfoBinding
+    val myRef = Firebase.database.getReference("state")
+
     private lateinit var session: UserSessionManager
     private lateinit var user: HashMap<String?, String?>
     private lateinit var username: String
     private lateinit var status: String
+
     private lateinit var event: Event
-    val myRef = Firebase.database.getReference("state")
-    private val storage = Firebase.storage.getReference("EventImage")
     private var eventId: String = ""
     private var title: String = ""
     private var date: String = ""
@@ -50,25 +48,18 @@ class AdminEventInfo : Fragment() {
     private var link: String = ""
     private var phone: String = ""
     var state: String = ""
-    lateinit var mTTS: TextToSpeech
-    private lateinit var tts: TextToSpeech
-    private val MY_DATA_CHECK_CODE = 1234
     private var infoValueEventListener: ValueEventListener? = null
 
     private val job = Job()
     private val scopeMainThread = CoroutineScope(job + Dispatchers.Main)
     private val scopeIO = CoroutineScope(job + Dispatchers.IO)
 
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        job.start()
-//    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.event_info, container, false)
+
         session = UserSessionManager(requireContext().applicationContext)
         user = session.userDetails
         username = user[UserSessionManager.KEY_NAME].toString()
@@ -118,15 +109,12 @@ class AdminEventInfo : Fragment() {
                                     Glide.with(requireContext().applicationContext)
                                         .asBitmap()
                                         .load(bitmap)
-                                        .fitCenter()// scale to fit entire image within ImageView
+                                        .fitCenter()
                                         .into(binding.imageView3)
                                     binding.tvTitle.text = title
-                                    binding.tvTimeDate.text =
-                                        "Date/Time: ${date}, ${time}"
-                                    binding.tvPhoneNo.text =
-                                        "Contact: $phone"
-                                    binding.tvAddress.text =
-                                        "Address: $address"
+                                    binding.tvTimeDate.text = "Date/Time: $date, $time"
+                                    binding.tvPhoneNo.text = "Contact: $phone"
+                                    binding.tvAddress.text = "Address: $address"
                                     binding.tvDescription.text = description
                                     if (link != "N/A") {
                                         binding.tvWebsite.visibility = View.VISIBLE
@@ -145,7 +133,7 @@ class AdminEventInfo : Fragment() {
         }
         binding.tvLink.setOnClickListener {
             if (!link.startsWith("http://") && !link.startsWith("https://")) {
-                link = "http://" + link;
+                link = "http://" + link
             }
             val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(link))
             startActivity(browserIntent)
@@ -153,7 +141,7 @@ class AdminEventInfo : Fragment() {
 
         if (status == "admin") {
             binding.edit.visibility = View.VISIBLE
-            binding.edit.setOnClickListener { _ ->
+            binding.edit.setOnClickListener {
                 val action = AdminEventInfoDirections.actionAdminEventInfoToAdminEditEvent(eventId)
                 binding.root.findNavController().navigate(action)
             }
@@ -204,7 +192,7 @@ class AdminEventInfo : Fragment() {
                                 .setAction("UNDO", View.OnClickListener {
                                     myRef.child(state).child("Events").child(eventId)
                                         .setValue(event)
-                                        .addOnSuccessListener { _ ->
+                                        .addOnSuccessListener {
                                             Toast.makeText(
                                                 context,
                                                 "Event restore successfully!!",
@@ -250,6 +238,5 @@ class AdminEventInfo : Fragment() {
             }
             else -> super.onOptionsItemSelected(item)
         }
-        return super.onOptionsItemSelected(item)
     }
 }

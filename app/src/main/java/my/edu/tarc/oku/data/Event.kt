@@ -1,8 +1,5 @@
 package my.edu.tarc.oku.data
 
-import android.content.Intent
-import android.net.Uri
-
 data class Event (
     val id:String,
     val image:String,

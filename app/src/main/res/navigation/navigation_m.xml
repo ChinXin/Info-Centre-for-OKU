@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/editProfileFragment"
         android:name="my.edu.tarc.oku.EditProfileFragment"
-        android:label="EditProfileFragment" >
+        android:label="Edit Profile">
         <action
             android:id="@+id/action_editProfileFragment_to_homeMemberFragment"
             app:destination="@id/homeMemberFragment" />
@@ -19,7 +19,7 @@
     <fragment
         android:id="@+id/changePasswordFragment"
         android:name="my.edu.tarc.oku.ChangePasswordFragment"
-        android:label="ChangePasswordFragment" >
+        android:label=" Change Password">
         <action
             android:id="@+id/action_changePasswordFragment_to_homeMemberFragment"
             app:destination="@id/homeMemberFragment" />
@@ -27,7 +27,7 @@
     <fragment
         android:id="@+id/homeMemberFragment"
         android:name="my.edu.tarc.oku.HomeMemberFragment"
-        android:label="HomeMemberFragment" >
+        android:label="Home">
         <action
             android:id="@+id/action_homeMemberFragment_to_feedbackFragment2"
             app:destination="@id/feedbackFragment2" />
@@ -37,8 +37,8 @@
     </fragment>
     <fragment
         android:id="@+id/feedbackFragment2"
-        android:name="my.edu.tarc.oku.feedbackFragment"
-        android:label="feedbackFragment" >
+        android:name="my.edu.tarc.oku.FeedbackFragment"
+        android:label="Feedback">
         <argument
             android:name="markerId"
             app:argType="string" />
@@ -49,8 +49,7 @@
     <fragment
         android:id="@+id/memberRegisteredEvent"
         android:name="my.edu.tarc.oku.MemberRegisteredEvent"
-        android:label="fragment_member_registered_event"
-        tools:layout="@layout/fragment_member_registered_event" >
+        android:label="Joined Event(s)">
         <action
             android:id="@+id/action_memberRegisteredEvent_to_memberEventInfo"
             app:destination="@id/memberEventInfo" />
@@ -59,7 +58,7 @@
     <fragment
         android:id="@+id/memberEventInfo"
         android:name="my.edu.tarc.oku.MemberEventInfo"
-        android:label="MemberEventInfo" >
+        android:label="Event Info">
         <argument android:name="eventId" />
         <action
             android:id="@+id/action_memberEventInfo_to_memberRegisteredEvent"

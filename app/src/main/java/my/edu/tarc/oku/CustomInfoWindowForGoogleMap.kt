@@ -1,20 +1,16 @@
 package my.edu.tarc.oku
 
 import android.app.Activity
-import android.app.Service
 import android.content.Context
-import android.content.Intent
-import android.os.IBinder
 import android.view.View
-import android.widget.EditText
 import android.widget.TextView
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Marker
 
+
 class CustomInfoWindowForGoogleMap(context: Context) : GoogleMap.InfoWindowAdapter {
 
-    var mContext = context
-    var mWindow = (context as Activity).layoutInflater.inflate(R.layout.info_window, null)
+    private var mWindow = (context as Activity).layoutInflater.inflate(R.layout.info_window, null)
 
     private fun rendowWindowText(marker: Marker, view: View){
 

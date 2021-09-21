@@ -1,7 +1,5 @@
 package my.edu.tarc.oku.data
 
-import com.google.firebase.database.Exclude
-
 data class Marker(
     val latitude:String,
     val longitude:String,

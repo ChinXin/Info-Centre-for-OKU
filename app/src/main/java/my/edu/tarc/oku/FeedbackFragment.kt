@@ -3,14 +3,12 @@ package my.edu.tarc.oku
 import android.app.AlertDialog
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.core.view.isInvisible
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.database.DataSnapshot
@@ -18,19 +16,15 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
-import my.edu.tarc.oku.data.Event
-import my.edu.tarc.oku.data.EventAdapter
 import my.edu.tarc.oku.data.Feedback
 import my.edu.tarc.oku.data.FeedbackAdapter
-import java.time.LocalDate
-import java.time.LocalTime
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import my.edu.tarc.oku.databinding.FragmentFeedbackBinding
 import java.util.*
 
-class feedbackFragment : Fragment() {
+class FeedbackFragment : Fragment() {
 
     private lateinit var binding : FragmentFeedbackBinding
     private var feedbackList: MutableList<Feedback> = ArrayList()
@@ -48,7 +42,7 @@ class feedbackFragment : Fragment() {
 
         val database = Firebase.database
         val myRef = database.getReference("feedback")
-        val args = feedbackFragmentArgs.fromBundle(requireArguments())
+        val args = FeedbackFragmentArgs.fromBundle(requireArguments())
         val markerId = args.markerId
         val username = args.username
 

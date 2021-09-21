@@ -1,8 +1,6 @@
 package my.edu.tarc.oku
 
-import android.R.attr
 import android.app.*
-import android.content.Context
 import android.content.Context.ALARM_SERVICE
 import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
@@ -22,8 +20,6 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.ktx.storage
-import kotlinx.coroutines.*
 import my.edu.tarc.oku.data.Event
 import my.edu.tarc.oku.data.EventRegistration
 import my.edu.tarc.oku.data.UserSessionManager
@@ -32,43 +28,23 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.*
-import android.graphics.BitmapFactory
-
-import android.graphics.Bitmap
 import android.graphics.Color
-import android.os.StrictMode
-import android.os.StrictMode.ThreadPolicy
-import java.io.IOException
-import java.net.URL
-import java.io.InputStream
-import java.net.HttpURLConnection
-import android.R.attr.bitmap
-import android.annotation.SuppressLint
-
-import android.os.AsyncTask
 import android.util.Base64
-import android.widget.ImageView
-import com.google.android.gms.tasks.OnSuccessListener
-//import my.edu.tarc.oku.data.PDFUtility
-import java.io.File
-import android.R.attr.rowCount
-
-import android.text.TextUtils
-
-
-
 
 
 class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
     private lateinit var binding: EventInfoBinding
+
+    private val myRef = Firebase.database.getReference("state")
+    private val myReg = Firebase.database.getReference("register")
+
     private lateinit var session: UserSessionManager
     private lateinit var user: HashMap<String?, String?>
     private lateinit var username: String
     private lateinit var status: String
+
+    //Event
     private lateinit var event: Event
-    val myRef = Firebase.database.getReference("state")
-    val myReg = Firebase.database.getReference("register")
-    private val storage = Firebase.storage.getReference("EventImage")
     private var eventId: String = ""
     private var title: String = ""
     private var date: String = ""
@@ -79,7 +55,7 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
     private var link: String = ""
     private var phone: String = ""
     var state: String = ""
-    lateinit var mTTS: TextToSpeech
+
     private var tts: TextToSpeech? = null
     private val MY_DATA_CHECK_CODE = 1234
     private lateinit var alarmManager: AlarmManager
@@ -98,7 +74,7 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
         username = user[UserSessionManager.KEY_NAME].toString()
         status = user[UserSessionManager.KEY_STATUS].toString()
 
-        alarmManager = requireActivity().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        alarmManager = requireActivity().getSystemService(ALARM_SERVICE) as AlarmManager
 
         val args = MemberEventInfoArgs.fromBundle(requireArguments())
 
@@ -139,7 +115,7 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
                                 .into(binding.imageView3)
                             binding.tvTitle.text = title
                             binding.tvTimeDate.text =
-                                "Date/Time: ${date}, ${time}"
+                                "Date/Time: $date, $time"
                             binding.tvPhoneNo.text =
                                 "Contact: $phone"
                             binding.tvAddress.text =
@@ -162,12 +138,12 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
         binding.btnTTS.isEnabled = false
 
         binding.btnTTS.setOnClickListener {
-            tts!!.speak(description, TextToSpeech.QUEUE_FLUSH, null, null);
+            tts!!.speak(description, TextToSpeech.QUEUE_FLUSH, null, null)
         }
 
         binding.tvLink.setOnClickListener {
             if (!link.startsWith("http://") && !link.startsWith("https://")) {
-                link = "http://" + link;
+                link = "http://" + link
             }
             val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(link))
             startActivity(browserIntent)
@@ -181,10 +157,10 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
             if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
                 // success, create the TTS instance
                 tts = TextToSpeech(context, this)
-                tts!!.setLanguage(Locale.US)
+                tts!!.language = Locale.US
                 tts!!.setPitch(0.9f)
                 tts!!.setSpeechRate(0.8f)
-                binding.btnTTS.setEnabled(true)
+                binding.btnTTS.isEnabled = true
             } else {
                 val installIntent = Intent()
                 installIntent.action = TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA
@@ -200,45 +176,42 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 Log.e("TTS", "The Language specified is not supported!")
             } else {
-                tts!!.setLanguage(Locale.getDefault())
+                tts!!.language = Locale.getDefault()
                 binding.btnTTS.isEnabled = true
             }
         } else {
-            Log.e("TTS", "Initilization Failed!")
+            Log.e("TTS", "Initialization Failed!")
         }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-//        myReg.get().addOnSuccessListener {
-//            if (it.exists()) {
-                registerEventListener = myReg.addValueEventListener(object : ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        if(snapshot.exists()){
-                        for (e in snapshot.children) {
-                            if (e.key.toString() == eventId) {
-                                if (!e.hasChild(username)) {
-                                    setHasOptionsMenu(true)
-                                } else {
-                                    setHasOptionsMenu(false)
-                                }
-                            } else {
+        registerEventListener = myReg.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    for (e in snapshot.children) {
+                        if (e.key.toString() == eventId) {
+                            if (!e.hasChild(username)) {
                                 setHasOptionsMenu(true)
+                            } else {
+                                setHasOptionsMenu(false)
                             }
-                        }} else {
+                        } else {
                             setHasOptionsMenu(true)
                         }
-
                     }
+                } else {
+                    setHasOptionsMenu(true)
+                }
 
-                    override fun onCancelled(error: DatabaseError) {}
-                })
-//
-//        }
+            }
+
+            override fun onCancelled(error: DatabaseError) {}
+        })
+
         super.onViewCreated(view, savedInstanceState)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         inflater.inflate(R.menu.event, menu)
         menu.findItem(R.id.btnAdd).isEnabled = false
         menu.findItem(R.id.btnDelete).isVisible = false
@@ -269,9 +242,8 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
                         Toast.makeText(context, "Register successfully!", Toast.LENGTH_LONG).show()
                         setHasOptionsMenu(false)
                         val reminderMessage =
-                            "Hey! Reminder for: $title\nEvent will begin in 3 days."
+                            "Hey! Your upcoming events $title\nWhen: $date, $time\nWhere: $address"
                         val reminderImage = Base64.decode(img, Base64.DEFAULT)
-//                        val reminderImage = BitmapFactory.decodeByteArray(bitmap,0, bitmap.size)
                         val reminderRequestCode = (Math.random() * (999999 - 1 + 1)).toInt() + 1
 
                         val dateArray = date.split("-").toTypedArray()
@@ -322,7 +294,6 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
             }
             else -> super.onOptionsItemSelected(item)
         }
-        return super.onOptionsItemSelected(item)
     }
 
     override fun onStart() {
@@ -350,7 +321,7 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name: CharSequence = "OKUEventReminderChannel"
-            val description: String = "Channel for OKU Event Reminder"
+            val description = "Channel for OKU Event Reminder"
             val importance: Int = NotificationManager.IMPORTANCE_HIGH
             val channel = NotificationChannel("notifyEvent", name, importance)
             channel.description = description

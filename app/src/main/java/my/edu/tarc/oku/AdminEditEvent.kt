@@ -7,63 +7,40 @@ import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.databinding.DataBindingUtil
 import java.util.*
-
 import android.app.TimePickerDialog
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.*
 import android.widget.*
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
+import android.util.Base64
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.navigation.Navigation
-
 import com.bumptech.glide.Glide
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import my.edu.tarc.oku.data.Event
-import my.edu.tarc.oku.databinding.FragmentAdminAddEventBinding
-
-import android.content.ContentResolver
-import android.util.Log
 import android.util.Patterns
-import android.webkit.MimeTypeMap
-import android.webkit.URLUtil
-import androidx.core.os.bundleOf
-import androidx.core.view.isVisible
 import androidx.navigation.findNavController
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.storage.OnProgressListener
-import com.google.firebase.storage.StorageReference
-import com.google.firebase.storage.UploadTask
-import com.google.firebase.storage.ktx.storage
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import my.edu.tarc.oku.data.EventAdapter
 import my.edu.tarc.oku.databinding.FragmentAdminEditEventBinding
-import java.text.SimpleDateFormat
+import java.io.ByteArrayOutputStream
 import java.util.regex.Pattern
-import androidx.navigation.NavOptions
-
-
-
 
 
 class AdminEditEvent : Fragment(), View.OnClickListener {
 
     private lateinit var binding: FragmentAdminEditEventBinding
     private val myRef = Firebase.database.getReference("state")
-    private val storage = Firebase.storage.getReference("EventImage")
 
     //Image
-    private var savedImgUri: String? = null
     private var newImg: Boolean = false
     private var imgUri: Uri? = null
+    private lateinit var strImg: String
 
     //System time
     private lateinit var c: Calendar
@@ -86,27 +63,25 @@ class AdminEditEvent : Fragment(), View.OnClickListener {
     private lateinit var date: String
     private lateinit var time: String
     private lateinit var address: String
-    private var img: String = ""
+    private lateinit var img: String
     private lateinit var description: String
     private lateinit var state: String
     private lateinit var phone: String
     private lateinit var link: String
-    private lateinit var oldImage: ImageView
 
-    private var valueEventListener: ValueEventListener? = null
     private var addValueEventListener: ValueEventListener? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding =
-            DataBindingUtil.inflate(inflater, R.layout.fragment_admin_edit_event, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_admin_edit_event, container, false)
 
         val args = AdminEditEventArgs.fromBundle(requireArguments())
 
         val stateList = resources.getStringArray(R.array.stateList)
         val adapter = ArrayAdapter(this.requireContext(), R.layout.dropdown_state, stateList)
+
         addValueEventListener = myRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 for (s in snapshot.children) {
@@ -114,8 +89,10 @@ class AdminEditEvent : Fragment(), View.OnClickListener {
                         if (args.eventId == e.key.toString()) {
                             eventId = e.key.toString()
                             img = e.child("image").value.toString()
-                            Glide.with(requireActivity().applicationContext)
-                                .load(img)
+                            val bitmap = Base64.decode(img, Base64.DEFAULT)
+                            Glide.with(requireView())
+                                .asBitmap()
+                                .load(bitmap)
                                 .override(356, 100)
                                 .fitCenter()
                                 .into(binding.imgEventE)
@@ -132,39 +109,12 @@ class AdminEditEvent : Fragment(), View.OnClickListener {
                             binding.ePhoneE.setText(e.child("phone").value.toString())
                         }
                     }
-                    for (e in s.child("Events").children) {//event in events
-                        val getId = e.key.toString()
-                        val title = e.child("title").value.toString()
-                        val date = e.child("date").value.toString()
-                        val time = e.child("time").value.toString()
-                        val address = e.child("address").value.toString()
-                        val state = e.child("state").value.toString()
-                        val description = e.child("description").value.toString()
-                        val image = e.child("image").value.toString()
-                        val link = e.child("link").value.toString()
-                        val phone = e.child("phone").value.toString()
-                        val event =
-                            Event(
-                                getId,
-                                image,
-                                title,
-                                date,
-                                time,
-                                address,
-                                state,
-                                description,
-                                link,
-                                phone
-                            )
-                    }
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {}
 
         })
-        oldImage = binding.imgEventE
-        oldImage.tag = "old"
 
         binding.eStateListE.setAdapter(adapter)
         setupListener()
@@ -175,7 +125,6 @@ class AdminEditEvent : Fragment(), View.OnClickListener {
         binding.imgEventE.setOnClickListener {
             val intent = Intent(Intent.ACTION_PICK)
             intent.type = "image/*"
-
             launchGallery.launch(intent)
         }
 
@@ -202,176 +151,62 @@ class AdminEditEvent : Fragment(), View.OnClickListener {
                 binding.descriptionE.isEnabled = false
                 binding.eLinkE.isEnabled = false
                 binding.ePhoneE.isEnabled = false
+                binding.progressBarHolderE.visibility = View.VISIBLE
+
                 val action = AdminEditEventDirections.actionAdminEditEventToAdminEventInfo(eventId)
                 if (state == newState) {
                     if (newImg) {
-                        storage.child("${eventId}.png").delete()
-                        val fileRef: StorageReference = storage.child("${eventId}.png")
-                        fileRef.putFile(imgUri!!).addOnSuccessListener(object :
-                            OnSuccessListener<UploadTask.TaskSnapshot> {
-                            override fun onSuccess(p0: UploadTask.TaskSnapshot?) {
-                                fileRef.downloadUrl.addOnSuccessListener {
-                                    savedImgUri = it.toString()
-                                    val event = Event(
-                                        eventId,
-                                        savedImgUri.toString(),
-                                        title,
-                                        date,
-                                        time,
-                                        address,
-                                        state,
-                                        description,
-                                        link,
-                                        phone
-                                    )
-                                    myRef.child(state).child("Events").child(eventId)
-                                        .setValue(event)
-                                        .addOnSuccessListener { _ ->
-                                            binding.progressBarHolderE.visibility = View.INVISIBLE
-                                            Toast.makeText(
-                                                context,
-                                                "Event updated successfully!!",
-                                                Toast.LENGTH_LONG
-                                            ).show()
-                                            binding.root.findNavController()
-                                                .navigate(action)
-                                        }.addOnFailureListener {
-                                            Toast.makeText(
-                                                context,
-                                                "Unable to update event.",
-                                                Toast.LENGTH_LONG
-                                            )
-                                                .show()
-                                        }
-                                }
-                            }
-
-                        }).addOnProgressListener {
-                            binding.progressBarHolderE.visibility = View.VISIBLE
-                        }.addOnFailureListener {
-                            binding.progressBarHolderE.visibility = View.INVISIBLE
-                            Toast.makeText(context, "Uploading Fail", Toast.LENGTH_LONG)
-                                .show()
-                        }
-                    } else {
-                        val event = Event(
-                            eventId,
-                            img,
-                            title,
-                            date,
-                            time,
-                            address,
-                            state,
-                            description,
-                            link,
-                            phone
-                        )
+                        val event = Event(eventId, strImg, title, date, time, address, state, description, link, phone)
                         myRef.child(state).child("Events").child(eventId)
                             .setValue(event)
                             .addOnSuccessListener { _ ->
                                 binding.progressBarHolderE.visibility = View.INVISIBLE
-                                Toast.makeText(
-                                    context,
-                                    "Event updated successfully!!",
-                                    Toast.LENGTH_LONG
-                                ).show()
+                                Toast.makeText( context,"Event updated successfully!!", Toast.LENGTH_LONG).show()
                                 binding.root.findNavController().navigate(action)
                             }.addOnFailureListener {
-                                Toast.makeText(
-                                    context,
-                                    "Unable to update event.",
-                                    Toast.LENGTH_LONG
-                                )
-                                    .show()
+                                Toast.makeText(context,"Unable to update event.", Toast.LENGTH_LONG).show()
+                            }
+
+                    } else {
+                        val event = Event(eventId, img, title, date, time, address, state, description, link, phone )
+                        myRef.child(state).child("Events").child(eventId)
+                            .setValue(event)
+                            .addOnSuccessListener { _ ->
+                                binding.progressBarHolderE.visibility = View.INVISIBLE
+                                Toast.makeText( context, "Event updated successfully!!", Toast.LENGTH_LONG ).show()
+                                binding.root.findNavController().navigate(action)
+                            }.addOnFailureListener {
+                                Toast.makeText(context,"Unable to update event.",Toast.LENGTH_LONG).show()
                             }
                     }
                 } else {
                     if (newImg) {
-                        storage.child("${eventId}.png").delete()
-                        val fileRef: StorageReference = storage.child("${eventId}.png")
-                        fileRef.putFile(imgUri!!).addOnSuccessListener(object :
-                            OnSuccessListener<UploadTask.TaskSnapshot> {
-                            override fun onSuccess(p0: UploadTask.TaskSnapshot?) {
-                                fileRef.downloadUrl.addOnSuccessListener {
-                                    savedImgUri = it.toString()
-                                    val event = Event(
-                                        eventId,
-                                        savedImgUri.toString(),
-                                        title,
-                                        date,
-                                        time,
-                                        address,
-                                        newState,
-                                        description,
-                                        link,
-                                        phone
-                                    )
-                                    myRef.child(state).child("Events").child(eventId).removeValue()
-                                        .addOnSuccessListener {
-                                            myRef.child(newState).child("Events").child(eventId)
-                                                .setValue(event)
-                                                .addOnSuccessListener { _ ->
-                                                    binding.progressBarHolderE.visibility =
-                                                        View.INVISIBLE
-                                                    Toast.makeText(
-                                                        context,
-                                                        "Event update successfully!!",
-                                                        Toast.LENGTH_LONG
-                                                    ).show()
-                                                    binding.root.findNavController()
-                                                        .navigate(action)
-                                                }.addOnFailureListener {
-                                                    Toast.makeText(
-                                                        context,
-                                                        "Unable to update event.",
-                                                        Toast.LENGTH_LONG
-                                                    )
-                                                        .show()
-                                                }
-                                        }
-                                }
+                        val event = Event(eventId, strImg, title, date, time, address, newState, description, link, phone)
+                        myRef.child(state).child("Events").child(eventId).removeValue()
+                            .addOnSuccessListener {
+                                myRef.child(newState).child("Events").child(eventId)
+                                    .setValue(event)
+                                    .addOnSuccessListener { _ ->
+                                        binding.progressBarHolderE.visibility =
+                                            View.INVISIBLE
+                                        Toast.makeText(context,"Event update successfully!!", Toast.LENGTH_LONG).show()
+                                        binding.root.findNavController().navigate(action)
+                                    }.addOnFailureListener {
+                                        Toast.makeText(context,"Unable to update event.", Toast.LENGTH_LONG).show()
+                                    }
                             }
-
-                        }).addOnProgressListener {
-                            binding.progressBarHolderE.visibility = View.VISIBLE
-                        }.addOnFailureListener {
-                            binding.progressBarHolderE.visibility = View.INVISIBLE
-                            Toast.makeText(context, "Unable to update event", Toast.LENGTH_LONG)
-                                .show()
-                        }
                     } else {
-                        val event = Event(
-                            eventId,
-                            img,
-                            title,
-                            date,
-                            time,
-                            address,
-                            newState,
-                            description,
-                            link,
-                            phone
-                        )
+                        val event = Event(eventId, img, title, date, time, address, newState, description, link, phone)
                         myRef.child(state).child("Events").child(eventId).removeValue()
                             .addOnSuccessListener {
                                 myRef.child(newState).child("Events").child(eventId)
                                     .setValue(event)
                                     .addOnSuccessListener { _ ->
                                         binding.progressBarHolderE.visibility = View.INVISIBLE
-                                        Toast.makeText(
-                                            context,
-                                            "Event updated successfully!!",
-                                            Toast.LENGTH_LONG
-                                        ).show()
-                                        binding.root.findNavController()
-                                            .navigate(action)
+                                        Toast.makeText( context,"Event updated successfully!!", Toast.LENGTH_LONG).show()
+                                        binding.root.findNavController().navigate(action)
                                     }.addOnFailureListener {
-                                        Toast.makeText(
-                                            context,
-                                            "Unable to update event.",
-                                            Toast.LENGTH_LONG
-                                        )
-                                            .show()
+                                        Toast.makeText(context,"Unable to update event.", Toast.LENGTH_LONG).show()
                                     }
                             }
                     }
@@ -451,7 +286,7 @@ class AdminEditEvent : Fragment(), View.OnClickListener {
     }
 
     private fun isValidate(): Boolean =
-        validateTitle() && validateDate() && validateTime() && validatePhone() && validateAddress() && validateState() && validateDescription() && validateURL()
+        validateImage() && validateTitle() && validateDate() && validateTime() && validatePhone() && validateAddress() && validateState() && validateDescription() && validateURL()
 
     private fun setupListener() {
         binding.eTitleE.addTextChangedListener(TextFieldValidation(binding.eTitleE))
@@ -460,6 +295,17 @@ class AdminEditEvent : Fragment(), View.OnClickListener {
         binding.descriptionE.addTextChangedListener(TextFieldValidation(binding.descriptionE))
         binding.eLinkE.addTextChangedListener(TextFieldValidation(binding.eLinkE))
         binding.ePhoneE.addTextChangedListener(TextFieldValidation(binding.ePhoneE))
+    }
+
+    private fun validateImage(): Boolean {
+        if (newImg){
+            //convert bitmap to string
+            val bitmap = (binding.imgEventE.drawable as BitmapDrawable).bitmap
+            val byteArray = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArray)
+            strImg = Base64.encodeToString(byteArray.toByteArray(), Base64.DEFAULT)
+        }
+        return true
     }
 
     private fun validateTitle(): Boolean {
@@ -531,19 +377,18 @@ class AdminEditEvent : Fragment(), View.OnClickListener {
             binding.ePhoneE.requestFocus()
             return false
         } else if (!Pattern.compile(REG).matcher(binding.ePhoneE.text.toString()).matches()) {
-            if (!Pattern.compile(REG1).matcher(binding.ePhoneE.text.toString()).matches()) {
+            return if (!Pattern.compile(REG1).matcher(binding.ePhoneE.text.toString()).matches()) {
                 binding.ePhoneELayout.error = "Invalid Phone Number! e.g 0123456789 / 0358764321"
                 binding.ePhoneE.requestFocus()
-                return false
+                false
             } else {
                 binding.ePhoneELayout.isErrorEnabled = false
-                return true
+                true
             }
         } else {
             binding.ePhoneELayout.isErrorEnabled = false
             return true
         }
-        return true
     }
 
     private fun validateAddress(): Boolean {
@@ -596,7 +441,7 @@ class AdminEditEvent : Fragment(), View.OnClickListener {
         }
 
     private fun validateURL(): Boolean {
-        if (binding.eLinkE.text.toString().trim().isEmpty()) {
+        if (binding.eLinkE.text.toString().trim() =="N/A" ) {
             link = "N/A"
             return true
         }
