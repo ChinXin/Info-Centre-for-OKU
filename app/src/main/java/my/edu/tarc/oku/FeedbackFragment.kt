@@ -95,14 +95,14 @@ class FeedbackFragment : Fragment() {
                             if(infoWindowListener != null){
                                 myRef.removeEventListener(infoWindowListener!!)
                             }
-                            for(x in snapshot.children){
-                                if(!snapshot.hasChild(markerId)){
-                                    myRef.child(markerId).child(username).setValue(new_feedback).addOnSuccessListener {
-                                        Toast.makeText(context,"Submit Successful!",Toast.LENGTH_LONG).show()
-                                    }
-                                    break
-                                }
 
+                            if(!snapshot.hasChild(markerId)){
+                                myRef.child(markerId).child(username).setValue(new_feedback).addOnSuccessListener {
+                                    Toast.makeText(context,"Submit Successful!",Toast.LENGTH_LONG).show()
+                                }
+                            }
+
+                            for(x in snapshot.children){
                                 if(x.key == markerId){
                                     if(x.hasChild(username)){ ///marker id
                                         val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
@@ -127,8 +127,6 @@ class FeedbackFragment : Fragment() {
                                         break
                                     }
                                 }
-
-
                             }
                         }
 

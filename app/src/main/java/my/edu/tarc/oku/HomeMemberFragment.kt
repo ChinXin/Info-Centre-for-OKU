@@ -138,7 +138,6 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                         if (t.key == "Individual") {
                             for (a in t.children) {
                                 if (a.key == name) {
-                                    Log.i("test123", "Line 122 = ${a.key}")
                                     for (b in a.children) {
                                         val id = b.key
                                         val lat = b.child("latitude").value.toString().toDouble()
@@ -263,7 +262,6 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
                             }
                             if (count == snapshot.childrenCount.toInt() && !check) {
                                 viewAlert(p0, markerId.toString())
-                                Log.i("test1234", "Line 219")
                             }
                         }
 
@@ -857,7 +855,6 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
         val autoId = content.findViewById<AutoCompleteTextView>(R.id.autoCompleteList)
         val autoId2 = content.findViewById<AutoCompleteTextView>(R.id.autoCompleteList2)
 
-        val dialog = builder.show()
         val btnSave = content.findViewById<Button>(R.id.btnSave)
         val btnCancel = content.findViewById<Button>(R.id.btnCancel)
         val btnDelete = content.findViewById<Button>(R.id.btnDelete)
@@ -920,6 +917,9 @@ class HomeMemberFragment : Fragment(), MemberEventResultAdapter.OnItemClickListe
 
         builder.setView(content)
         builder.setCancelable(false)
+
+        val dialog = builder.show()
+
 
         btnSave.setOnClickListener {
             val lat = latitude.toDouble()

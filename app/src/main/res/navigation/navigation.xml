@@ -81,7 +81,7 @@
     <fragment
         android:id="@+id/feedbackFragment"
         android:name="my.edu.tarc.oku.FeedbackFragment"
-        android:label="Feedback">
+        android:label="FeedbackFragment" >
         <argument
             android:name="markerId"
             app:argType="string" />
