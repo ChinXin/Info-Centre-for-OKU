@@ -41,6 +41,10 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import my.edu.tarc.oku.data.Marker
 import my.edu.tarc.oku.databinding.FragmentHomeAdminBinding
 import my.edu.tarc.oku.databinding.MarkerFormBinding
@@ -55,17 +59,23 @@ import my.edu.tarc.oku.R as R
 class HomeAdminFragment : Fragment() {
 
     private lateinit var binding : FragmentHomeAdminBinding
+    val database = Firebase.database
+    val myRef = database.getReference("state")
 
     lateinit var map: GoogleMap
     lateinit var customView: View
+    var markerEventListener:ValueEventListener? = null
     private val REQUEST_LOCATION_PERMISSION = 1
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+
+    private val job = Job()
+    private val scopeMainThread = CoroutineScope(job + Dispatchers.Main)
+    private val scopeIO = CoroutineScope(job + Dispatchers.IO)
 
     @SuppressLint("MissingPermission")
     private val callback = OnMapReadyCallback { googleMap ->
         map = googleMap
-        val database = Firebase.database
-        val myRef = database.getReference("state")
+
 
         enableMyLocation()
 
@@ -80,7 +90,7 @@ class HomeAdminFragment : Fragment() {
         }
 
         //display all
-        myRef.addValueEventListener(object : ValueEventListener {
+        markerEventListener = myRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 for(s in snapshot.children){
                     for (t in s.children){
@@ -197,14 +207,23 @@ class HomeAdminFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setHasOptionsMenu(true)
         super.onViewCreated(view, savedInstanceState)
-        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
-        mapFragment?.getMapAsync(callback)
+        val v: View = this.requireActivity().findViewById(android.R.id.content)
 
-        val v:View = this.requireActivity().findViewById(android.R.id.content)
-        Snackbar.make(v,"Long press to add a marker!",Snackbar.LENGTH_SHORT)
-            .setAction("OK",{})
-            .setActionTextColor(ContextCompat.getColor(this.requireContext(),android.R.color.white))
-            .show()
+        scopeIO.launch {
+            Snackbar.make(v, "Long press to add a marker!", Snackbar.LENGTH_SHORT)
+                .setAction("OK", {})
+                .setActionTextColor(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        android.R.color.white
+                    )
+                )
+                .show()
+            scopeMainThread.launch {
+                val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
+                mapFragment?.getMapAsync(callback)
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -224,6 +243,14 @@ class HomeAdminFragment : Fragment() {
             map.mapType = GoogleMap.MAP_TYPE_TERRAIN
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onPause() {
+        if(markerEventListener != null){
+            myRef.removeEventListener(markerEventListener!!)
+        }
+        job.cancel()
+        super.onPause()
     }
 
     private fun isPermissionGranted() : Boolean {

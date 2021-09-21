@@ -16,8 +16,10 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import my.edu.tarc.oku.data.Event
 import my.edu.tarc.oku.data.EventAdapter
@@ -35,6 +37,10 @@ class AdminEvent : Fragment() {
     private var valueEventListener: ValueEventListener? = null
     val database = Firebase.database
     val myRef = database.getReference("state")
+    private val job = Job()
+    private val scopeMainThread = CoroutineScope(job + Dispatchers.Main)
+    private val scopeIO = CoroutineScope(job + Dispatchers.IO)
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -49,7 +55,7 @@ class AdminEvent : Fragment() {
             }
         })
 
-        CoroutineScope(IO).launch {
+        scopeIO.launch {
             valueEventListener = myRef.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     eventList.clear()
@@ -69,7 +75,7 @@ class AdminEvent : Fragment() {
                             eventList.add(event)
                         }
                     }
-                    CoroutineScope(Main).launch {
+                    scopeMainThread.launch {
                         val myRecyclerView: RecyclerView = binding.eventRecycleView
                         myRecyclerView.adapter = EventAdapter(eventList)
                         myRecyclerView.setHasFixedSize(true)
@@ -153,10 +159,10 @@ class AdminEvent : Fragment() {
     }
 
     override fun onPause() {
-        super.onPause()
         if (valueEventListener != null) {
             myRef.removeEventListener(valueEventListener!!)
         }
+        super.onPause()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

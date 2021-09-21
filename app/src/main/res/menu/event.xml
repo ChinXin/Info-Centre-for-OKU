@@ -4,24 +4,30 @@
     <item
         android:id="@+id/btnAdd"
         android:icon="@drawable/ic_baseline_add_24"
-        android:title="Add"
+        android:title="Add Event"
         android:visible="false"/>
 
     <item
         android:id="@+id/btnParticipants"
         android:icon="@drawable/ic_baseline_people_alt_24"
-        android:title="Participant(s)"
+        android:title="Show Participant(s)"
         android:visible="false" />
 
     <item
         android:id="@+id/btnDelete"
         android:icon="@drawable/ic_baseline_delete_24"
-        android:title="Delete"
+        android:title="Delete Event"
         android:visible="false" />
 
     <item
         android:id="@+id/btnRegisterE"
         android:icon="@drawable/ic_baseline_how_to_reg_24"
         android:title="Register Event"
+        android:visible="false" />
+
+    <item
+        android:id="@+id/btnExport"
+        android:icon="@drawable/ic_baseline_print_24"
+        android:title="Export As Excel"
         android:visible="false" />
 </menu>

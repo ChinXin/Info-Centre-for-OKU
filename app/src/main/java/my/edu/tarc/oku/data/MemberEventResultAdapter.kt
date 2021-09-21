@@ -19,8 +19,6 @@ class MemberEventResultAdapter(
 ) :
     RecyclerView.Adapter<MemberEventResultAdapter.myViewHolder>(){
 
-    var search = eventList as ArrayList<Event>
-
     inner class myViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView),
         View.OnClickListener {
         val eventTitle: TextView = itemView.findViewById(R.id.eTitle)
@@ -38,10 +36,6 @@ class MemberEventResultAdapter(
                 listener.onItemClick(position)
             }
         }
-    }
-
-    init {
-        search = eventList as ArrayList<Event>
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): myViewHolder {

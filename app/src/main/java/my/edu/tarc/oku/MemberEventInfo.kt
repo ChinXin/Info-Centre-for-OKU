@@ -49,6 +49,14 @@ import android.os.AsyncTask
 import android.util.Base64
 import android.widget.ImageView
 import com.google.android.gms.tasks.OnSuccessListener
+//import my.edu.tarc.oku.data.PDFUtility
+import java.io.File
+import android.R.attr.rowCount
+
+import android.text.TextUtils
+
+
+
 
 
 class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
@@ -132,7 +140,9 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
                             binding.tvTitle.text = title
                             binding.tvTimeDate.text =
                                 "Date/Time: ${date}, ${time}"
-                            binding.tvAddres.text =
+                            binding.tvPhoneNo.text =
+                                "Contact: $phone"
+                            binding.tvAddress.text =
                                 "Address: $address"
                             binding.tvDescription.text = description
                             if (link != "N/A") {
@@ -353,5 +363,6 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
             notificationManager.createNotificationChannel(channel)
         }
     }
+
 
 }

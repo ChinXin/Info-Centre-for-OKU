@@ -122,7 +122,9 @@ class HomeEventInfo : Fragment(), TextToSpeech.OnInitListener {
                             binding.tvTitle.text = title
                             binding.tvTimeDate.text =
                                 "Date/Time: ${date}, ${time}"
-                            binding.tvAddres.text =
+                            binding.tvPhoneNo.text =
+                                "Contact: $phone"
+                            binding.tvAddress.text =
                                 "Address: $address"
                             binding.tvDescription.text = description
                             if (link != "N/A") {

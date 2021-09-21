@@ -55,6 +55,15 @@ class AdminEventInfo : Fragment() {
     private val MY_DATA_CHECK_CODE = 1234
     private var infoValueEventListener: ValueEventListener? = null
 
+    private val job = Job()
+    private val scopeMainThread = CoroutineScope(job + Dispatchers.Main)
+    private val scopeIO = CoroutineScope(job + Dispatchers.IO)
+
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        job.start()
+//    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -76,60 +85,64 @@ class AdminEventInfo : Fragment() {
         binding = DataBindingUtil.inflate(inflater, R.layout.event_info, container, false)
 
         val args = AdminEventInfoArgs.fromBundle(requireArguments())
-
-        infoValueEventListener = myRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                for (s in snapshot.children) {
-                    for (e in s.child("Events").children) {
-                        if (e.key.toString() == args.eventId) {
-                            eventId = e.child("id").value.toString()
-                            img = e.child("image").value.toString()
-                            title = e.child("title").value.toString()
-                            date = e.child("date").value.toString()
-                            time = e.child("time").value.toString()
-                            address = e.child("address").value.toString()
-                            description = e.child("description").value.toString()
-                            link = e.child("link").value.toString()
-                            state = e.child("state").value.toString()
-                            phone = e.child("phone").value.toString()
-                            event = Event(
-                                eventId,
-                                img,
-                                title,
-                                date,
-                                time,
-                                address,
-                                state,
-                                description,
-                                link,
-                                phone
-                            )
-                            val bitmap = Base64.decode(img, Base64.DEFAULT)
-                            Glide.with(requireContext().applicationContext)
-                                .asBitmap()
-                                .load(bitmap)
-                                .fitCenter()// scale to fit entire image within ImageView
-                                .into(binding.imageView3)
-                            binding.tvTitle.text = title
-                            binding.tvTimeDate.text =
-                                "Date/Time: ${date}, ${time}"
-                            binding.tvAddres.text =
-                                "Address: $address"
-                            binding.tvDescription.text = description
-                            if (link != "N/A") {
-                                binding.tvWebsite.visibility = View.VISIBLE
-                                binding.tvLink.visibility = View.VISIBLE
-                                binding.tvLink.text = link
+        scopeIO.launch {
+            infoValueEventListener = myRef.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (s in snapshot.children) {
+                        for (e in s.child("Events").children) {
+                            if (e.key.toString() == args.eventId) {
+                                eventId = e.child("id").value.toString()
+                                img = e.child("image").value.toString()
+                                title = e.child("title").value.toString()
+                                date = e.child("date").value.toString()
+                                time = e.child("time").value.toString()
+                                address = e.child("address").value.toString()
+                                description = e.child("description").value.toString()
+                                link = e.child("link").value.toString()
+                                state = e.child("state").value.toString()
+                                phone = e.child("phone").value.toString()
+                                event = Event(
+                                    eventId,
+                                    img,
+                                    title,
+                                    date,
+                                    time,
+                                    address,
+                                    state,
+                                    description,
+                                    link,
+                                    phone
+                                )
+                                scopeMainThread.launch {
+                                    val bitmap = Base64.decode(img, Base64.DEFAULT)
+                                    Glide.with(requireContext().applicationContext)
+                                        .asBitmap()
+                                        .load(bitmap)
+                                        .fitCenter()// scale to fit entire image within ImageView
+                                        .into(binding.imageView3)
+                                    binding.tvTitle.text = title
+                                    binding.tvTimeDate.text =
+                                        "Date/Time: ${date}, ${time}"
+                                    binding.tvPhoneNo.text =
+                                        "Contact: $phone"
+                                    binding.tvAddress.text =
+                                        "Address: $address"
+                                    binding.tvDescription.text = description
+                                    if (link != "N/A") {
+                                        binding.tvWebsite.visibility = View.VISIBLE
+                                        binding.tvLink.visibility = View.VISIBLE
+                                        binding.tvLink.text = link
+                                    }
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            override fun onCancelled(error: DatabaseError) {}
+                override fun onCancelled(error: DatabaseError) {}
 
-        })
-
+            })
+        }
         binding.tvLink.setOnClickListener {
             if (!link.startsWith("http://") && !link.startsWith("https://")) {
                 link = "http://" + link;
