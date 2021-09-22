@@ -61,6 +61,7 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
     private lateinit var alarmManager: AlarmManager
     private var registerEventListener: ValueEventListener? = null
     private var infoValueEventListener: ValueEventListener? = null
+    private lateinit var args:MemberEventInfoArgs
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -76,7 +77,7 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
 
         alarmManager = requireActivity().getSystemService(ALARM_SERVICE) as AlarmManager
 
-        val args = MemberEventInfoArgs.fromBundle(requireArguments())
+        args = MemberEventInfoArgs.fromBundle(requireArguments())
 
         binding.btnTTS.visibility = View.VISIBLE
 
@@ -189,17 +190,20 @@ class MemberEventInfo : Fragment(), TextToSpeech.OnInitListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
                     for (e in snapshot.children) {
-                        if (e.key.toString() == eventId) {
-                            if (!e.hasChild(username)) {
-                                setHasOptionsMenu(true)
-                            } else {
+                        if (e.key.toString() == args.eventId) {
+                            if (e.hasChild(username)) {
                                 setHasOptionsMenu(false)
                             }
+                            else {
+                                setHasOptionsMenu(true)
+                            }
+                            break
                         } else {
                             setHasOptionsMenu(true)
                         }
                     }
-                } else {
+                }
+                else {
                     setHasOptionsMenu(true)
                 }
 
