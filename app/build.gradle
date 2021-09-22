@@ -83,7 +83,7 @@ dependencies {
     implementation 'com.google.mlkit:object-detection-custom:16.3.3'
 
     //excel
-    implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
+    implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '4.0.1'
     implementation 'javax.xml.stream:stax-api:1.0'
 
     //email
