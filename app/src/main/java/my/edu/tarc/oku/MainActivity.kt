@@ -1,26 +1,19 @@
 package my.edu.tarc.oku
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import android.view.LayoutInflater
-import android.view.MenuInflater
+import android.widget.Button
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.findNavController
-import androidx.navigation.ui.*
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.navigateUp
+import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.navigation.NavigationView
-import com.google.android.material.snackbar.Snackbar
 import my.edu.tarc.oku.databinding.ActivityMainBinding
-import android.widget.Button
-import android.widget.TextView
-import androidx.core.view.GravityCompat
-import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.Observer
-import my.edu.tarc.oku.data.UserSessionManager
-import org.w3c.dom.Text
-import android.text.Html
 
 class MainActivity : AppCompatActivity() {
 
@@ -30,7 +23,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         @Suppress("UNUSED_VARIABLE")
-        val binding = DataBindingUtil.setContentView<ActivityMainBinding>(this, R.layout.activity_main)
+        val binding =
+            DataBindingUtil.setContentView<ActivityMainBinding>(this, R.layout.activity_main)
 
         setSupportActionBar(binding.appBarMain.toolbar)
 
