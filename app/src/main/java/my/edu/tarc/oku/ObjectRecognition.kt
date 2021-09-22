@@ -65,12 +65,15 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
 
         captureImageFab = findViewById(R.id.captureImageFab)
         inputImageView = findViewById(R.id.imageView)
+        imgSampleOne = findViewById(R.id.imgSampleOne)
+        imgSampleTwo = findViewById(R.id.imgSampleTwo)
+        imgSampleThree = findViewById(R.id.imgSampleThree)
         tvPlaceholder = findViewById(R.id.tvPlaceholder)
 
         captureImageFab.setOnClickListener(this)
-//        imgSampleOne.setOnClickListener(this)
-//        imgSampleTwo.setOnClickListener(this)
-//        imgSampleThree.setOnClickListener(this)
+        imgSampleOne.setOnClickListener(this)
+        imgSampleTwo.setOnClickListener(this)
+        imgSampleThree.setOnClickListener(this)
 
 //        val checkIntent = Intent()
 //        checkIntent.action = TextToSpeech.Engine.ACTION_CHECK_TTS_DATA
@@ -142,17 +145,35 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
         }
     }
 
+    /**
+     * onClick(v: View?)
+     *      Detect touches on the UI components
+     */
     override fun onClick(v: View?) {
         when (v?.id) {
             R.id.captureImageFab -> {
                 try {
                     dispatchTakePictureIntent()
                 } catch (e: ActivityNotFoundException) {
+                    Log.i("test12345","Line 125")
                 }
+            }
+            R.id.imgSampleOne -> {
+                setViewAndDetect(getSampleImage(R.drawable.img_meal_one))
+            }
+            R.id.imgSampleTwo -> {
+                setViewAndDetect(getSampleImage(R.drawable.img_meal_two))
+            }
+            R.id.imgSampleThree -> {
+                setViewAndDetect(getSampleImage(R.drawable.img_meal_three))
             }
         }
     }
 
+    /**
+     * runObjectDetection(bitmap: Bitmap)
+     *      TFLite Object Detection function
+     */
     private fun runObjectDetection(bitmap: Bitmap) {
         // Step 1: Create TFLite's TensorImage object
         val image = TensorImage.fromBitmap(bitmap)
@@ -168,15 +189,21 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
             options
         )
 
+        // Step 3: Feed given image to the detector
         val results = detector.detect(image)
 
+        // Step 4: Parse the detection result and show it
         val resultToDisplay = results.map {
+            // Get the top-1 category and craft the display text
             val category = it.categories.first()
             val text = "${category.label}, ${category.score.times(100).toInt()}%"
 
+            // Create a data object to display the detection result
             DetectionResult(it.boundingBox, text)
+
         }
 
+        // Draw the detection result on the bitmap and show it.
         val imgWithResult = drawDetectionResult(bitmap, resultToDisplay)
         runOnUiThread {
             inputImageView.setImageBitmap(imgWithResult)
@@ -189,38 +216,68 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
             for (i in it.categories){
                 tts.speak(i.label.toString(), TextToSpeech.QUEUE_ADD, null,null);
             }
+
+            //Log.i("test12346","$result")
+            //tts.speak(result, TextToSpeech.QUEUE_FLUSH, null)
         }
     }
 
+    /**
+     * debugPrint(visionObjects: List<Detection>)
+     *      Print the detection result to logcat to examine
+     */
     private fun debugPrint(results : List<Detection>) {
         for ((i, obj) in results.withIndex()) {
             val box = obj.boundingBox
 
+            Log.d(TAG, "Detected object: ${i} ")
+            Log.d(TAG, "  boundingBox: (${box.left}, ${box.top}) - (${box.right},${box.bottom})")
+
             for ((j, category) in obj.categories.withIndex()) {
+                Log.d(TAG, "    Label $j: ${category.label}")
                 val confidence: Int = category.score.times(100).toInt()
+                Log.d(TAG, "    Confidence: ${confidence}%")
             }
         }
     }
 
+    /**
+     * setViewAndDetect(bitmap: Bitmap)
+     *      Set image to view and call object detection
+     */
     private fun setViewAndDetect(bitmap: Bitmap) {
+        // Display capture image
         inputImageView.setImageBitmap(bitmap)
         tvPlaceholder.visibility = View.INVISIBLE
+
+        // Run ODT and display result
+        // Note that we run this in the background thread to avoid blocking the app UI because
+        // TFLite object detection is a synchronised process.
         lifecycleScope.launch(Dispatchers.Default) { runObjectDetection(bitmap) }
     }
 
+    /**
+     * getCapturedImage():
+     *      Decodes and crops the captured image from camera.
+     */
     private fun getCapturedImage(): Bitmap {
+        // Get the dimensions of the View
         val targetW: Int = inputImageView.width
         val targetH: Int = inputImageView.height
 
         val bmOptions = BitmapFactory.Options().apply {
+            // Get the dimensions of the bitmap
             inJustDecodeBounds = true
 
             BitmapFactory.decodeFile(currentPhotoPath, this)
 
             val photoW: Int = outWidth
             val photoH: Int = outHeight
+
+            // Determine how much to scale down the image
             val scaleFactor: Int = max(1, min(photoW / targetW, photoH / targetH))
 
+            // Decode the image file into a Bitmap sized to fill the View
             inJustDecodeBounds = false
             inSampleSize = scaleFactor
             inMutable = true
@@ -248,12 +305,20 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
         }
     }
 
+    /**
+     * getSampleImage():
+     *      Get image form drawable and convert to bitmap.
+     */
     private fun getSampleImage(drawable: Int): Bitmap {
         return BitmapFactory.decodeResource(resources, drawable, BitmapFactory.Options().apply {
             inMutable = true
         })
     }
 
+    /**
+     * rotateImage():
+     *     Decodes and crops the captured image from camera.
+     */
     private fun rotateImage(source: Bitmap, angle: Float): Bitmap {
         val matrix = Matrix()
         matrix.postRotate(angle)
@@ -263,8 +328,13 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
         )
     }
 
+    /**
+     * createImageFile():
+     *     Generates a temporary image file for the Camera app to write to.
+     */
     @Throws(IOException::class)
     private fun createImageFile(): File {
+        // Create an image file name
         val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
         val storageDir: File? = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         return File.createTempFile(
@@ -272,12 +342,18 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
             ".jpg", /* suffix */
             storageDir /* directory */
         ).apply {
+            // Save a file: path for use with ACTION_VIEW intents
             currentPhotoPath = absolutePath
         }
     }
 
+    /**
+     * dispatchTakePictureIntent():
+     *     Start the Camera app to take a photo.
+     */
     private fun dispatchTakePictureIntent() {
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
+            // Ensure that there's a camera activity to handle the intent
             takePictureIntent.resolveActivity(packageManager)?.also {
                 // Create the File where the photo should go
                 val photoFile: File? = try {
@@ -286,6 +362,7 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
                     Log.e(TAG, e.message.toString())
                     null
                 }
+                // Continue only if the File was successfully created
                 photoFile?.also {
                     val photoURI: Uri = FileProvider.getUriForFile(
                         this,
@@ -299,6 +376,10 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
         }
     }
 
+    /**
+     * drawDetectionResult(bitmap: Bitmap, detectionResults: List<DetectionResult>
+     *      Draw a box around each objects and show the object's name.
+     */
     private fun drawDetectionResult(
         bitmap: Bitmap,
         detectionResults: List<DetectionResult>
@@ -319,6 +400,7 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
 
             val tagSize = Rect(0, 0, 0, 0)
 
+            // calculate the right font size
             pen.style = Paint.Style.FILL_AND_STROKE
             pen.color = Color.YELLOW
             pen.strokeWidth = 2F
@@ -327,6 +409,7 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
             pen.getTextBounds(it.text, 0, it.text.length, tagSize)
             val fontSize: Float = pen.textSize * box.width() / tagSize.width()
 
+            // adjust the font size so texts are inside the bounding box
             if (fontSize < pen.textSize) pen.textSize = fontSize
 
             var margin = (box.width() - tagSize.width()) / 2.0F
@@ -340,4 +423,8 @@ class ObjectRecognition : AppCompatActivity(), View.OnClickListener,TextToSpeech
     }
 }
 
+/**
+ * DetectionResult
+ *      A class to store the visualization info of a detected object.
+ */
 data class DetectionResult(val boundingBox: RectF, val text: String)
